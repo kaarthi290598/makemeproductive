@@ -49,7 +49,7 @@ const TodoFilterDeadline = ({
         to: new Date(toDate),
       });
     }
-  }, []);
+  }, [searchParams, setDate]);
 
   function handleFilterChange(value: DateRange | undefined) {
     console.log(value);
