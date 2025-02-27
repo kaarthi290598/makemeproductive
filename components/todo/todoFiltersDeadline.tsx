@@ -16,7 +16,13 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "../ui/button";
 
-const TodoFilterDeadline = ({ date, setDate }: any) => {
+const TodoFilterDeadline = ({
+  date,
+  setDate,
+}: {
+  date: DateRange | undefined;
+  setDate: React.Dispatch<React.SetStateAction<DateRange | undefined>>;
+}) => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();

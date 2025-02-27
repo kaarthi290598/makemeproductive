@@ -15,7 +15,13 @@ import {
 } from "@/components/ui/select";
 import { useTodo } from "./todoContext";
 
-const TodoFilterCategory = ({ selectedValue, setSelectedValue }: any) => {
+const TodoFilterCategory = ({
+  selectedValue,
+  setSelectedValue,
+}: {
+  selectedValue: string;
+  setSelectedValue: React.Dispatch<React.SetStateAction<string>>;
+}) => {
   const { categories } = useTodo();
   const searchParams = useSearchParams();
   const pathname = usePathname();
