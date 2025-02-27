@@ -15,7 +15,7 @@ export async function POST(request: Request) {
 
     // Insert the user into Supabase (adjust the table/columns as needed)
     const { data, error } = await supabase
-      .from("Users")
+      .from("users")
       .insert([{ clerk_id: clerkId, email }]);
 
     if (error) {
