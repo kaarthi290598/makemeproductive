@@ -3,7 +3,7 @@
 import { CheckCircle, Circle, NotebookPen } from "lucide-react"; // Using icons for checkbox
 
 import React from "react";
-import { useTodo } from "./todoContext";
+import { Todo, useTodo } from "./todoContext";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 
@@ -74,7 +74,7 @@ const TodoEmpty = () => {
   );
 };
 
-const TodoCard = ({ todo }: { todo: any }) => {
+const TodoCard = ({ todo }: { todo: Todo }) => {
   const { toggleTodo } = useTodo();
   const toggleCompletion = () => toggleTodo(todo.id);
 

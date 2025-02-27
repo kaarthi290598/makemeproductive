@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
 // Define the Todo type
-type Todo = {
+export type Todo = {
   id: number;
   name: string;
   category: string;
