@@ -12,7 +12,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import { Eraser, Trash } from "lucide-react";
+import { Eraser } from "lucide-react";
 
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 

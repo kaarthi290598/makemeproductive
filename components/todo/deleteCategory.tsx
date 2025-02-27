@@ -1,7 +1,7 @@
 import React from "react";
 import { useTodo } from "./todoContext";
 import { Button } from "../ui/button";
-import { DeleteIcon, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 const DeleteCategory = () => {
   const { categories, removeCategory } = useTodo();

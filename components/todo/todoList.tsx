@@ -1,10 +1,11 @@
 "use client";
-import { useState } from "react";
-import { GripVertical, CheckCircle, Circle, NotebookPen } from "lucide-react"; // Using icons for checkbox
+
+import { CheckCircle, Circle, NotebookPen } from "lucide-react"; // Using icons for checkbox
 
 import React from "react";
 import { useTodo } from "./todoContext";
 import { useSearchParams } from "next/navigation";
+import Image from "next/image";
 
 const TodoList = () => {
   const { todos } = useTodo();
@@ -56,7 +57,13 @@ export default TodoList;
 const TodoEmpty = () => {
   return (
     <div className="flex h-full flex-col items-center justify-center">
-      <img src="/todolist.svg" className="w-[200px]" />
+      <Image
+        src="/todolist.svg"
+        className="w-[200px]"
+        width={200}
+        height={200}
+        alt="Todo List"
+      />
       <div className="flex items-center gap-2">
         <NotebookPen className="h-4 w-4 text-muted-foreground" />
         <h1 className="text-md italic text-muted-foreground">

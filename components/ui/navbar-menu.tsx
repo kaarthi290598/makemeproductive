@@ -1,5 +1,4 @@
 import {
-  HamIcon,
   HomeIcon,
   LogIn,
   LogOut,

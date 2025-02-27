@@ -1,10 +1,8 @@
 "use client";
-import React, { use } from "react";
+import React from "react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -13,7 +11,7 @@ import {
 import { Button } from "../ui/button";
 import { Plus } from "lucide-react";
 import AddCategoryForm from "./addCategoryForm";
-import { useTodo } from "./todoContext";
+
 import DeleteCategory from "./deleteCategory";
 
 const TodoAddCategory = () => {
