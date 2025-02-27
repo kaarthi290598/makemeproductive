@@ -1,30 +1,25 @@
 // app/api/clerk-webhook/route.ts
-import { supabase } from "@/lib/supabaseClient";
 import { NextResponse } from "next/server";
+import { supabase } from "../../../lib/supabaseClient";
 
 export async function POST(request: Request) {
-  // Parse the incoming JSON payload from Clerk
   const event = await request.json();
 
-  // Optional: Verify the webhook signature using Clerk's secret (see Clerk docs)
-
-  // Handle the "user.created" event
   if (event.type === "user.created") {
     const { id: clerkId, email_addresses: emailAddresses } = event.data;
     const email = emailAddresses?.[0]?.email_address;
 
-    // Insert the user into Supabase (adjust the table/columns as needed)
+    // Upsert the user record in the "profiles" table
     const { data, error } = await supabase
-      .from("users")
-      .insert([{ clerk_id: clerkId, email }]);
+      .from("profiles")
+      .upsert([{ clerk_id: clerkId, email }], { onConflict: "clerk_id" });
 
     if (error) {
-      console.error("Error inserting user:", error);
+      console.error("Error upserting profile:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
     return NextResponse.json({ success: true, data });
   }
 
-  // Acknowledge any other events
   return NextResponse.json({ message: "Event not handled" });
 }
