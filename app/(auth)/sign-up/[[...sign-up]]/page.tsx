@@ -5,7 +5,7 @@ export default function Page() {
     <div className="flex h-screen items-center justify-center">
       <SignUp
         fallbackRedirectUrl="/home"
-        signInFallbackRedirectUrl="/sign-in" // 🔹 Provide a valid sign-in route
+        signInFallbackRedirectUrl="/sign-in" // Redirects users to sign in if they already have an account
       />
     </div>
   );
