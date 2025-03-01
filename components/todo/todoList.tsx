@@ -7,8 +7,8 @@ import { Todo, useTodo } from "./todoContext";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 
-const TodoList = () => {
-  const { todos } = useTodo();
+const TodoList = ({ todos }: { todos: Todo[] }) => {
+  console.log(todos);
 
   const searchParams = useSearchParams();
 
@@ -18,11 +18,11 @@ const TodoList = () => {
   const toDate = searchParams.get("to");
 
   let filteredTodos = category
-    ? todos.filter((todo) => todo.category === category)
+    ? todos.filter((todo: Todo) => todo.category === category)
     : todos;
 
   if (fromDate && toDate) {
-    filteredTodos = filteredTodos.filter((todo) => {
+    filteredTodos = filteredTodos.filter((todo: Todo) => {
       if (!todo?.deadline) return false; // Skip todos without a deadline
 
       const todoDate = new Date(todo.deadline);
