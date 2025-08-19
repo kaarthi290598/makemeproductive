@@ -11,6 +11,13 @@ export type Todo = {
   };
 };
 
+export type TodoInput = {
+  name: string;
+  deadline?: Date | null;
+  isCompleted: boolean;
+  category_Id: number;
+};
+
 export type Todos = Todo[];
 
 export type Category = {
