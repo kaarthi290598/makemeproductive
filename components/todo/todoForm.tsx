@@ -67,7 +67,7 @@ const TodoForm = ({
   // Mobile/Tablet Tab View
   if (isMobile) {
     return (
-      <Tabs defaultValue="add" className="w-full bg-sidebar p-4">
+      <Tabs defaultValue="add" className="w-full rounded-lg bg-sidebar p-4">
         <TabsList className="grid grid-cols-3">
           <TabsTrigger value="add">Add</TabsTrigger>
           <TabsTrigger value="filter">Filter</TabsTrigger>
