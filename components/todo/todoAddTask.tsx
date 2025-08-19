@@ -9,11 +9,12 @@ import {
 
 import { Button } from "../ui/button";
 import { Plus } from "lucide-react";
-import { TodoAddTaskForm } from "./TodoAddTaskFormbackup";
+// import { TodoAddTaskForm } from "./TodoAddTaskFormbackup";
 import { fetchCategories } from "@/lib/actions/todosData";
 import { TodoAddEditTaskForm } from "./TodoAddEditTaskForm";
+import { Categories } from "@/lib/types/type";
 
-const TodoAddTask = ({ categories }: { categories: any }) => {
+const TodoAddTask = ({ categories }: { categories: Categories }) => {
   const [open, setOpen] = React.useState(false);
   return (
     <Dialog open={open} onOpenChange={setOpen}>

@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabaseClient";
 import { revalidatePath } from "next/cache";
 import { QueryClient } from "@tanstack/react-query";
+import { Todo } from "../types/type";
 
 export async function fetchTodoList() {
   // Retrieve the currently authenticated Clerk user ID
@@ -33,7 +34,7 @@ export async function fetchTodoList() {
   return data;
 }
 
-export async function createTodo(todoValues: any) {
+export async function createTodo(todoValues: Todo) {
   // Retrieve the currently authenticated Clerk user ID
   const { userId } = await auth();
   if (!userId) {
@@ -55,7 +56,13 @@ export async function createTodo(todoValues: any) {
   return data;
 }
 
-export async function updateTodo({ todoValues, id }: any) {
+export async function updateTodo({
+  todoValues,
+  id,
+}: {
+  todoValues: Todo;
+  id: number;
+}) {
   const { userId } = await auth();
   if (!userId) {
     throw new Error("User is not authenticated.");

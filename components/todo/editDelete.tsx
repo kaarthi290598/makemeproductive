@@ -67,7 +67,7 @@ export function EditDeleteButton({
           <DialogHeader>
             <DialogTitle>Edit Task</DialogTitle>
             <DialogDescription>
-              Make changes to your todo here. Click save when you're done.
+              Make changes to your todo here. Click save when you&apos;re done.
             </DialogDescription>
           </DialogHeader>
 
