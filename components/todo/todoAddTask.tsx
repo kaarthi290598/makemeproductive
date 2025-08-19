@@ -1,41 +1,36 @@
-import React from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+"use client";
 
-import { Button } from "../ui/button";
+import * as React from "react";
+import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-// import { TodoAddTaskForm } from "./TodoAddTaskFormbackup";
-import { fetchCategories } from "@/lib/actions/todosData";
 import { TodoAddEditTaskForm } from "./TodoAddEditTaskForm";
 import { Categories } from "@/lib/types/type";
+import { ResponsiveModal } from "./responsiveTodoAddEditModal";
 
-const TodoAddTask = ({ categories }: { categories: Categories }) => {
+export default function TodoAddTask({
+  categories,
+}: {
+  categories: Categories;
+}) {
   const [open, setOpen] = React.useState(false);
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <ResponsiveModal
+      open={open}
+      setOpen={setOpen}
+      title="Add Task"
+      description="Create a new task and assign it to a category."
+      trigger={
         <Button variant="secondary">
-          <Plus /> Add Tasks
+          <Plus className="mr-2" /> Add Task
         </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Add Task</DialogTitle>
-        </DialogHeader>
-
-        <TodoAddEditTaskForm
-          setOpen={setOpen}
-          categories={categories}
-          isEdit={false}
-        />
-      </DialogContent>
-    </Dialog>
+      }
+    >
+      <TodoAddEditTaskForm
+        setOpen={setOpen}
+        categories={categories}
+        isEdit={false}
+      />
+    </ResponsiveModal>
   );
-};
-
-export default TodoAddTask;
+}

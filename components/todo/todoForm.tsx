@@ -71,7 +71,7 @@ const TodoForm = ({
         <TabsList className="grid grid-cols-3">
           <TabsTrigger value="add">Add</TabsTrigger>
           <TabsTrigger value="filter">Filter</TabsTrigger>
-          <TabsTrigger value="delete">Delete/ Reset Filter</TabsTrigger>
+          <TabsTrigger value="delete">Delete/Reset</TabsTrigger>
         </TabsList>
         <TabsContent value="add" className="mt-4">
           <div className="flex flex-col gap-2">

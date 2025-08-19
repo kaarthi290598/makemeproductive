@@ -6,6 +6,11 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* body {
+  @apply bg-background text-foreground;
+  pointer-events: auto !important;
+} */
+
 @layer base {
   :root {
     --background: 0 0% 100%;

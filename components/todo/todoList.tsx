@@ -45,7 +45,7 @@ const TodoList = ({
   });
 
   return (
-    <div className="flex max-h-[400px] flex-1 flex-col rounded-lg bg-sidebar p-4 lg:max-h-screen">
+    <div className="flex max-h-[500px] min-h-[200px] flex-1 flex-col overflow-scroll rounded-lg bg-sidebar p-4 lg:max-h-screen">
       {!todos.length ? (
         <TodoEmpty />
       ) : (

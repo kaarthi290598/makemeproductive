@@ -1,7 +1,7 @@
 import React, { useTransition } from "react";
 import { CheckCircle, Circle } from "lucide-react";
 
-import { Categories, Category, Todo } from "@/lib/types/type";
+import { Categories, Todo } from "@/lib/types/type";
 import { toggleTodo } from "@/lib/actions/todosData";
 import { EditDeleteButton } from "./editDelete";
 
@@ -27,7 +27,7 @@ export const TodoCard = ({
 
   return (
     <div
-      className={`flex w-full items-center justify-between rounded-lg border bg-card px-4 py-3 shadow-md transition-all ${
+      className={`flex w-full items-center justify-between rounded-lg border bg-card px-2 py-2 shadow-md transition-all lg:px-4 lg:py-3 ${
         todo.isCompleted ? "bg-muted" : ""
       }`}
     >
@@ -48,7 +48,7 @@ export const TodoCard = ({
       {/* Todo Content */}
       <div className="flex flex-1 flex-col">
         <h3
-          className={`text-lg font-semibold transition-colors ${
+          className={`text-base font-semibold transition-colors sm:text-lg md:text-xl ${
             todo.isCompleted
               ? "text-muted-foreground line-through"
               : "text-foreground"
@@ -57,7 +57,7 @@ export const TodoCard = ({
           {todo.name}
         </h3>
         <p
-          className={`text-sm transition-colors ${
+          className={`text-xs transition-colors sm:text-sm md:text-base ${
             todo.isCompleted
               ? "text-muted-foreground line-through"
               : "text-muted-foreground"
@@ -68,11 +68,10 @@ export const TodoCard = ({
       </div>
 
       {/* Deadline */}
-
       <div className="flex items-center gap-3">
         {todo.deadline && (
           <span
-            className={`rounded-md bg-muted px-2 py-1 text-sm transition-colors ${
+            className={`rounded-md bg-muted px-2 py-1 text-xs transition-colors sm:text-sm md:text-base ${
               todo.isCompleted
                 ? "text-muted-foreground line-through"
                 : "text-foreground"

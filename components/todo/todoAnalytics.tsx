@@ -12,13 +12,13 @@ const TodoAnalytics = async () => {
   const PendingTodos = todos.filter((todo) => !todo.isCompleted);
 
   return (
-    <div className="flex flex-1 flex-col gap-3 rounded-lg bg-secondary">
+    <div className="flex h-full flex-1 flex-col gap-3 rounded-lg bg-secondary">
       <div className="flex gap-3">
         <TodoTotalTaskCard todos={todos} />
 
         <TodoDeadlineCard todos={todos} />
       </div>
-      <div className="h-full flex-1">
+      <div className="h-full overflow-scroll">
         {PendingTodos.length === 0 ? (
           <TodoEmpty />
         ) : (
@@ -38,7 +38,7 @@ const TodoTotalTaskCard = ({ todos }: { todos: Todos }) => {
   return (
     <div className="flex flex-1 flex-col items-center justify-center rounded-lg bg-sidebar p-10">
       <h1 className="text-5xl lg:text-7xl">{totalTask}</h1>
-      <p className="text-sm lg:text-base">Pending Tasks</p>
+      <p className="text-center text-sm lg:text-base">Pending Tasks</p>
     </div>
   );
 };
@@ -54,7 +54,9 @@ const TodoDeadlineCard = ({ todos }: { todos: Todos }) => {
   return (
     <div className="flex flex-1 flex-col items-center justify-center rounded-lg bg-sidebar p-10">
       <h1 className="text-5xl lg:text-7xl">{deadlineCount}</h1>
-      <p className="text-sm lg:text-base">Tasks Crossed the deadline</p>
+      <p className="text-center text-sm lg:text-base">
+        Tasks Crossed the deadline
+      </p>
     </div>
   );
 };

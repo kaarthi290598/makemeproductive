@@ -9,7 +9,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useTodo } from "./todoContext";
+
 import { Todos } from "@/lib/types/type";
 
 export default function TodoChart({ todos }: { todos: Todos }) {
@@ -43,13 +43,16 @@ export default function TodoChart({ todos }: { todos: Todos }) {
   ) satisfies ChartConfig;
 
   return (
-    <div className="h-full w-full flex-1 rounded-lg">
+    <div className="w-full overflow-scroll rounded-lg">
       <Card className="h-full border-none bg-sidebar">
         <CardHeader>
           <CardTitle>Tasks by Category</CardTitle>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="w-full">
+          <ChartContainer
+            config={chartConfig}
+            className="h-full w-full overflow-scroll"
+          >
             <BarChart
               accessibilityLayer
               data={chartData}

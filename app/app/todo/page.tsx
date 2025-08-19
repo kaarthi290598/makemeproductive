@@ -11,11 +11,11 @@ const page = async () => {
   const categories = await fetchCategories();
 
   return (
-    <div className="flex h-full w-full flex-col gap-6 p-10">
+    <div className="flex h-full w-full flex-col gap-6 p-4 lg:p-10">
       <div>
         <TodoForm categories={categories} todos={todos} />
       </div>
-      <div className="flex flex-1 flex-col gap-4 p-2 lg:flex-row lg:overflow-hidden lg:p-0">
+      <div className="flex h-full flex-1 flex-col gap-4 p-2 lg:flex-row lg:overflow-hidden lg:p-0">
         <Suspense fallback={<SpinnerLoad />}>
           <TodoList todos={todos} categories={categories} />
         </Suspense>
