@@ -1,15 +1,22 @@
 "use client";
 
-import { CheckCircle, Circle, NotebookPen } from "lucide-react"; // Using icons for checkbox
+import { NotebookPen } from "lucide-react"; // Using icons for checkbox
 
 import React from "react";
-import { Todo, useTodo } from "./todoContext";
+
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
+import TodoCard from "./todoCard";
+import { Categories, Category, Todo } from "@/lib/types/type";
 
-const TodoList = ({ todos }: { todos: Todo[] }) => {
+const TodoList = ({
+  todos,
+  categories,
+}: {
+  todos: Todo[];
+  categories: Categories;
+}) => {
   console.log(todos);
-
   const searchParams = useSearchParams();
 
   const category = searchParams.get("category");
@@ -18,7 +25,7 @@ const TodoList = ({ todos }: { todos: Todo[] }) => {
   const toDate = searchParams.get("to");
 
   let filteredTodos = category
-    ? todos.filter((todo: Todo) => todo.category === category)
+    ? todos.filter((todo: Todo) => todo.category.category === category)
     : todos;
 
   if (fromDate && toDate) {
@@ -38,13 +45,13 @@ const TodoList = ({ todos }: { todos: Todo[] }) => {
   });
 
   return (
-    <div className="flex flex-1 flex-col rounded-lg bg-sidebar p-4">
+    <div className="flex max-h-[400px] flex-1 flex-col rounded-lg bg-sidebar p-4 lg:max-h-screen">
       {!todos.length ? (
         <TodoEmpty />
       ) : (
         <div className="scrollbar-none flex-1 space-y-4 overflow-y-auto pr-2">
           {filteredTodos.map((todo) => (
-            <TodoCard key={todo.id} todo={todo} />
+            <TodoCard key={todo.id} todo={todo} categories={categories} />
           ))}
         </div>
       )}
@@ -70,74 +77,6 @@ const TodoEmpty = () => {
           You Have No Todos
         </h1>
       </div>
-    </div>
-  );
-};
-
-const TodoCard = ({ todo }: { todo: Todo }) => {
-  const { toggleTodo } = useTodo();
-  const toggleCompletion = () => toggleTodo(todo.id);
-
-  const isDeadlineCompleted =
-    todo.isCompleted === false &&
-    todo?.deadline &&
-    new Date(todo.deadline) < new Date();
-
-  return (
-    <div
-      className={`flex w-full items-center justify-between rounded-lg border bg-card px-4 py-3 shadow-md transition-all ${
-        todo.isCompleted ? "bg-muted" : ""
-      }`}
-    >
-      {/* Drag Icon - TO BE DONE LATER */}
-      {/* <GripVertical className="mr-3 cursor-grab text-muted-foreground" /> */}
-
-      {/* Completion Toggle */}
-      <div
-        onClick={toggleCompletion}
-        className="mr-3 cursor-pointer text-muted-foreground"
-      >
-        {todo.isCompleted ? (
-          <CheckCircle className="text-green-500" />
-        ) : (
-          <Circle className="text-muted-foreground" />
-        )}
-      </div>
-
-      {/* Todo Content */}
-      <div className="flex flex-1 flex-col">
-        <h3
-          className={`text-lg font-semibold transition-colors ${
-            todo.isCompleted
-              ? "text-muted-foreground line-through"
-              : "text-foreground"
-          }`}
-        >
-          {todo.name}
-        </h3>
-        <p
-          className={`text-sm transition-colors ${
-            todo.isCompleted
-              ? "text-muted-foreground line-through"
-              : "text-muted-foreground"
-          }`}
-        >
-          {todo.category}
-        </p>
-      </div>
-
-      {/* Deadline */}
-      {todo.deadline && (
-        <span
-          className={`rounded-md bg-muted px-2 py-1 text-sm transition-colors ${
-            todo.isCompleted
-              ? "text-muted-foreground line-through"
-              : "text-foreground"
-          } ${isDeadlineCompleted && "bg-red-500 text-white"} `}
-        >
-          {new Date(todo.deadline).toLocaleDateString()}
-        </span>
-      )}
     </div>
   );
 };

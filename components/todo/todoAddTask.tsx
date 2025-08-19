@@ -9,9 +9,11 @@ import {
 
 import { Button } from "../ui/button";
 import { Plus } from "lucide-react";
-import { TodoAddTaskForm } from "./TodoAddTaskForm";
+import { TodoAddTaskForm } from "./TodoAddTaskFormbackup";
+import { fetchCategories } from "@/lib/actions/todosData";
+import { TodoAddEditTaskForm } from "./TodoAddEditTaskForm";
 
-const TodoAddTask = () => {
+const TodoAddTask = ({ categories }: { categories: any }) => {
   const [open, setOpen] = React.useState(false);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -25,7 +27,11 @@ const TodoAddTask = () => {
           <DialogTitle>Add Task</DialogTitle>
         </DialogHeader>
 
-        <TodoAddTaskForm setOpen={setOpen} />
+        <TodoAddEditTaskForm
+          setOpen={setOpen}
+          categories={categories}
+          isEdit={false}
+        />
       </DialogContent>
     </Dialog>
   );

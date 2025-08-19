@@ -16,7 +16,7 @@ import {
 
 import { Categories } from "@/lib/types/type";
 
-const TodoFilterCategory = ({
+const NotesFilterCategory = ({
   selectedValue,
   setSelectedValue,
   categories,
@@ -52,7 +52,7 @@ const TodoFilterCategory = ({
       onValueChange={handleFilterChange}
       defaultValue=""
     >
-      <SelectTrigger className="border-none bg-secondary">
+      <SelectTrigger className="w-[200px] border-none bg-secondary">
         <SelectValue placeholder="Filter by Category" />
       </SelectTrigger>
       <SelectContent>
@@ -70,4 +70,4 @@ const TodoFilterCategory = ({
   );
 };
 
-export default TodoFilterCategory;
+export default NotesFilterCategory;

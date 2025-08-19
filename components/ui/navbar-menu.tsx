@@ -43,9 +43,9 @@ export default function Navbar({ className }: { className?: string }) {
           </Link>
         </SignedOut>
         <SignedIn>
-          <Link href="/home">
+          <Link href="/app">
             <Button variant="link" className="text-md">
-              Go to Home <HomeIcon />
+              Go to App <HomeIcon />
             </Button>
           </Link>
           <SignOutButton>
@@ -89,10 +89,10 @@ export default function Navbar({ className }: { className?: string }) {
             {/* Signed In Menu Items */}
             <SignedIn>
               <DropdownMenuItem asChild>
-                <Link href="/home">
+                <Link href="/app">
                   <div className="flex items-center gap-2">
                     <HomeIcon className="h-4 w-4" />
-                    Go to Home
+                    Go to App
                   </div>
                 </Link>
               </DropdownMenuItem>

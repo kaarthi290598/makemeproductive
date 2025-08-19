@@ -10,18 +10,20 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useTodo } from "./todoContext";
+import { Todos } from "@/lib/types/type";
 
-export default function TodoChart() {
-  const { todos } = useTodo();
-
+export default function TodoChart({ todos }: { todos: Todos }) {
   // Count tasks per category
-  const categoryCounts = todos.reduce(
-    (acc, todo) => {
-      acc[todo.category] = (acc[todo.category] || 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>,
-  );
+  const categoryCounts = todos
+    .filter((todo) => !todo.isCompleted) // Filter only completed todos
+    .reduce(
+      (acc, todo) => {
+        const categoryName = todo.category.category;
+        acc[categoryName] = (acc[categoryName] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
   // Convert category data into chart format
   const chartData = Object.entries(categoryCounts).map(
@@ -42,7 +44,7 @@ export default function TodoChart() {
 
   return (
     <div className="h-full w-full flex-1 rounded-lg">
-      <Card className="border-none bg-sidebar">
+      <Card className="h-full border-none bg-sidebar">
         <CardHeader>
           <CardTitle>Tasks by Category</CardTitle>
         </CardHeader>

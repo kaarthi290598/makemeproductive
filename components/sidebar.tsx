@@ -1,14 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  Calendar,
-  ChevronRight,
-  Home,
-  Inbox,
-  Search,
-  Settings,
-} from "lucide-react";
+import { Calendar, Home, Inbox } from "lucide-react";
 
 import {
   Sidebar,
@@ -16,42 +9,34 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-  SidebarRail,
 } from "@/components/ui/sidebar";
 import { Collapsible } from "@radix-ui/react-collapsible";
-import { CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
+import { CollapsibleTrigger } from "./ui/collapsible";
 import Link from "next/link";
 
 const items = [
   {
-    title: "Home",
-    url: "/home",
-    icon: Home,
-  },
-  {
     title: "To-do",
-    url: "/home/todo",
+    url: "/app/todo",
     icon: Inbox,
   },
   {
     title: "Notes",
-    url: "/home/notes",
+    url: "/app/notes",
     icon: Calendar,
   },
 ];
 
 const SidebarApp = () => {
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" variant="sidebar">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Make Me Productive</SidebarGroupLabel>
+          <SidebarGroupLabel>Make Me Productive </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="mt-5 space-y-1">
               <SidebarMenu>
@@ -66,7 +51,7 @@ const SidebarApp = () => {
                         <Link href={item.url}>
                           <SidebarMenuButton tooltip={item.title}>
                             {item.icon && <item.icon />}
-                            <span>{item.title}</span>
+                            <span className="text-[16px]">{item.title}</span>
                           </SidebarMenuButton>
                         </Link>
                       </CollapsibleTrigger>

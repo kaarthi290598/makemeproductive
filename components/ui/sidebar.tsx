@@ -18,10 +18,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { DialogTitle } from "./dialog";
 
 const SIDEBAR_COOKIE_NAME = "sidebar:state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
-const SIDEBAR_WIDTH = "12rem";
+const SIDEBAR_WIDTH = "10rem";
 const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
@@ -215,6 +216,8 @@ const Sidebar = React.forwardRef<
             side={side}
           >
             <div className="flex h-full w-full flex-col">{children}</div>
+
+            <DialogTitle className="sr-only">Sidebar</DialogTitle>
           </SheetContent>
         </Sheet>
       );

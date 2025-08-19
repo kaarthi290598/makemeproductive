@@ -24,14 +24,19 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { CustomDatePicker } from "../customDatePicker";
-import { useTodo } from "./todoContext";
+
+import { createTodo } from "@/lib/actions/todosData";
+import { Category } from "@/lib/types/type";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import SpinnerLoad from "../spinner";
 
 const formSchema = z.object({
   name: z.string().min(3, {
     message: "Task must be at least 3 characters.",
   }),
-  category: z.string().min(1, {
-    message: "Category is required.",
+  category_Id: z.string().min(1, {
+    message: "Category ID is required.",
   }),
   deadline: z
     .string()
@@ -43,29 +48,42 @@ const formSchema = z.object({
 
 export function TodoAddTaskForm({
   setOpen,
+  categories,
 }: {
   setOpen: (open: boolean) => void;
+  categories: any;
 }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      category: "",
+      category_Id: "",
       deadline: "", // Deadline is optional
     },
   });
 
-  const { addTodo, categories } = useTodo();
+  const { mutate: addTaskMutate, isPending } = useMutation({
+    mutationFn: createTodo,
+
+    onSuccess: () => {
+      setOpen(false);
+
+      toast.success("Task added successfully!");
+    },
+    onError: (err: Error) => {
+      toast.error(`Error adding Task: ${err.message}`);
+    },
+  });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
     const todoValues = {
-      id: Math.random() * 4,
       isCompleted: false,
-      deadline: values.deadline,
-      ...values,
+      deadline: values.deadline ? new Date(values.deadline) : null,
+      category_Id: Number(values.category_Id),
+      name: values.name,
     };
-    addTodo(todoValues);
+
+    await addTaskMutate(todoValues);
     setOpen(false);
   }
 
@@ -90,7 +108,7 @@ export function TodoAddTaskForm({
         {/* Category Field */}
         <FormField
           control={form.control}
-          name="category"
+          name="category_Id"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Category*</FormLabel>
@@ -102,12 +120,13 @@ export function TodoAddTaskForm({
                   <SelectContent>
                     <SelectGroup>
                       <SelectLabel>Categories</SelectLabel>
-                      <SelectItem value="Personal">Personal</SelectItem>
-                      <SelectItem value="Work">Work</SelectItem>
-                      <SelectItem value="Health">Health</SelectItem>
-                      {categories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
+
+                      {categories.map((category: Category) => (
+                        <SelectItem
+                          key={category.id}
+                          value={String(category.id)}
+                        >
+                          {category.category}
                         </SelectItem>
                       ))}
                     </SelectGroup>
@@ -145,7 +164,7 @@ export function TodoAddTaskForm({
             Cancel
           </Button>
           <Button type="submit" className="">
-            Submit
+            {isPending ? <SpinnerLoad /> : "Add Task"}
           </Button>
         </div>
       </form>

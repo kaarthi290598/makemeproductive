@@ -65,7 +65,7 @@ const TodoFilterDeadline = ({
           id="date"
           variant={"secondary"}
           className={cn(
-            "w-[300px] justify-start text-left font-normal",
+            "justify-start text-left font-normal",
             !date && "text-muted-foreground",
           )}
         >

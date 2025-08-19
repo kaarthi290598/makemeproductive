@@ -17,7 +17,16 @@ import {
 } from "@/components/ui/form";
 
 import { Input } from "@/components/ui/input";
-import { useTodo } from "./todoContext";
+
+import { Categories, Category } from "@/lib/types/type";
+import { addCategory } from "@/lib/actions/todosData";
+import {
+  QueryClient,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { toast } from "sonner";
+import SpinnerLoad from "../spinner";
 
 const formSchema = z.object({
   category: z
@@ -26,9 +35,13 @@ const formSchema = z.object({
     .nonempty({ message: "Category is required" }), // Required field validation
 });
 
-const AddCategoryForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
-  const { categories, addCategory } = useTodo();
-
+const AddCategoryForm = ({
+  setOpen,
+  categories,
+}: {
+  setOpen: (open: boolean) => void;
+  categories: Categories | undefined;
+}) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -36,14 +49,35 @@ const AddCategoryForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
     },
   });
 
+  const queryClient = useQueryClient();
+
+  const { mutate: addCategoryMutate, isPending } = useMutation({
+    mutationFn: addCategory,
+    mutationKey: ["category"],
+    onSuccess: () => {
+      setOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      toast.success("Category added successfully!");
+    },
+    onError: (err: Error) => {
+      toast.error("Error adding category:");
+    },
+  });
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    if (categories.includes(values.category)) {
-      alert("Category already exists");
+    const newCategory =
+      values.category.charAt(0).toUpperCase() +
+      values.category.slice(1).toLowerCase();
+    if (
+      categories?.some(
+        (category: Category) => category.category === newCategory,
+      )
+    ) {
+      toast.error("Category already exists!");
       return;
     }
 
-    addCategory(values.category);
+    addCategoryMutate(newCategory);
     setOpen(false);
   }
 
@@ -66,7 +100,7 @@ const AddCategoryForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
         <div className="flex justify-end gap-4">
           <Button variant="destructive">Cancel</Button>
           <Button type="submit" className="">
-            Submit
+            {isPending ? <SpinnerLoad /> : "Add Category"}
           </Button>
         </div>
       </form>

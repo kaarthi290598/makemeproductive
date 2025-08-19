@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 
 const Hero = () => {
   return (
-    <div className="relative z-10 flex flex-col items-center justify-center h-screen">
+    <div className="relative z-10 flex h-screen flex-col items-center justify-center">
       <GridPattern
         squares={[
           [4, 4],
@@ -28,21 +28,21 @@ const Hero = () => {
         className={cn(
           "[mask-image:radial-gradient(600px_circle_at_center,white,transparent)]",
           "[-webkit-mask-image:radial-gradient(600px_circle_at_center,white,transparent)]",
-          "inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
+          "inset-x-0 inset-y-[-30%] h-[200%] skew-y-12",
         )}
       />
       <div className="flex flex-col items-center justify-center gap-8 text-center">
-        <h1 className=" text-5xl md:text-6xl lg:text-8xl  tracking-wide">
+        <h1 className="text-5xl tracking-wide md:text-6xl lg:text-8xl">
           All-in-One
           <SparklesText className="" text="Productivity Hub" />
         </h1>
-        <p className=" max-w-[80%] lg:max-w-[70%] font-light text-sm md:text-lg ">
+        <p className="max-w-[80%] text-sm font-light md:text-lg lg:max-w-[70%]">
           Organize your life with ease! From tracking tasks to planning meals,
           managing passwords, and generating QR codes
         </p>
         <SignedIn>
-          <Link href="/home">
-            <PulsatingButton>Go to Home</PulsatingButton>
+          <Link href="/app">
+            <PulsatingButton>Go to App</PulsatingButton>
           </Link>
         </SignedIn>
         <SignedOut>
