@@ -18,7 +18,7 @@ const TodoAnalytics = async () => {
 
         <TodoDeadlineCard todos={todos} />
       </div>
-      <div className="h-full overflow-scroll">
+      <div className="b h-full overflow-scroll bg-sidebar">
         {PendingTodos.length === 0 ? (
           <TodoEmpty />
         ) : (

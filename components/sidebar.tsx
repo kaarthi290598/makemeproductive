@@ -13,6 +13,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Collapsible } from "@radix-ui/react-collapsible";
 import { CollapsibleTrigger } from "./ui/collapsible";
@@ -32,6 +33,7 @@ const items = [
 ];
 
 const SidebarApp = () => {
+  const { setOpenMobile } = useSidebar();
   return (
     <Sidebar collapsible="icon" variant="sidebar">
       <SidebarContent>
@@ -48,7 +50,10 @@ const SidebarApp = () => {
                   >
                     <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
-                        <Link href={item.url}>
+                        <Link
+                          href={item.url}
+                          onClick={() => setOpenMobile(false)}
+                        >
                           <SidebarMenuButton tooltip={item.title}>
                             {item.icon && <item.icon />}
                             <span className="text-[16px]">{item.title}</span>

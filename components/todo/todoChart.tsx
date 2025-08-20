@@ -43,42 +43,37 @@ export default function TodoChart({ todos }: { todos: Todos }) {
   ) satisfies ChartConfig;
 
   return (
-    <div className="w-full overflow-scroll rounded-lg">
-      <Card className="h-full border-none bg-sidebar">
-        <CardHeader>
-          <CardTitle>Tasks by Category</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer
-            config={chartConfig}
-            className="h-full w-full overflow-scroll"
+    <Card className="h-full w-full overflow-scroll border-none">
+      <CardHeader>
+        <CardTitle>Tasks by Category</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={chartConfig} className="w-full overflow-scroll">
+          <BarChart
+            accessibilityLayer
+            data={chartData}
+            layout="vertical"
+            margin={{ left: 4 }}
           >
-            <BarChart
-              accessibilityLayer
-              data={chartData}
-              layout="vertical"
-              margin={{ left: 4 }}
-            >
-              <YAxis
-                dataKey="category"
-                type="category"
-                tickLine={false}
-                tickMargin={10}
-                axisLine={false}
-                tickFormatter={(value) =>
-                  chartConfig[value as keyof typeof chartConfig]?.label
-                }
-              />
-              <XAxis dataKey="tasks" type="number" hide />
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent hideLabel />}
-              />
-              <Bar dataKey="tasks" layout="vertical" radius={5} />
-            </BarChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
-    </div>
+            <YAxis
+              dataKey="category"
+              type="category"
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+              tickFormatter={(value) =>
+                chartConfig[value as keyof typeof chartConfig]?.label
+              }
+            />
+            <XAxis dataKey="tasks" type="number" hide />
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent hideLabel />}
+            />
+            <Bar dataKey="tasks" layout="vertical" radius={5} />
+          </BarChart>
+        </ChartContainer>
+      </CardContent>
+    </Card>
   );
 }
