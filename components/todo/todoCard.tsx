@@ -63,7 +63,7 @@ export const TodoCard = ({
               : "text-muted-foreground"
           }`}
         >
-          {todo.category?.category}
+          {todo.category ? todo.category.category : "No category"}
         </p>
       </div>
 

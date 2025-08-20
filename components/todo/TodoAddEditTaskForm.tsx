@@ -186,7 +186,11 @@ export function TodoAddEditTaskForm({
         />
 
         <div className="flex justify-end gap-4">
-          <Button variant="destructive" onClick={() => setOpen(false)}>
+          <Button
+            variant="destructive"
+            onClick={() => setOpen(false)}
+            type="button"
+          >
             Cancel
           </Button>
           <Button type="submit" className="">

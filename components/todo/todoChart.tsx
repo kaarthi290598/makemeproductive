@@ -18,7 +18,9 @@ export default function TodoChart({ todos }: { todos: Todos }) {
     .filter((todo) => !todo.isCompleted) // Filter only completed todos
     .reduce(
       (acc, todo) => {
-        const categoryName = todo.category.category;
+        const categoryName = todo.category
+          ? todo.category.category
+          : "No category";
         acc[categoryName] = (acc[categoryName] || 0) + 1;
         return acc;
       },

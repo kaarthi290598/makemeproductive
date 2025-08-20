@@ -98,7 +98,13 @@ const AddCategoryForm = ({
           )}
         />
         <div className="flex justify-end gap-4">
-          <Button variant="destructive">Cancel</Button>
+          <Button
+            variant="destructive"
+            onClick={() => setOpen(false)}
+            type="button"
+          >
+            Cancel
+          </Button>
           <Button type="submit" className="">
             {isPending ? <SpinnerLoad /> : "Add Category"}
           </Button>
