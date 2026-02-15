@@ -4,6 +4,7 @@ export type Todo = {
 
   deadline?: string;
   isCompleted: boolean;
+  order: number | null;
   category_Id: number;
   category: {
     id: number;
@@ -25,7 +26,7 @@ export type Category = {
   createdAt: string;
   category: string;
   category_type: string;
-  user_Id: string;
+  user_id: string;
 };
 
 export type Categories = Category[];

@@ -23,7 +23,8 @@ export async function fetchTodoList() {
       category(id, category)
     `,
     )
-    .eq("user_Id", userId);
+    .eq("user_Id", userId)
+    .order("order", { ascending: true });
 
   console.log(data);
   if (error) {
@@ -204,4 +205,41 @@ export async function toggleTodo(todoId: number) {
 
   revalidatePath("/app/todo");
   return data;
+}
+
+export async function updateTodoOrder(items: { id: number; order: number }[]) {
+  const { userId } = await auth();
+  if (!userId) {
+    throw new Error("User is not authenticated.");
+  }
+
+  // Optimize by sending multiple updates or upsert
+  const updates = items.map((item) => ({
+    id: item.id,
+    order: item.order,
+    user_Id: userId, // Ensure ownership
+  }));
+
+  // Upsert can be used for batch updates if we provide PK (id)
+  // However, simpler to just loop if upsert is tricky with partial data,
+  // but supabase upsert works well if we provide all required fields or if we just want to update.
+  // Actually, 'upsert' might need all non-null fields if it thinks it's a new row.
+  // Using a loop for now or a specific rpc if needed. But let's try upsert with minimal fields if table allows.
+  // Better yet, just iterate. For small lists (todo list) it's fine.
+  // OR use `upsert` but we need to match the existing record content? No, just fields we want to change if we use specific columns?
+  // Supabase upsert updates if Conflict, but requires all necessary columns for the table constraints if it were an insert.
+
+  // Let's use individual updates for safety and simplicity first, or a better SQL approach.
+  // Ideally, `upsert` with `onConflict` 'id'.
+  // We need to fetch the existing rows? No.
+
+  for (const item of items) {
+    await supabase
+      .from("todos")
+      .update({ order: item.order })
+      .eq("id", item.id)
+      .eq("user_Id", userId);
+  }
+
+  revalidatePath("/app/todo");
 }

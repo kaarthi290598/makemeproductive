@@ -52,14 +52,14 @@ const NotesFilterCategory = ({
       onValueChange={handleFilterChange}
       defaultValue=""
     >
-      <SelectTrigger className="w-[200px] border-none bg-secondary">
+      <SelectTrigger className="w-fit border-none bg-secondary">
         <SelectValue placeholder="Filter by Category" />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
           <SelectLabel>Categories</SelectLabel>
 
-          {categories.map((category) => (
+          {categories?.map((category) => (
             <SelectItem key={category.id} value={category.category}>
               {category.category}
             </SelectItem>

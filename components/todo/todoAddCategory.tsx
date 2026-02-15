@@ -30,7 +30,7 @@ const TodoAddCategory = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary">
+        <Button>
           <Plus /> Add / Delete Category
         </Button>
       </DialogTrigger>

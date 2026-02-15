@@ -21,7 +21,7 @@ export default function TodoAddTask({
       title="Add Task"
       description="Create a new task and assign it to a category."
       trigger={
-        <Button variant="secondary">
+        <Button>
           <Plus className="mr-2" /> Add Task
         </Button>
       }

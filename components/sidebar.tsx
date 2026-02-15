@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Calendar, Home, Inbox } from "lucide-react";
+import { Calendar, Home, Inbox, Wallet } from "lucide-react";
 
 import {
   Sidebar,
@@ -29,6 +29,11 @@ const items = [
     title: "Notes",
     url: "/app/notes",
     icon: Calendar,
+  },
+  {
+    title: "Expense Tracker",
+    url: "/app/expense-tracker/overview",
+    icon: Wallet,
   },
 ];
 
