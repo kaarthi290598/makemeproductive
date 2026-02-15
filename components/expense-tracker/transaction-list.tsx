@@ -161,77 +161,73 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
               placeholder="Search note..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-9 w-full border-none bg-secondary lg:w-48 xl:w-64"
+              className="h-9 w-full border-none bg-secondary sm:w-48 lg:w-48 xl:w-64"
             />
-            <Select
-              value={filterType}
-              onValueChange={(val) =>
-                setFilterType(val as "all" | "income" | "expense")
-              }
-            >
-              <SelectTrigger className="h-9 w-[130px] border-none bg-secondary">
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="income">Credits</SelectItem>
-                <SelectItem value="expense">Debits</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={filterCategory} onValueChange={setFilterCategory}>
-              <SelectTrigger className="h-9 w-[150px] border-none bg-secondary">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              value={filterSettlement}
-              onValueChange={(val) =>
-                setFilterSettlement(val as "all" | "settlement")
-              }
-            >
-              <SelectTrigger className="h-9 w-[150px] border-none bg-secondary">
-                <SelectValue placeholder="Settlement" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="settlement">Needs Settlement</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+              <Select
+                value={filterType}
+                onValueChange={(val) =>
+                  setFilterType(val as "all" | "income" | "expense")
+                }
+              >
+                <SelectTrigger className="h-9 w-[calc(50%-4px)] border-none bg-secondary sm:w-[130px]">
+                  <SelectValue placeholder="Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="income">Credits</SelectItem>
+                  <SelectItem value="expense">Debits</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger className="h-9 w-[calc(50%-4px)] border-none bg-secondary sm:w-[150px]">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+              <Select
+                value={filterSettlement}
+                onValueChange={(val) =>
+                  setFilterSettlement(val as "all" | "settlement")
+                }
+              >
+                <SelectTrigger className="h-9 w-[calc(50%-4px)] border-none bg-secondary sm:w-[150px]">
+                  <SelectValue placeholder="Settlement" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="settlement">Needs Settlement</SelectItem>
+                </SelectContent>
+              </Select>
 
-            <Select value={filterPaidBy} onValueChange={setFilterPaidBy}>
-              <SelectTrigger className="h-9 w-[130px] border-none bg-secondary">
-                <SelectValue placeholder="Paid By" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All People</SelectItem>
-                {persons.map((person) => (
-                  <SelectItem key={person.id} value={person.name}>
-                    {person.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Button
-              onClick={handleExport}
-              size="sm"
-              className="ml-auto h-9 bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              <Download className="mr-2 h-4 w-4" /> Export
-            </Button>
+              <Select value={filterPaidBy} onValueChange={setFilterPaidBy}>
+                <SelectTrigger className="h-9 w-[calc(50%-4px)] border-none bg-secondary sm:w-[130px]">
+                  <SelectValue placeholder="Paid By" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All People</SelectItem>
+                  {persons.map((person) => (
+                    <SelectItem key={person.id} value={person.name}>
+                      {person.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Row 2: Date Related Filters */}
           <div className="flex flex-wrap items-center gap-2 border-t border-border/40 pt-2">
-            <span className="mr-2 text-xs font-medium text-muted-foreground">
+            <span className="mr-2 w-full text-xs font-medium text-muted-foreground sm:w-auto">
               Filter by Date:
             </span>
             <Select
@@ -240,7 +236,7 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
                 setDateFilterType(val as "all" | "month" | "year")
               }
             >
-              <SelectTrigger className="h-9 w-[130px] border-none bg-secondary">
+              <SelectTrigger className="h-9 w-full border-none bg-secondary sm:w-[130px]">
                 <SelectValue placeholder="Date Filter" />
               </SelectTrigger>
               <SelectContent>
@@ -260,7 +256,7 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
                   setSelectedDate(`${year}-${currentMonth}`);
                 }}
               >
-                <SelectTrigger className="h-9 w-[100px] border-none bg-secondary">
+                <SelectTrigger className="h-9 w-[calc(50%-4px)] border-none bg-secondary sm:w-[100px]">
                   <SelectValue placeholder="Year" />
                 </SelectTrigger>
                 <SelectContent>
@@ -284,7 +280,7 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
                   setSelectedDate(`${currentYear}-${month}`);
                 }}
               >
-                <SelectTrigger className="h-9 w-[120px] border-none bg-secondary">
+                <SelectTrigger className="h-9 w-[calc(50%-4px)] border-none bg-secondary sm:w-[120px]">
                   <SelectValue placeholder="Month" />
                 </SelectTrigger>
                 <SelectContent>
@@ -301,19 +297,27 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
                 </SelectContent>
               </Select>
             )}
+
+            <Button
+              onClick={handleExport}
+              size="sm"
+              className="h-9 w-full bg-primary text-primary-foreground hover:bg-primary/90 sm:ml-auto sm:w-auto"
+            >
+              <Download className="mr-2 h-4 w-4" /> Export
+            </Button>
           </div>
         </div>
       )}
 
-      <div className="rounded-md border bg-card">
+      <div className="overflow-x-auto rounded-md border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Date</TableHead>
+              <TableHead className="whitespace-nowrap">Date</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead>Paid By</TableHead>
-              <TableHead>Note</TableHead>
+              <TableHead className="hidden md:table-cell">Paid By</TableHead>
+              <TableHead className="hidden sm:table-cell">Note</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Amount</TableHead>
               <TableHead className="w-[100px]"></TableHead>
@@ -329,7 +333,7 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
             ) : (
               filteredTransactions.map((t) => (
                 <TableRow key={t.id}>
-                  <TableCell>
+                  <TableCell className="whitespace-nowrap">
                     {format(parseLocalISODate(t.date), "MMM d, yyyy")}
                   </TableCell>
                   <TableCell>
@@ -337,42 +341,50 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
                       variant={t.type === "income" ? "default" : "destructive"}
                       className={
                         t.type === "income"
-                          ? "bg-green-500 hover:bg-green-600"
-                          : "bg-red-500 hover:bg-red-600"
+                          ? "bg-green-500 px-2 py-0 text-[10px] hover:bg-green-600"
+                          : "bg-red-500 px-2 py-0 text-[10px] hover:bg-red-600"
                       }
                     >
                       {t.type === "income" ? "Credit" : "Debit"}
                     </Badge>
                   </TableCell>
-                  <TableCell>{getCategoryName(t.category_id)}</TableCell>
-                  <TableCell>{t.paid_by || "-"}</TableCell>
-                  <TableCell className="max-w-[200px] truncate">
+                  <TableCell className="max-w-[100px] truncate">
+                    {getCategoryName(t.category_id)}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {t.paid_by || "-"}
+                  </TableCell>
+                  <TableCell className="hidden max-w-[150px] truncate sm:table-cell">
                     {t.note || "-"}
                   </TableCell>
                   <TableCell>
                     {t.needs_settlement && (
                       <Badge
                         variant="outline"
-                        className="flex w-fit cursor-pointer items-center gap-1 border-yellow-500 text-yellow-600"
+                        className="flex w-fit cursor-pointer items-center gap-1 border-yellow-500 px-1 py-0 text-[10px] text-yellow-600"
                         onClick={() => toggleSettlement(t.id, false)}
                       >
                         <AlertCircle className="h-3 w-3" />
-                        Settlement
+                        <span className="">Settlement</span>
                       </Badge>
                     )}
                   </TableCell>
                   <TableCell
-                    className={`text-right font-medium ${t.type === "income" ? "text-green-600" : "text-red-600"}`}
+                    className={`text-right font-medium tabular-nums ${t.type === "income" ? "text-green-600" : "text-red-600"}`}
                   >
-                    {t.type === "income" ? "+" : "-"}₹{t.amount.toFixed(2)}
+                    {t.type === "income" ? "+" : "-"}₹{t.amount.toFixed(0)}
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-1">
                       <AddTransactionDialog
                         transactionToEdit={t}
                         trigger={
-                          <Button variant="ghost" size="icon">
-                            <Edit2 className="h-4 w-4 text-muted-foreground hover:text-blue-500" />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
+                            <Edit2 className="h-3.5 w-3.5 text-muted-foreground hover:text-blue-500" />
                           </Button>
                         }
                       />
@@ -387,9 +399,10 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="h-8 w-8"
                             disabled={deletingId === t.id}
                           >
-                            <Trash2 className="h-4 w-4 text-muted-foreground hover:text-red-500" />
+                            <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-red-500" />
                           </Button>
                         }
                       />

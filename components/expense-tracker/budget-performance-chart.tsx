@@ -51,27 +51,31 @@ export function BudgetPerformanceChart({
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={data}
-                margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                layout="vertical"
+                margin={{ top: 20, right: 60, left: 10, bottom: 20 }}
+                barGap={5}
+                barCategoryGap="20%"
               >
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  vertical={false}
+                  horizontal={false}
+                  vertical={true}
                   opacity={0.2}
                 />
                 <XAxis
-                  dataKey="name"
-                  angle={-45}
-                  textAnchor="end"
-                  interval={0}
-                  height={80}
+                  type="number"
                   axisLine={false}
                   tickLine={false}
                   style={{ fontSize: "11px" }}
                 />
                 <YAxis
+                  dataKey="name"
+                  type="category"
+                  width={150}
+                  tickMargin={10}
                   axisLine={false}
                   tickLine={false}
-                  style={{ fontSize: "11px" }}
+                  style={{ fontSize: "11px", fontWeight: 500 }}
                 />
                 <Tooltip
                   contentStyle={{
@@ -86,25 +90,29 @@ export function BudgetPerformanceChart({
                   dataKey="budget"
                   fill="#94a3b8"
                   name="Planned Budget"
-                  radius={[4, 4, 0, 0]}
-                  barSize={30}
+                  radius={[0, 4, 4, 0]}
+                  barSize={15}
                   animationDuration={1500}
                 />
                 <Bar
                   dataKey="spent"
                   fill="#f43f5e"
                   name="Actual Spent"
-                  radius={[4, 4, 0, 0]}
-                  barSize={30}
+                  radius={[0, 4, 4, 0]}
+                  barSize={15}
                   animationDuration={1500}
                 >
                   <LabelList
                     dataKey="spent"
-                    position="top"
+                    position="right"
                     formatter={(v: number) =>
                       v > 0 ? `₹${v.toLocaleString()}` : ""
                     }
-                    style={{ fontSize: "10px", fontWeight: 600 }}
+                    style={{
+                      fontSize: "10px",
+                      fontWeight: 600,
+                      fill: "hsl(var(--foreground))",
+                    }}
                   />
                 </Bar>
               </BarChart>

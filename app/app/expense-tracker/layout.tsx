@@ -37,12 +37,14 @@ export default function ExpenseTrackerLayout({
 
   return (
     <div className="h-full flex-1 space-y-4 overflow-y-auto p-4 pt-6 md:p-8">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Expense Tracker</h2>
-        <div className="flex items-center space-x-2">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
+          Expense Tracker
+        </h2>
+        <div className="flex flex-wrap items-center gap-2">
           {!loading && !error && (
             <>
-              <ConfirmDialog
+              {/* <ConfirmDialog
                 title="Reset All Data"
                 description="Are you sure you want to reset all data? This cannot be undone."
                 onConfirm={async () => {
@@ -62,13 +64,15 @@ export default function ExpenseTrackerLayout({
                     variant="outline"
                     title="Reset All Data"
                     disabled={isResetting}
+                    size="sm"
+                    className="h-9 px-3"
                   >
                     <Trash className="mr-2 h-4 w-4" />
-                    Reset
+                    <span className="xs:inline hidden">Reset</span>
                   </Button>
                 }
-              />
-              <ConfirmDialog
+              /> */}
+              {/* <ConfirmDialog
                 title="Close Month"
                 description="Are you sure you want to close the current month? This will reset spent amounts and carry over savings."
                 onConfirm={async () => {
@@ -83,19 +87,34 @@ export default function ExpenseTrackerLayout({
                 loading={isClosingMonth}
                 confirmText="Close Month"
                 trigger={
-                  <Button variant="outline" disabled={isClosingMonth}>
+                  <Button
+                    variant="outline"
+                    disabled={isClosingMonth}
+                    size="sm"
+                    className="h-9 px-3"
+                  >
                     <RefreshCcw className="mr-2 h-4 w-4" />
-                    Close Month
+                    <span className="xs:inline hidden">Close Month</span>
+                  </Button>
+                }
+              /> */}
+              <AddTransactionDialog
+                defaultType="income"
+                trigger={
+                  <Button size="sm" className="h-9 px-3">
+                    <span className="xs:hidden">+</span>
+                    <span className="">Add Credit</span>
                   </Button>
                 }
               />
               <AddTransactionDialog
-                defaultType="income"
-                trigger={<Button>Add Credit</Button>}
-              />
-              <AddTransactionDialog
                 defaultType="expense"
-                trigger={<Button>Add Debit</Button>}
+                trigger={
+                  <Button size="sm" className="h-9 px-3">
+                    <span className="xs:hidden">-</span>
+                    <span className="">Add Debit</span>
+                  </Button>
+                }
               />
             </>
           )}

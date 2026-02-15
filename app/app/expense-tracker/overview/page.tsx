@@ -28,6 +28,7 @@ export default function OverviewPage() {
   return (
     <div className="space-y-4">
       {/* Date Filters */}
+      {/* Date Filters */}
       <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-sidebar p-2 shadow-sm lg:p-3">
         <Select
           value={dateFilterType}
@@ -35,7 +36,7 @@ export default function OverviewPage() {
             setDateFilterType(val as "all" | "month" | "year")
           }
         >
-          <SelectTrigger className="h-9 w-[130px] border-none bg-secondary">
+          <SelectTrigger className="h-9 w-full border-none bg-secondary sm:w-[130px]">
             <SelectValue placeholder="Date Filter" />
           </SelectTrigger>
           <SelectContent>
@@ -55,7 +56,7 @@ export default function OverviewPage() {
               setSelectedDate(`${year}-${currentMonth}`);
             }}
           >
-            <SelectTrigger className="h-9 w-[100px] border-none bg-secondary">
+            <SelectTrigger className="h-9 w-[calc(50%-4px)] border-none bg-secondary sm:w-[100px]">
               <SelectValue placeholder="Year" />
             </SelectTrigger>
             <SelectContent>
@@ -79,7 +80,7 @@ export default function OverviewPage() {
               setSelectedDate(`${currentYear}-${month}`);
             }}
           >
-            <SelectTrigger className="h-9 w-[120px] border-none bg-secondary">
+            <SelectTrigger className="h-9 w-[calc(50%-4px)] border-none bg-secondary sm:w-[120px]">
               <SelectValue placeholder="Month" />
             </SelectTrigger>
             <SelectContent>
@@ -99,11 +100,11 @@ export default function OverviewPage() {
       </div>
 
       <Overview dateFilterType={dateFilterType} selectedDate={selectedDate} />
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <div className="col-span-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-7">
+        <div className="col-span-1 lg:col-span-4">
           <CategorySpendingChart data={categoryData} />
         </div>
-        <div className="col-span-3">
+        <div className="col-span-1 lg:col-span-3">
           <RecentTransactions
             limit={10}
             global={true}

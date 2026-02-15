@@ -72,7 +72,9 @@ export function RecentTransactions({
               <TableRow className="hover:bg-transparent">
                 <TableHead className="h-9 px-4">Date</TableHead>
                 <TableHead className="h-9 px-4">Category</TableHead>
-                <TableHead className="h-9 px-4">Note</TableHead>
+                <TableHead className="hidden h-9 px-4 sm:table-cell">
+                  Note
+                </TableHead>
                 <TableHead className="h-9 px-4 text-right">Amount</TableHead>
               </TableRow>
             </TableHeader>
@@ -92,7 +94,7 @@ export function RecentTransactions({
                     <TableCell className="px-4 py-2 text-xs font-medium">
                       {getCategoryName(t.category_id)}
                     </TableCell>
-                    <TableCell className="max-w-[120px] truncate px-4 py-2 text-xs text-muted-foreground">
+                    <TableCell className="hidden max-w-[120px] truncate px-4 py-2 text-xs text-muted-foreground sm:table-cell">
                       {t.note || "-"}
                     </TableCell>
                     <TableCell
