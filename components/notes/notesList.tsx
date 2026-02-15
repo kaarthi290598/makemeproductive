@@ -33,7 +33,7 @@ const NotesList = () => {
   return (
     <div className="h-full overflow-y-auto bg-sidebar p-4">
       <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {notesData.map((note: any) => (
+        {notesData.map((note) => (
           <NotesCard key={note.id} note={note} />
         ))}
       </div>

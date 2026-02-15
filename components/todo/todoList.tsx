@@ -33,21 +33,24 @@ const TodoList = ({
   const fromDate = searchParams.get("from");
   const toDate = searchParams.get("to");
 
-  let filteredTodos = category
-    ? todos.filter((todo: Todo) => todo.category.category === category)
-    : todos;
+  const filteredTodos = React.useMemo(() => {
+    let filtered = category
+      ? todos.filter((todo: Todo) => todo.category.category === category)
+      : todos;
 
-  if (fromDate && toDate) {
-    filteredTodos = filteredTodos.filter((todo: Todo) => {
-      if (!todo?.deadline) return false; // Skip todos without a deadline
+    if (fromDate && toDate) {
+      filtered = filtered.filter((todo: Todo) => {
+        if (!todo?.deadline) return false; // Skip todos without a deadline
 
-      const todoDate = new Date(todo.deadline);
-      const from = new Date(fromDate);
-      const to = new Date(toDate);
+        const todoDate = new Date(todo.deadline);
+        const from = new Date(fromDate);
+        const to = new Date(toDate);
 
-      return todoDate >= from && todoDate <= to;
-    });
-  }
+        return todoDate >= from && todoDate <= to;
+      });
+    }
+    return filtered;
+  }, [todos, category, fromDate, toDate]);
 
   // Remove forced sorting by isCompleted to respect DB order (which is user-controlled now)
   // If we want to keep completed items at the bottom visually but allow reordering, it gets complex.
@@ -63,7 +66,7 @@ const TodoList = ({
   // Sync local state when todos change (e.g. initial load or refetch)
   useEffect(() => {
     setOrderedTodos(filteredTodos);
-  }, [todos, category, fromDate, toDate]); // Depend on filter params too
+  }, [filteredTodos]); // Depend on memoized filteredTodos
 
   const isFiltered = !!category || (!!fromDate && !!toDate);
 

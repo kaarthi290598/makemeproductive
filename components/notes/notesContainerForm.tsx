@@ -14,7 +14,7 @@ const NotesContainerForm = () => {
     error,
   } = useQuery({
     queryKey: ["categories"],
-    queryFn: fetchNotesList,
+    queryFn: () => fetchNotesList(),
   });
 
   return (

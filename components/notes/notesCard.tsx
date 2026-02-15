@@ -118,8 +118,8 @@ const NotesCard: React.FC<{ note: NotesCardProps["note"] }> = ({ note }) => {
           <DialogHeader>
             <DialogTitle>Delete Note</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{note.title}"? This action cannot
-              be undone.
+              Are you sure you want to delete &quot;{note.title}&quot;? This
+              action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

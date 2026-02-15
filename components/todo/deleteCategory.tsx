@@ -33,7 +33,7 @@ const DeleteCategory = ({
   if (error) return <div>Error loading categories</div>;
 
   const displayedCategories = categories?.filter(
-    (category: Category) => category.user_Id !== null,
+    (category: Category) => category.user_id !== null,
   );
 
   return (

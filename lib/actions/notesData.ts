@@ -28,10 +28,16 @@ export async function fetchNotesList(categoryFilter?: string) {
     throw new Error(`Error fetching notes: ${error.message}`);
   }
 
+  interface Note {
+    category?: {
+      category: string;
+    } | null;
+  }
+
   // Apply category filter if provided (filter client-side for reliability)
   if (categoryFilter && data) {
-    return data.filter(
-      (note: any) => note.category?.category === categoryFilter
+    return (data as unknown as Note[]).filter(
+      (note) => note.category?.category === categoryFilter,
     );
   }
 
