@@ -264,7 +264,7 @@ export function AddTransactionDialog({
                   htmlFor="settlement"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  Needs to Settle
+                  Need to Settle
                 </label>
               </div>
             </div>
