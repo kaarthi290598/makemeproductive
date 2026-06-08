@@ -121,29 +121,31 @@ export default function ExpenseTrackerLayout({
         </div>
       </div>
 
-      {loading ? (
-        <SpinnerLoad />
-      ) : error ? (
-        <div className="flex h-[400px] w-full items-center justify-center text-destructive">
-          Error: {error}
-        </div>
-      ) : (
-        <Tabs
-          value={activeTab}
-          onValueChange={handleTabChange}
-          className="space-y-4"
-        >
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="transactions">Transactions</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-          </TabsList>
-          <div className="mt-4">
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="space-y-4"
+      >
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="transactions">Transactions</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+        </TabsList>
+        <div className="mt-4 min-h-[400px]">
+          {loading ? (
+            <div className="flex h-[400px] w-full items-center justify-center">
+              <SpinnerLoad />
+            </div>
+          ) : error ? (
+            <div className="flex h-[400px] w-full items-center justify-center text-destructive">
+              Error: {error}
+            </div>
+          ) : (
             <Suspense fallback={<SpinnerLoad />}>{children}</Suspense>
-          </div>
-        </Tabs>
-      )}
+          )}
+        </div>
+      </Tabs>
     </div>
   );
 }

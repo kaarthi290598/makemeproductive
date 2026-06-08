@@ -79,22 +79,40 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
     }
   },
 
+  // --- Transaction Actions (optimistic + background category refresh) ---
+
   addTransaction: async (transaction) => {
     set({ error: null });
     try {
-      await createExpenseTransaction(transaction);
-      await get().initialize(true);
+      const created = await createExpenseTransaction(transaction);
+      // Optimistic: prepend the new transaction to local state immediately
+      set((state) => ({
+        transactions: [created, ...state.transactions],
+      }));
+      // Background: refresh categories to sync 'spent' amounts from DB
+      fetchExpenseCategories()
+        .then((categories) => set({ categories }))
+        .catch(() => {});
     } catch (err: any) {
       set({ error: err.message });
-      throw err; // Re-throw to handle loading in component
+      throw err;
     }
   },
 
   updateTransaction: async (id, updates) => {
     set({ error: null });
     try {
-      await updateExpenseTransaction(id, updates);
-      await get().initialize(true);
+      const updated = await updateExpenseTransaction(id, updates);
+      // Optimistic: replace the transaction in local state immediately
+      set((state) => ({
+        transactions: state.transactions.map((t) =>
+          t.id === id ? { ...t, ...updated } : t,
+        ),
+      }));
+      // Background: refresh categories to sync 'spent' amounts from DB
+      fetchExpenseCategories()
+        .then((categories) => set({ categories }))
+        .catch(() => {});
     } catch (err: any) {
       set({ error: err.message });
       throw err;
@@ -103,15 +121,22 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
 
   toggleSettlement: async (id, needsSettlement) => {
     set({ error: null });
+    // Optimistic: update local state immediately
+    set((state) => ({
+      transactions: state.transactions.map((t) =>
+        t.id === id ? { ...t, needs_settlement: needsSettlement } : t,
+      ),
+    }));
     try {
       await toggleTransactionSettlement(id, needsSettlement);
+    } catch (err: any) {
+      // Revert on failure
       set((state) => ({
+        error: err.message,
         transactions: state.transactions.map((t) =>
-          t.id === id ? { ...t, needs_settlement: needsSettlement } : t,
+          t.id === id ? { ...t, needs_settlement: !needsSettlement } : t,
         ),
       }));
-    } catch (err: any) {
-      set({ error: err.message });
     }
   },
 
@@ -119,18 +144,32 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
     set({ error: null });
     try {
       await deleteExpenseTransaction(id);
-      await get().initialize(true);
+      // Optimistic: remove the transaction from local state immediately
+      set((state) => ({
+        transactions: state.transactions.filter((t) => t.id !== id),
+      }));
+      // Background: refresh categories to sync 'spent' amounts from DB
+      fetchExpenseCategories()
+        .then((categories) => set({ categories }))
+        .catch(() => {});
     } catch (err: any) {
       set({ error: err.message });
       throw err;
     }
   },
 
+  // --- Category Actions (optimistic, no background refresh needed) ---
+
   addCategory: async (category) => {
     set({ error: null });
     try {
-      await createExpenseCategory(category);
-      await get().initialize(true);
+      const created = await createExpenseCategory(category);
+      // Optimistic: append the new category to local state
+      set((state) => ({
+        categories: [...state.categories, created].sort((a, b) =>
+          a.name.localeCompare(b.name),
+        ),
+      }));
     } catch (err: any) {
       set({ error: err.message });
       throw err;
@@ -140,8 +179,13 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
   updateCategory: async (id, updates) => {
     set({ error: null });
     try {
-      await updateExpenseCategory(id, updates);
-      await get().initialize(true);
+      const updated = await updateExpenseCategory(id, updates);
+      // Optimistic: replace the category in local state
+      set((state) => ({
+        categories: state.categories
+          .map((c) => (c.id === id ? { ...c, ...updated } : c))
+          .sort((a, b) => a.name.localeCompare(b.name)),
+      }));
     } catch (err: any) {
       set({ error: err.message });
       throw err;
@@ -152,18 +196,28 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
     set({ error: null });
     try {
       await deleteExpenseCategory(id);
-      await get().initialize(true);
+      // Optimistic: remove the category from local state
+      set((state) => ({
+        categories: state.categories.filter((c) => c.id !== id),
+      }));
     } catch (err: any) {
       set({ error: err.message });
       throw err;
     }
   },
 
+  // --- Person Actions (optimistic, no background refresh needed) ---
+
   addPerson: async (name) => {
     set({ error: null });
     try {
-      await createExpensePerson(name);
-      await get().initialize(true);
+      const created = await createExpensePerson(name);
+      // Optimistic: append the new person to local state
+      set((state) => ({
+        persons: [...state.persons, created].sort((a, b) =>
+          a.name.localeCompare(b.name),
+        ),
+      }));
     } catch (err: any) {
       set({ error: err.message });
       throw err;
@@ -173,8 +227,13 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
   updatePerson: async (id, name) => {
     set({ error: null });
     try {
-      await updateExpensePerson(id, name);
-      await get().initialize(true);
+      const updated = await updateExpensePerson(id, name);
+      // Optimistic: replace the person in local state
+      set((state) => ({
+        persons: state.persons
+          .map((p) => (p.id === id ? { ...p, ...updated } : p))
+          .sort((a, b) => a.name.localeCompare(b.name)),
+      }));
     } catch (err: any) {
       set({ error: err.message });
       throw err;
@@ -185,12 +244,17 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
     set({ error: null });
     try {
       await deleteExpensePerson(id);
-      await get().initialize(true);
+      // Optimistic: remove the person from local state
+      set((state) => ({
+        persons: state.persons.filter((p) => p.id !== id),
+      }));
     } catch (err: any) {
       set({ error: err.message });
       throw err;
     }
   },
+
+  // --- Reconcile & Reset (these are heavy operations, keep full refresh) ---
 
   reconcileBudget: async (month) => {
     set({ loading: true, error: null });

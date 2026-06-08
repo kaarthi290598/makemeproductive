@@ -54,6 +54,7 @@ export function AddTransactionDialog({
   const [needsSettlement, setNeedsSettlement] = useState(false);
   const [paidBy, setPaidBy] = useState<string>(""); // Default empty, effect will set it
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [addAnother, setAddAnother] = useState(false);
 
   const isEditMode = !!transactionToEdit;
 
@@ -128,9 +129,13 @@ export function AddTransactionDialog({
         toast.success("Transaction added successfully!");
       }
 
-      setOpen(false);
-      if (onOpenChange) onOpenChange(false);
-      resetForm();
+      if (!isEditMode && addAnother) {
+        resetForm();
+      } else {
+        setOpen(false);
+        if (onOpenChange) onOpenChange(false);
+        resetForm();
+      }
     } catch (err) {
       // Error handled by store, just stop loading
     } finally {
@@ -290,6 +295,21 @@ export function AddTransactionDialog({
           </div>
         </div>
         <DialogFooter>
+          {!isEditMode && (
+            <div className="mr-auto flex items-center space-x-2">
+              <Checkbox
+                id="addAnother"
+                checked={addAnother}
+                onCheckedChange={(c) => setAddAnother(!!c)}
+              />
+              <label
+                htmlFor="addAnother"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Add another
+              </label>
+            </div>
+          )}
           <Button type="submit" onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isEditMode ? "Update" : "Save"}{" "}
