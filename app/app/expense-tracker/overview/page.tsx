@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { format } from "date-fns";
 import { formatDateToLocalISO } from "@/lib/utils";
+import { CalendarRange, Filter } from "lucide-react";
 
 export default function OverviewPage() {
   const [dateFilterType, setDateFilterType] = useState<
@@ -26,17 +27,21 @@ export default function OverviewPage() {
   const { categoryData } = useAnalyticsData(dateFilterType, selectedDate);
 
   return (
-    <div className="space-y-4">
-      {/* Date Filters */}
-      {/* Date Filters */}
-      <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-sidebar p-2 shadow-sm lg:p-3">
+    <div className="space-y-6">
+      {/* Premium Toolbar */}
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border/50 bg-card p-3 shadow-sm">
+        <div className="flex items-center gap-1.5 text-muted-foreground mr-2">
+          <Filter className="size-4" />
+          <span className="text-xs font-semibold uppercase tracking-wider">Date Filters</span>
+        </div>
+
         <Select
           value={dateFilterType}
           onValueChange={(val) =>
             setDateFilterType(val as "all" | "month" | "year")
           }
         >
-          <SelectTrigger className="h-9 w-full border-none bg-secondary sm:w-[130px]">
+          <SelectTrigger className="h-9 w-[130px] rounded-lg border-border/60 bg-background text-sm shadow-none transition-colors hover:bg-accent">
             <SelectValue placeholder="Date Filter" />
           </SelectTrigger>
           <SelectContent>
@@ -47,29 +52,32 @@ export default function OverviewPage() {
         </Select>
 
         {(dateFilterType === "month" || dateFilterType === "year") && (
-          <Select
-            value={selectedDate.slice(0, 4)}
-            onValueChange={(year) => {
-              const currentMonth =
-                selectedDate.slice(5, 7) ||
-                new Date().toISOString().slice(5, 7);
-              setSelectedDate(`${year}-${currentMonth}`);
-            }}
-          >
-            <SelectTrigger className="h-9 w-[calc(50%-4px)] border-none bg-secondary sm:w-[100px]">
-              <SelectValue placeholder="Year" />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from(
-                { length: 5 },
-                (_, i) => new Date().getFullYear() - i,
-              ).map((year) => (
-                <SelectItem key={year} value={year.toString()}>
-                  {year}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-px bg-border" />
+            <Select
+              value={selectedDate.slice(0, 4)}
+              onValueChange={(year) => {
+                const currentMonth =
+                  selectedDate.slice(5, 7) ||
+                  new Date().toISOString().slice(5, 7);
+                setSelectedDate(`${year}-${currentMonth}`);
+              }}
+            >
+              <SelectTrigger className="h-9 w-[100px] rounded-lg border-border/60 bg-background text-sm shadow-none transition-colors hover:bg-accent">
+                <SelectValue placeholder="Year" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from(
+                  { length: 5 },
+                  (_, i) => new Date().getFullYear() - i,
+                ).map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         )}
 
         {dateFilterType === "month" && (
@@ -80,7 +88,7 @@ export default function OverviewPage() {
               setSelectedDate(`${currentYear}-${month}`);
             }}
           >
-            <SelectTrigger className="h-9 w-[calc(50%-4px)] border-none bg-secondary sm:w-[120px]">
+            <SelectTrigger className="h-9 w-[120px] rounded-lg border-border/60 bg-background text-sm shadow-none transition-colors hover:bg-accent">
               <SelectValue placeholder="Month" />
             </SelectTrigger>
             <SelectContent>
@@ -100,7 +108,8 @@ export default function OverviewPage() {
       </div>
 
       <Overview dateFilterType={dateFilterType} selectedDate={selectedDate} />
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-7">
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-7">
         <div className="col-span-1 lg:col-span-4">
           <CategorySpendingChart data={categoryData} />
         </div>

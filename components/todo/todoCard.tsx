@@ -1,9 +1,17 @@
 import React, { useTransition } from "react";
-import { CheckCircle, Circle, Calendar, Folder } from "lucide-react";
+import {
+  CheckCircle2,
+  Circle,
+  Calendar,
+  Folder,
+  GripVertical,
+  AlertTriangle,
+} from "lucide-react";
 
 import { Categories, Todo } from "@/lib/types/type";
 import { toggleTodo } from "@/lib/actions/todosData";
 import { EditDeleteButton } from "./editDelete";
+import { cn } from "@/lib/utils";
 
 export const TodoCard = ({
   todo,
@@ -20,69 +28,96 @@ export const TodoCard = ({
     });
   };
 
-  const isDeadlineCompleted =
+  const isOverdue =
     todo.isCompleted === false &&
     todo?.deadline &&
     new Date(todo.deadline) < new Date();
 
   return (
     <div
-      className={`flex w-full items-center justify-between rounded-xl border bg-card px-3 py-3 shadow-sm transition-all hover:border-primary/40 hover:shadow-md lg:px-4 lg:py-4 ${
-        todo.isCompleted ? "bg-muted" : ""
-      }`}
+      className={cn(
+        "group flex w-full items-center gap-3 rounded-xl border bg-background px-3 py-2.5 transition-all duration-200 hover:shadow-sm lg:px-4 lg:py-3",
+        todo.isCompleted
+          ? "border-border/30 bg-muted/30"
+          : "border-border/50 hover:border-border",
+        isOverdue && "border-destructive/30 bg-destructive/5",
+      )}
     >
+      {/* Drag Handle */}
+      <GripVertical className="size-3.5 shrink-0 text-muted-foreground/30 transition-colors group-hover:text-muted-foreground/60" />
+
       {/* Completion Toggle */}
-      <div
+      <button
         onClick={toggleCompletion}
-        className="mr-3 cursor-pointer text-muted-foreground"
+        className="shrink-0 transition-transform hover:scale-110 focus:outline-none"
+        aria-label={
+          todo.isCompleted ? "Mark as incomplete" : "Mark as complete"
+        }
       >
         {isPending ? (
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <div className="size-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         ) : todo.isCompleted ? (
-          <CheckCircle className="h-6 w-6 text-green-500 transition-transform hover:scale-110" />
+          <CheckCircle2 className="size-5 text-emerald-500" />
         ) : (
-          <Circle className="h-6 w-6 text-muted-foreground transition-transform hover:scale-110" />
+          <Circle className="size-5 text-muted-foreground/50 transition-colors hover:text-primary" />
         )}
-      </div>
+      </button>
 
       {/* Todo Content */}
-      <div className="flex flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
         <h3
-          className={`line-clamp-1 text-sm font-semibold transition-colors sm:text-base md:text-lg ${
+          className={cn(
+            "truncate text-sm font-medium transition-colors",
             todo.isCompleted
-              ? "text-muted-foreground line-through"
-              : "text-foreground"
-          }`}
+              ? "text-muted-foreground/60 line-through"
+              : "text-foreground",
+          )}
         >
           {todo.name}
         </h3>
 
-        <div className="flex items-center gap-2 text-xs text-muted-foreground sm:text-sm">
-          <Folder className="h-3 w-3" />
+        <div className="flex items-center gap-3">
+          {/* Category Badge */}
           <span
-            className={`transition-colors ${
-              todo.isCompleted ? "text-muted-foreground line-through" : ""
-            }`}
+            className={cn(
+              "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium",
+              todo.isCompleted
+                ? "bg-muted text-muted-foreground/50"
+                : "bg-primary/8 text-primary/70",
+            )}
           >
-            {todo.category ? todo.category.category : "No category"}
+            <Folder className="size-2.5" />
+            {todo.category ? todo.category.category : "Uncategorized"}
           </span>
+
+          {/* Deadline */}
+          {todo.deadline && (
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium",
+                todo.isCompleted
+                  ? "text-muted-foreground/50 line-through"
+                  : isOverdue
+                    ? "bg-destructive/10 text-destructive"
+                    : "text-muted-foreground",
+              )}
+            >
+              {isOverdue ? (
+                <AlertTriangle className="size-2.5" />
+              ) : (
+                <Calendar className="size-2.5" />
+              )}
+              {new Date(todo.deadline).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Deadline + Actions */}
-      <div className="flex items-center gap-3">
-        {todo.deadline && (
-          <span
-            className={`flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors sm:text-sm ${
-              todo.isCompleted
-                ? "bg-muted text-muted-foreground line-through"
-                : "bg-muted text-foreground"
-            } ${isDeadlineCompleted && "!bg-red-500 !text-white"} `}
-          >
-            <Calendar className="h-3 w-3" />
-            {new Date(todo.deadline).toLocaleDateString()}
-          </span>
-        )}
+      {/* Actions */}
+      <div className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100">
         <EditDeleteButton todo={todo} categories={categories} />
       </div>
     </div>

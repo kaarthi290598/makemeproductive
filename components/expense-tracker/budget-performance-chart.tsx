@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Scale } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -27,16 +28,20 @@ interface BudgetPerformanceChartProps {
 
 export function BudgetPerformanceChart({
   data,
-  height = 500,
+  height = 400,
 }: BudgetPerformanceChartProps) {
   return (
-    <Card className="border-primary/10 shadow-lg md:col-span-2">
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold">
-          Budget vs Actual Performance
-        </CardTitle>
+    <Card className="border border-border/50 bg-card shadow-sm rounded-xl overflow-hidden md:col-span-2">
+      <CardHeader className="flex flex-row items-center gap-2 border-b border-border/50 py-3">
+        <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10">
+          <Scale className="size-3.5 text-primary" />
+        </div>
+        <div>
+          <CardTitle className="text-sm font-semibold">Budget vs Actual Performance</CardTitle>
+          <p className="text-[10px] text-muted-foreground mt-0.5">Comparison of planned budgets against actual spending</p>
+        </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         <div
           style={{
             height: typeof height === "number" ? `${height}px` : height,
@@ -44,7 +49,7 @@ export function BudgetPerformanceChart({
           }}
         >
           {data.length === 0 ? (
-            <div className="flex h-full items-center justify-center italic text-muted-foreground">
+            <div className="flex h-full items-center justify-center italic text-muted-foreground text-sm">
               No data to compare.
             </div>
           ) : (
@@ -52,55 +57,63 @@ export function BudgetPerformanceChart({
               <BarChart
                 data={data}
                 layout="vertical"
-                margin={{ top: 20, right: 60, left: 10, bottom: 20 }}
-                barGap={5}
+                margin={{ top: 10, right: 60, left: 0, bottom: 10 }}
+                barGap={4}
                 barCategoryGap="20%"
               >
                 <CartesianGrid
                   strokeDasharray="3 3"
                   horizontal={false}
                   vertical={true}
-                  opacity={0.2}
+                  opacity={0.15}
                 />
                 <XAxis
                   type="number"
                   axisLine={false}
                   tickLine={false}
-                  style={{ fontSize: "11px" }}
+                  tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
                 />
                 <YAxis
                   dataKey="name"
                   type="category"
-                  width={150}
-                  tickMargin={10}
+                  width={120}
+                  tickMargin={8}
                   axisLine={false}
                   tickLine={false}
-                  style={{ fontSize: "11px", fontWeight: 500 }}
+                  tick={{ fontSize: 11, fontWeight: 500, fill: "hsl(var(--foreground))" }}
                 />
                 <Tooltip
+                  cursor={{ fill: "hsl(var(--muted)/0.3)", radius: 4 }}
                   contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
                     borderRadius: "12px",
-                    border: "none",
-                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                    border: "1px solid hsl(var(--border))",
+                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.05)",
                   }}
                   formatter={(value: number) => `₹${value.toLocaleString()}`}
                 />
-                <Legend verticalAlign="top" align="right" />
+                <Legend 
+                  verticalAlign="top" 
+                  align="right" 
+                  iconType="circle"
+                  iconSize={8}
+                  wrapperStyle={{ fontSize: "11px", paddingBottom: "15px" }}
+                />
                 <Bar
                   dataKey="budget"
-                  fill="#94a3b8"
+                  fill="hsl(var(--muted-foreground)/0.35)"
                   name="Planned Budget"
                   radius={[0, 4, 4, 0]}
-                  barSize={15}
-                  animationDuration={1500}
+                  barSize={12}
+                  animationDuration={1200}
                 />
                 <Bar
                   dataKey="spent"
-                  fill="#f43f5e"
+                  fill="hsl(var(--primary))"
                   name="Actual Spent"
                   radius={[0, 4, 4, 0]}
-                  barSize={15}
-                  animationDuration={1500}
+                  barSize={12}
+                  animationDuration={1200}
                 >
                   <LabelList
                     dataKey="spent"
@@ -113,6 +126,7 @@ export function BudgetPerformanceChart({
                       fontWeight: 600,
                       fill: "hsl(var(--foreground))",
                     }}
+                    offset={10}
                   />
                 </Bar>
               </BarChart>

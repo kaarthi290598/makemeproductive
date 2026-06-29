@@ -2,6 +2,7 @@
 
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -47,24 +48,31 @@ export function ConfirmDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange?.(false)}
-            disabled={loading}
-          >
-            {cancelText}
-          </Button>
-          <Button
-            variant={variant}
-            disabled={loading}
-            onClick={async () => {
-              await onConfirm();
-              onOpenChange?.(false);
-            }}
-          >
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {confirmText}
-          </Button>
+          <DialogClose asChild>
+            <Button
+              variant="outline"
+              disabled={loading}
+            >
+              {cancelText}
+            </Button>
+          </DialogClose>
+          <DialogClose asChild>
+            <Button
+              variant={variant}
+              disabled={loading}
+              onClick={async (e) => {
+                // If there's an async operation, prevent close until finished
+                if (loading) {
+                  e.preventDefault();
+                  return;
+                }
+                await onConfirm();
+              }}
+            >
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {confirmText}
+            </Button>
+          </DialogClose>
         </DialogFooter>
       </DialogContent>
     </Dialog>

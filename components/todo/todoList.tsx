@@ -1,6 +1,6 @@
 "use client";
 
-import { NotebookPen } from "lucide-react"; // Using icons for checkbox
+import { ClipboardList } from "lucide-react";
 
 import React from "react";
 
@@ -25,7 +25,6 @@ const TodoList = ({
   todos: Todo[];
   categories: Categories;
 }) => {
-  console.log(todos);
   const searchParams = useSearchParams();
 
   const category = searchParams.get("category");
@@ -52,15 +51,6 @@ const TodoList = ({
     return filtered;
   }, [todos, category, fromDate, toDate]);
 
-  // Remove forced sorting by isCompleted to respect DB order (which is user-controlled now)
-  // If we want to keep completed items at the bottom visually but allow reordering, it gets complex.
-  // For now, removing this sort so "order" column dictates position.
-  /*
-  filteredTodos = filteredTodos.sort((a, b) => {
-    return a.isCompleted === b.isCompleted ? 0 : a.isCompleted ? 1 : -1;
-  });
-  */
-
   const [orderedTodos, setOrderedTodos] = useState<Todo[]>(filteredTodos);
 
   // Sync local state when todos change (e.g. initial load or refetch)
@@ -69,6 +59,9 @@ const TodoList = ({
   }, [filteredTodos]); // Depend on memoized filteredTodos
 
   const isFiltered = !!category || (!!fromDate && !!toDate);
+
+  const completedCount = orderedTodos.filter((t) => t.isCompleted).length;
+  const totalCount = orderedTodos.length;
 
   const onDragEnd = async (result: DropResult) => {
     if (!result.destination) return;
@@ -86,8 +79,6 @@ const TodoList = ({
     setOrderedTodos(newTodos);
 
     // Prepare updates for backend
-    // We update the 'order' of all affected items (or all items to be safe/simple)
-    // Map index to order. We can use the index as the order.
     const updates = newTodos.map((todo, index) => ({
       id: todo.id,
       order: index,
@@ -98,17 +89,38 @@ const TodoList = ({
     } catch (error) {
       console.error("Failed to update order:", error);
       toast.error("Failed to save new order");
-      // Revert on error?
+      // Revert on error
       setOrderedTodos(filteredTodos);
     }
   };
 
   return (
-    <div className="flex max-h-[400px] min-h-[200px] flex-1 flex-col overflow-scroll rounded-lg bg-sidebar p-4 lg:max-h-screen">
+    <div className="flex max-h-[400px] min-h-[200px] flex-1 flex-col overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm lg:max-h-screen">
+      {/* List Header */}
+      <div className="flex items-center justify-between border-b border-border/50 px-4 py-3">
+        <div className="flex items-center gap-2">
+          <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10">
+            <ClipboardList className="size-3.5 text-primary" />
+          </div>
+          <h2 className="text-sm font-semibold text-foreground">Tasks</h2>
+          {totalCount > 0 && (
+            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+              {completedCount}/{totalCount}
+            </span>
+          )}
+        </div>
+        {isFiltered && (
+          <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-medium text-primary">
+            Filtered
+          </span>
+        )}
+      </div>
+
+      {/* List Content */}
       {!todos.length ? (
         <TodoEmpty />
       ) : (
-        <div className="scrollbar-none flex-1 space-y-4 overflow-y-auto pr-2">
+        <div className="scrollbar-none flex-1 space-y-2 overflow-y-auto p-3">
           {isFiltered ? (
             orderedTodos.map((todo) => (
               <TodoCard key={todo.id} todo={todo} categories={categories} />
@@ -120,7 +132,7 @@ const TodoList = ({
                   <div
                     {...provided.droppableProps}
                     ref={provided.innerRef}
-                    className="space-y-4"
+                    className="space-y-2"
                   >
                     {orderedTodos.map((todo, index) => (
                       <Draggable
@@ -128,11 +140,16 @@ const TodoList = ({
                         draggableId={String(todo.id)}
                         index={index}
                       >
-                        {(provided) => (
+                        {(provided, snapshot) => (
                           <div
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
+                            className={
+                              snapshot.isDragging
+                                ? "rounded-xl shadow-lg ring-2 ring-primary/20"
+                                : ""
+                            }
                           >
                             <TodoCard todo={todo} categories={categories} />
                           </div>
@@ -155,19 +172,23 @@ export default TodoList;
 
 const TodoEmpty = () => {
   return (
-    <div className="flex h-full flex-col items-center justify-center">
-      <Image
-        src="/todolist.svg"
-        className="w-[200px]"
-        width={200}
-        height={200}
-        alt="Todo List"
-      />
-      <div className="flex items-center gap-2">
-        <NotebookPen className="h-4 w-4 text-muted-foreground" />
-        <h1 className="text-md italic text-muted-foreground">
-          You Have No Todos
-        </h1>
+    <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8">
+      <div className="flex size-16 items-center justify-center rounded-2xl bg-muted/50">
+        <Image
+          src="/todolist.svg"
+          className="size-10 opacity-60"
+          width={40}
+          height={40}
+          alt="No tasks"
+        />
+      </div>
+      <div className="text-center">
+        <p className="text-sm font-medium text-muted-foreground">
+          No tasks yet
+        </p>
+        <p className="mt-0.5 text-xs text-muted-foreground/60">
+          Create your first task to get started
+        </p>
       </div>
     </div>
   );

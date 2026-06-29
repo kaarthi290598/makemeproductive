@@ -3,9 +3,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit, Trash } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { Categories, Todo } from "@/lib/types/type";
 import { TodoAddEditTaskForm } from "./TodoAddEditTaskForm";
 import { toast } from "sonner";
@@ -38,19 +39,26 @@ export function EditDeleteButton({
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <button
-            className="flex items-center justify-center rounded-full p-2 hover:bg-gray-100"
+            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus:outline-none"
             aria-label="Open menu"
           >
-            <MoreHorizontal className="h-4 w-4" />
+            <MoreHorizontal className="size-4" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-32">
-          <DropdownMenuItem onClick={() => setOpen(true)}>
-            <Edit className="mr-2 h-4 w-4" />
+        <DropdownMenuContent align="end" className="w-36 rounded-xl">
+          <DropdownMenuItem
+            onClick={() => setOpen(true)}
+            className="gap-2 rounded-lg text-sm"
+          >
+            <Pencil className="size-3.5" />
             Edit
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => deleteTodoMutate(todo.id)}>
-            <Trash className="mr-2 h-4 w-4" />
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => deleteTodoMutate(todo.id)}
+            className="gap-2 rounded-lg text-sm text-destructive focus:text-destructive"
+          >
+            <Trash2 className="size-3.5" />
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>

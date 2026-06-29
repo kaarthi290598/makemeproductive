@@ -10,9 +10,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { format } from "date-fns";
-import { Badge } from "@/components/ui/badge";
 import { parseLocalISODate } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ReceiptText } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface RecentTransactionsProps {
   dateFilterType?: "all" | "month" | "year";
@@ -61,44 +62,53 @@ export function RecentTransactions({
   };
 
   return (
-    <Card className="border-primary/10 shadow-md">
-      <CardHeader className="py-3">
-        <CardTitle className="text-base font-semibold">{title}</CardTitle>
+    <Card className="border border-border/50 bg-card shadow-sm rounded-xl overflow-hidden">
+      <CardHeader className="flex flex-row items-center gap-2 border-b border-border/50 py-3">
+        <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10">
+          <ReceiptText className="size-3.5 text-primary" />
+        </div>
+        <div>
+          <CardTitle className="text-sm font-semibold">{title}</CardTitle>
+          <p className="text-[10px] text-muted-foreground mt-0.5">Most recent logs</p>
+        </div>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="rounded-md border-t">
+        <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="h-9 px-4">Date</TableHead>
-                <TableHead className="h-9 px-4">Category</TableHead>
-                <TableHead className="hidden h-9 px-4 sm:table-cell">
+              <TableRow className="hover:bg-transparent border-b border-border/40">
+                <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground">Date</TableHead>
+                <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground">Category</TableHead>
+                <TableHead className="hidden h-9 px-4 text-xs font-semibold text-muted-foreground sm:table-cell">
                   Note
                 </TableHead>
-                <TableHead className="h-9 px-4 text-right">Amount</TableHead>
+                <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground text-right">Amount</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {recentTransactions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">
+                  <TableCell colSpan={4} className="h-24 text-center text-xs text-muted-foreground">
                     No recent activity.
                   </TableCell>
                 </TableRow>
               ) : (
                 recentTransactions.map((t) => (
-                  <TableRow key={t.id} className="group transition-colors">
-                    <TableCell className="px-4 py-2 text-xs">
+                  <TableRow key={t.id} className="group transition-colors border-b border-border/30 last:border-0 hover:bg-muted/30">
+                    <TableCell className="px-4 py-2.5 text-xs text-muted-foreground">
                       {format(parseLocalISODate(t.date), "MMM d")}
                     </TableCell>
-                    <TableCell className="px-4 py-2 text-xs font-medium">
+                    <TableCell className="px-4 py-2.5 text-xs font-medium text-foreground">
                       {getCategoryName(t.category_id)}
                     </TableCell>
-                    <TableCell className="hidden max-w-[120px] truncate px-4 py-2 text-xs text-muted-foreground sm:table-cell">
+                    <TableCell className="hidden max-w-[120px] truncate px-4 py-2.5 text-xs text-muted-foreground/80 sm:table-cell">
                       {t.note || "-"}
                     </TableCell>
                     <TableCell
-                      className={`px-4 py-2 text-right text-xs font-bold tabular-nums ${t.type === "income" ? "text-green-600" : "text-red-600"}`}
+                      className={cn(
+                        "px-4 py-2.5 text-right text-xs font-semibold tabular-nums",
+                        t.type === "income" ? "text-emerald-600" : "text-rose-600"
+                      )}
                     >
                       {t.type === "income" ? "+" : "-"}₹{t.amount.toFixed(0)}
                     </TableCell>

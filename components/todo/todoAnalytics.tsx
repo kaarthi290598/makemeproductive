@@ -4,27 +4,69 @@ import TodoChart from "./todoChart";
 import { fetchTodoList } from "@/lib/actions/todosData";
 import { Todos } from "@/lib/types/type";
 import Image from "next/image";
-import { NotebookPen } from "lucide-react";
+import {
+  ListTodo,
+  AlertTriangle,
+  BarChart3,
+  CheckCircle2,
+  TrendingUp,
+} from "lucide-react";
 
 const TodoAnalytics = async () => {
   const todos = await fetchTodoList();
 
-  const PendingTodos = todos.filter((todo) => !todo.isCompleted);
+  const pendingTodos = todos.filter((todo) => !todo.isCompleted);
+  const completedTodos = todos.filter((todo) => todo.isCompleted);
+  const overdueTodos = todos.filter(
+    (todo) =>
+      !todo.isCompleted &&
+      todo?.deadline &&
+      new Date(todo.deadline) < new Date(),
+  );
+
+  const completionRate =
+    todos.length > 0
+      ? Math.round((completedTodos.length / todos.length) * 100)
+      : 0;
 
   return (
-    <div className="flex h-full flex-1 flex-col gap-3 rounded-lg bg-secondary">
-      <div className="flex gap-3">
-        <TodoTotalTaskCard todos={todos} />
-
-        <TodoDeadlineCard todos={todos} />
+    <div className="flex h-full flex-1 flex-col gap-3">
+      {/* Stat Cards */}
+      <div className="grid grid-cols-2 gap-3">
+        <StatCard
+          icon={<ListTodo className="size-4 text-primary" />}
+          label="Pending"
+          value={pendingTodos.length}
+          bgClass="bg-primary/10"
+        />
+        <StatCard
+          icon={<AlertTriangle className="size-4 text-destructive" />}
+          label="Overdue"
+          value={overdueTodos.length}
+          bgClass="bg-destructive/10"
+          valueClass={overdueTodos.length > 0 ? "text-destructive" : ""}
+        />
+        <StatCard
+          icon={<CheckCircle2 className="size-4 text-emerald-500" />}
+          label="Completed"
+          value={completedTodos.length}
+          bgClass="bg-emerald-500/10"
+        />
+        <StatCard
+          icon={<TrendingUp className="size-4 text-amber-500" />}
+          label="Done Rate"
+          value={`${completionRate}%`}
+          bgClass="bg-amber-500/10"
+        />
       </div>
-      <div className="b h-full overflow-scroll bg-sidebar">
-        {PendingTodos.length === 0 ? (
+
+      {/* Chart */}
+      <div className="flex-1 overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm">
+        {pendingTodos.length === 0 ? (
           <TodoEmpty />
         ) : (
           <TodoChart todos={todos} />
         )}
-        {/* <TodoChart todos={todos} /> */}
       </div>
     </div>
   );
@@ -32,50 +74,51 @@ const TodoAnalytics = async () => {
 
 export default TodoAnalytics;
 
-const TodoTotalTaskCard = ({ todos }: { todos: Todos }) => {
-  const totalTask = todos.filter((todo) => todo.isCompleted === false).length;
-
+const StatCard = ({
+  icon,
+  label,
+  value,
+  bgClass,
+  valueClass = "",
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number | string;
+  bgClass: string;
+  valueClass?: string;
+}) => {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center rounded-lg bg-sidebar p-10">
-      <h1 className="text-5xl lg:text-7xl">{totalTask}</h1>
-      <p className="text-center text-sm lg:text-base">Pending Tasks</p>
-    </div>
-  );
-};
-
-const TodoDeadlineCard = ({ todos }: { todos: Todos }) => {
-  const deadlineCount = todos.filter(
-    (todo) =>
-      todo.isCompleted === false &&
-      todo?.deadline &&
-      new Date(todo.deadline) < new Date(),
-  ).length;
-
-  return (
-    <div className="flex flex-1 flex-col items-center justify-center rounded-lg bg-sidebar p-10">
-      <h1 className="text-5xl lg:text-7xl">{deadlineCount}</h1>
-      <p className="text-center text-sm lg:text-base">
-        Tasks Crossed the deadline
-      </p>
+    <div className="flex items-center gap-3 rounded-xl border border-border/50 bg-card px-4 py-3 shadow-sm">
+      <div
+        className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${bgClass}`}
+      >
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <p
+          className={`text-3xl font-bold tracking-tight ${valueClass || "text-foreground"}`}
+        >
+          {value}
+        </p>
+        <p className="truncate text-[11px] text-muted-foreground">{label}</p>
+      </div>
     </div>
   );
 };
 
 const TodoEmpty = () => {
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center rounded-lg bg-sidebar">
-      <Image
-        src="/todolist.svg"
-        className="w-[200px]"
-        width={200}
-        height={200}
-        alt="Todo List"
-      />
-      <div className="flex items-center gap-2">
-        <NotebookPen className="h-4 w-4 text-muted-foreground" />
-        <h1 className="text-md italic text-muted-foreground">
-          No Pending Todos to display the chart
-        </h1>
+    <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-8">
+      <div className="flex size-14 items-center justify-center rounded-2xl bg-muted/50">
+        <BarChart3 className="size-6 text-muted-foreground/40" />
+      </div>
+      <div className="text-center">
+        <p className="text-sm font-medium text-muted-foreground">
+          All caught up!
+        </p>
+        <p className="mt-0.5 text-xs text-muted-foreground/60">
+          No pending tasks to chart
+        </p>
       </div>
     </div>
   );

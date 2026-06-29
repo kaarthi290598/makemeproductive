@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useExpenseStore } from "@/hooks/use-expense-store";
+import { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -13,6 +12,7 @@ import { format } from "date-fns";
 import { CategorySpendingChart } from "./category-spending-chart";
 import { IncomeExpenseRatioChart } from "./income-expense-ratio-chart";
 import { BudgetPerformanceChart } from "./budget-performance-chart";
+import { Calendar, Filter } from "lucide-react";
 
 import { useAnalyticsData } from "@/hooks/use-analytics-data";
 import { formatDateToLocalISO } from "@/lib/utils";
@@ -31,16 +31,21 @@ export function Analytics() {
   );
 
   return (
-    <div className="space-y-4">
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-sidebar p-2 lg:p-3">
+    <div className="space-y-6">
+      {/* Premium Toolbar */}
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border/50 bg-card p-3 shadow-sm">
+        <div className="flex items-center gap-1.5 text-muted-foreground mr-2">
+          <Filter className="size-4" />
+          <span className="text-xs font-semibold uppercase tracking-wider">Analyze By</span>
+        </div>
+
         <Select
           value={dateFilterType}
           onValueChange={(val) =>
             setDateFilterType(val as "all" | "month" | "year")
           }
         >
-          <SelectTrigger className="h-9 w-[130px] border-none bg-secondary">
+          <SelectTrigger className="h-9 w-[130px] rounded-lg border-border/60 bg-background text-sm shadow-none transition-colors hover:bg-accent">
             <SelectValue placeholder="Date Filter" />
           </SelectTrigger>
           <SelectContent>
@@ -51,29 +56,32 @@ export function Analytics() {
         </Select>
 
         {(dateFilterType === "month" || dateFilterType === "year") && (
-          <Select
-            value={selectedDate.slice(0, 4)}
-            onValueChange={(year) => {
-              const currentMonth =
-                selectedDate.slice(5, 7) ||
-                new Date().toISOString().slice(5, 7);
-              setSelectedDate(`${year}-${currentMonth}`);
-            }}
-          >
-            <SelectTrigger className="h-9 w-[100px] border-none bg-secondary">
-              <SelectValue placeholder="Year" />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from(
-                { length: 5 },
-                (_, i) => new Date().getFullYear() - i,
-              ).map((year) => (
-                <SelectItem key={year} value={year.toString()}>
-                  {year}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-px bg-border" />
+            <Select
+              value={selectedDate.slice(0, 4)}
+              onValueChange={(year) => {
+                const currentMonth =
+                  selectedDate.slice(5, 7) ||
+                  new Date().toISOString().slice(5, 7);
+                setSelectedDate(`${year}-${currentMonth}`);
+              }}
+            >
+              <SelectTrigger className="h-9 w-[100px] rounded-lg border-border/60 bg-background text-sm shadow-none transition-colors hover:bg-accent">
+                <SelectValue placeholder="Year" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from(
+                  { length: 5 },
+                  (_, i) => new Date().getFullYear() - i,
+                ).map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         )}
 
         {dateFilterType === "month" && (
@@ -84,7 +92,7 @@ export function Analytics() {
               setSelectedDate(`${currentYear}-${month}`);
             }}
           >
-            <SelectTrigger className="h-9 w-[120px] border-none bg-secondary">
+            <SelectTrigger className="h-9 w-[120px] rounded-lg border-border/60 bg-background text-sm shadow-none transition-colors hover:bg-accent">
               <SelectValue placeholder="Month" />
             </SelectTrigger>
             <SelectContent>
@@ -103,7 +111,7 @@ export function Analytics() {
         )}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         <CategorySpendingChart data={categoryData} />
         <IncomeExpenseRatioChart data={pieData} />
         <BudgetPerformanceChart data={categoryData} />

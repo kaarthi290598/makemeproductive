@@ -11,16 +11,33 @@ const page = async () => {
   const categories = await fetchCategories();
 
   return (
-    <div className="flex h-full w-full flex-col gap-2 p-2 lg:gap-5 lg:p-10">
-      <div className="">
-        <TodoForm categories={categories} todos={todos} />
+    <div className="flex h-full w-full flex-col gap-4 p-3 lg:gap-6 lg:p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-foreground lg:text-2xl">
+            Tasks
+          </h1>
+          <p className="mt-0.5 text-xs text-muted-foreground lg:text-sm">
+            Organize, prioritize, and conquer your day
+          </p>
+        </div>
       </div>
-      <div className="flex flex-1 flex-col gap-4 p-2 lg:flex-row lg:overflow-hidden lg:p-0">
-        <Suspense fallback={<SpinnerLoad />}>
-          <TodoList todos={todos} categories={categories} />
-        </Suspense>
 
-        <TodoAnalytics />
+      {/* Toolbar */}
+      <TodoForm categories={categories} todos={todos} />
+
+      {/* Content */}
+      <div className="flex flex-1 flex-col gap-4 lg:flex-row lg:overflow-hidden">
+        <div className="lg:w-[60%]">
+          <Suspense fallback={<SpinnerLoad />}>
+            <TodoList todos={todos} categories={categories} />
+          </Suspense>
+        </div>
+
+        <div className="lg:w-[40%]">
+          <TodoAnalytics />
+        </div>
       </div>
     </div>
   );

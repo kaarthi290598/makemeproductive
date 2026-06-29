@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart3 } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -27,16 +28,20 @@ interface CategorySpendingChartProps {
 
 export function CategorySpendingChart({
   data,
-  height = 500,
+  height = 400,
 }: CategorySpendingChartProps) {
   return (
-    <Card className="border-primary/10 shadow-lg">
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold">
-          Spending by Category
-        </CardTitle>
+    <Card className="border border-border/50 bg-card shadow-sm rounded-xl overflow-hidden">
+      <CardHeader className="flex flex-row items-center gap-2 border-b border-border/50 py-3">
+        <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10">
+          <BarChart3 className="size-3.5 text-primary" />
+        </div>
+        <div>
+          <CardTitle className="text-sm font-semibold">Spending by Category</CardTitle>
+          <p className="text-[10px] text-muted-foreground mt-0.5">Total spent per category</p>
+        </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         <div
           style={{
             height: typeof height === "number" ? `${height}px` : height,
@@ -44,45 +49,44 @@ export function CategorySpendingChart({
         >
           {data.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center space-y-2 italic text-muted-foreground">
-              <p>No expenses found for this period.</p>
-              <p className="text-xs not-italic">
-                Try changing the date filter.
-              </p>
+              <p className="text-sm">No expenses found for this period.</p>
+              <p className="text-xs not-italic">Try changing the date filter.</p>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={data}
                 layout="vertical"
-                margin={{ left: 10, right: 60, top: 20, bottom: 20 }}
+                margin={{ left: 0, right: 60, top: 10, bottom: 10 }}
               >
                 <CartesianGrid
                   strokeDasharray="3 3"
                   horizontal={true}
                   vertical={false}
-                  opacity={0.3}
+                  opacity={0.15}
                 />
                 <XAxis
                   type="number"
                   hide={false}
                   axisLine={false}
                   tickLine={false}
-                  style={{ fontSize: "10px" }}
+                  tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
                 />
                 <YAxis
                   dataKey="name"
                   type="category"
-                  width={150}
+                  width={120}
                   axisLine={false}
                   tickLine={false}
-                  style={{ fontSize: "11px", fontWeight: 500 }}
+                  tick={{ fontSize: 11, fontWeight: 500, fill: "hsl(var(--foreground))" }}
                 />
                 <Tooltip
-                  cursor={{ fill: "transparent" }}
+                  cursor={{ fill: "hsl(var(--muted)/0.5)", radius: 4 }}
                   contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
                     borderRadius: "12px",
-                    border: "none",
-                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                    border: "1px solid hsl(var(--border))",
+                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.05)",
                   }}
                   formatter={(value: number) => [
                     `₹${value.toLocaleString()}`,
@@ -91,12 +95,12 @@ export function CategorySpendingChart({
                 />
                 <Bar
                   dataKey="spent"
-                  radius={[0, 4, 4, 0]}
-                  animationDuration={1500}
-                  barSize={20}
+                  radius={[0, 6, 6, 0]}
+                  animationDuration={1200}
+                  barSize={18}
                 >
                   {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell key={`cell-${index}`} fill={entry.color || "hsl(var(--primary))"} />
                   ))}
                   <LabelList
                     dataKey="spent"
@@ -105,10 +109,11 @@ export function CategorySpendingChart({
                       v > 0 ? `₹${v.toLocaleString()}` : ""
                     }
                     style={{
-                      fontSize: "12px",
+                      fontSize: "11px",
                       fontWeight: 600,
                       fill: "hsl(var(--foreground))",
                     }}
+                    offset={10}
                   />
                 </Bar>
               </BarChart>

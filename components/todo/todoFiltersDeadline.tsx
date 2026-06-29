@@ -63,28 +63,27 @@ const TodoFilterDeadline = ({
       <PopoverTrigger asChild>
         <Button
           id="date"
-          variant={"secondary"}
+          variant="outline"
           className={cn(
-            "justify-start text-left font-normal",
+            "h-9 justify-start gap-2 rounded-lg border-border/60 text-left text-sm font-normal shadow-none transition-colors hover:bg-accent",
             !date && "text-muted-foreground",
           )}
         >
-          <CalendarIcon />
+          <CalendarIcon className="size-3.5 shrink-0 text-muted-foreground" />
           {date?.from ? (
             date.to ? (
-              <>
-                {format(date.from, "LLL dd, y")} -{" "}
-                {format(date.to, "LLL dd, y")}
-              </>
+              <span className="truncate">
+                {format(date.from, "MMM d")} – {format(date.to, "MMM d, y")}
+              </span>
             ) : (
-              format(date.from, "LLL dd, y")
+              format(date.from, "MMM d, y")
             )
           ) : (
-            <span>Deadline Date filter</span>
+            <span>Deadline</span>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto rounded-xl p-0" align="start">
         <Calendar
           initialFocus
           mode="range"
@@ -92,6 +91,7 @@ const TodoFilterDeadline = ({
           selected={date}
           onSelect={handleFilterChange}
           numberOfMonths={2}
+          className="rounded-xl"
         />
       </PopoverContent>
     </Popover>

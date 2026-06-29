@@ -17,9 +17,12 @@ import { Button } from "@/components/ui/button";
 import {
   Trash2,
   AlertCircle,
-  ArrowUpRight,
-  Edit2,
+  Pencil,
   Download,
+  Search,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -33,6 +36,7 @@ import { toast } from "sonner";
 import { AddTransactionDialog } from "./add-transaction-dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { parseLocalISODate, formatDateToLocalISO } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 interface TransactionListProps {
   hideFilters?: boolean;
@@ -61,9 +65,11 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
   const [selectedDate, setSelectedDate] = useState<string>(
     formatDateToLocalISO(new Date()).slice(0, 7),
   ); // YYYY-MM
-  const [editingTransaction, setEditingTransaction] =
-    useState<Transaction | null>(null); // For future Edit Dialog
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 40;
 
   const handleDelete = async (id: string) => {
     setDeletingId(id);
@@ -112,6 +118,21 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
     );
   });
 
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredTransactions.length / pageSize);
+  const paginatedTransactions = filteredTransactions.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  // Reset pagination when filters change
+  // We can just rely on the UI to reset, or implicitly handle out of bounds:
+  if (currentPage > totalPages && totalPages > 0) {
+    setCurrentPage(totalPages);
+  } else if (totalPages === 0 && currentPage !== 1) {
+    setCurrentPage(1);
+  }
+
   const handleExport = () => {
     const headers = [
       "Date",
@@ -154,23 +175,27 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
   return (
     <div className="space-y-4">
       {!hideFilters && (
-        <div className="space-y-2 rounded-lg border bg-sidebar p-2 lg:p-3">
+        <div className="space-y-3 rounded-xl border border-border/50 bg-card p-3 shadow-sm">
           {/* Row 1: General Filters & Export */}
           <div className="flex flex-wrap items-center gap-2">
-            <Input
-              placeholder="Search note..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-9 w-full border-none bg-secondary sm:w-48 lg:w-48 xl:w-64"
-            />
-            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+            <div className="relative flex-1 min-w-[200px] max-w-sm">
+              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search note..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="h-9 pl-9 pr-4 rounded-lg border-border/60 bg-background text-sm shadow-none focus-visible:ring-1 focus-visible:ring-primary"
+              />
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-2">
               <Select
                 value={filterType}
                 onValueChange={(val) =>
                   setFilterType(val as "all" | "income" | "expense")
                 }
               >
-                <SelectTrigger className="h-9 w-[calc(50%-4px)] border-none bg-secondary sm:w-[130px]">
+                <SelectTrigger className="h-9 w-[130px] rounded-lg border-border/60 bg-background text-sm shadow-none transition-colors hover:bg-accent">
                   <SelectValue placeholder="Type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -179,8 +204,9 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
                   <SelectItem value="expense">Debits</SelectItem>
                 </SelectContent>
               </Select>
+
               <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger className="h-9 w-[calc(50%-4px)] border-none bg-secondary sm:w-[150px]">
+                <SelectTrigger className="h-9 w-[150px] rounded-lg border-border/60 bg-background text-sm shadow-none transition-colors hover:bg-accent">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -192,15 +218,14 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+
               <Select
                 value={filterSettlement}
                 onValueChange={(val) =>
                   setFilterSettlement(val as "all" | "settlement")
                 }
               >
-                <SelectTrigger className="h-9 w-[calc(50%-4px)] border-none bg-secondary sm:w-[150px]">
+                <SelectTrigger className="h-9 w-[150px] rounded-lg border-border/60 bg-background text-sm shadow-none transition-colors hover:bg-accent">
                   <SelectValue placeholder="Settlement" />
                 </SelectTrigger>
                 <SelectContent>
@@ -210,7 +235,7 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
               </Select>
 
               <Select value={filterPaidBy} onValueChange={setFilterPaidBy}>
-                <SelectTrigger className="h-9 w-[calc(50%-4px)] border-none bg-secondary sm:w-[130px]">
+                <SelectTrigger className="h-9 w-[130px] rounded-lg border-border/60 bg-background text-sm shadow-none transition-colors hover:bg-accent">
                   <SelectValue placeholder="Paid By" />
                 </SelectTrigger>
                 <SelectContent>
@@ -226,17 +251,18 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
           </div>
 
           {/* Row 2: Date Related Filters */}
-          <div className="flex flex-wrap items-center gap-2 border-t border-border/40 pt-2">
-            <span className="mr-2 w-full text-xs font-medium text-muted-foreground sm:w-auto">
-              Filter by Date:
+          <div className="flex flex-wrap items-center gap-2 border-t border-border/40 pt-3">
+            <span className="flex items-center gap-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider mr-2">
+              <Filter className="size-3" /> Filter Date:
             </span>
+
             <Select
               value={dateFilterType}
               onValueChange={(val) =>
                 setDateFilterType(val as "all" | "month" | "year")
               }
             >
-              <SelectTrigger className="h-9 w-full border-none bg-secondary sm:w-[130px]">
+              <SelectTrigger className="h-9 w-[130px] rounded-lg border-border/60 bg-background text-sm shadow-none transition-colors hover:bg-accent">
                 <SelectValue placeholder="Date Filter" />
               </SelectTrigger>
               <SelectContent>
@@ -256,7 +282,7 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
                   setSelectedDate(`${year}-${currentMonth}`);
                 }}
               >
-                <SelectTrigger className="h-9 w-[calc(50%-4px)] border-none bg-secondary sm:w-[100px]">
+                <SelectTrigger className="h-9 w-[100px] rounded-lg border-border/60 bg-background text-sm shadow-none transition-colors hover:bg-accent">
                   <SelectValue placeholder="Year" />
                 </SelectTrigger>
                 <SelectContent>
@@ -280,7 +306,7 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
                   setSelectedDate(`${currentYear}-${month}`);
                 }}
               >
-                <SelectTrigger className="h-9 w-[calc(50%-4px)] border-none bg-secondary sm:w-[120px]">
+                <SelectTrigger className="h-9 w-[120px] rounded-lg border-border/60 bg-background text-sm shadow-none transition-colors hover:bg-accent">
                   <SelectValue placeholder="Month" />
                 </SelectTrigger>
                 <SelectContent>
@@ -301,90 +327,96 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
             <Button
               onClick={handleExport}
               size="sm"
-              className="h-9 w-full bg-primary text-primary-foreground hover:bg-primary/90 sm:ml-auto sm:w-auto"
+              variant="outline"
+              className="h-9 ml-auto gap-1.5 rounded-lg border-border/60 bg-background text-xs font-semibold shadow-none transition-colors hover:bg-accent"
             >
-              <Download className="mr-2 h-4 w-4" /> Export
+              <Download className="size-3.5 text-muted-foreground" /> Export CSV
             </Button>
           </div>
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-md border bg-card">
+      {/* Modern Table Card wrapper */}
+      <div className="overflow-x-auto rounded-xl border border-border/50 bg-card shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead className="whitespace-nowrap">Date</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead className="hidden md:table-cell">Paid By</TableHead>
-              <TableHead className="hidden sm:table-cell">Note</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
-              <TableHead className="w-[100px]"></TableHead>
+            <TableRow className="hover:bg-transparent border-b border-border/40">
+              <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground">Date</TableHead>
+              <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground">Type</TableHead>
+              <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground">Category</TableHead>
+              <TableHead className="hidden h-9 px-4 text-xs font-semibold text-muted-foreground md:table-cell">Paid By</TableHead>
+              <TableHead className="hidden h-9 px-4 text-xs font-semibold text-muted-foreground sm:table-cell">Note</TableHead>
+              <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground">Status</TableHead>
+              <TableHead className="h-9 px-4 text-xs font-semibold text-muted-foreground text-right">Amount</TableHead>
+              <TableHead className="h-9 w-[100px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredTransactions.length === 0 ? (
+            {paginatedTransactions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center">
+                <TableCell colSpan={8} className="h-24 text-center text-xs text-muted-foreground">
                   No transactions found.
                 </TableCell>
               </TableRow>
             ) : (
-              filteredTransactions.map((t) => (
-                <TableRow key={t.id}>
-                  <TableCell className="whitespace-nowrap">
+              paginatedTransactions.map((t) => (
+                <TableRow key={t.id} className="group transition-colors border-b border-border/30 last:border-0 hover:bg-muted/30">
+                  <TableCell className="px-4 py-2.5 text-xs text-muted-foreground whitespace-nowrap">
                     {format(parseLocalISODate(t.date), "MMM d, yyyy")}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-4 py-2.5">
                     <Badge
-                      variant={t.type === "income" ? "default" : "destructive"}
-                      className={
+                      variant="outline"
+                      className={cn(
+                        "px-2 py-0.5 text-[10px] font-semibold rounded-md inline-flex items-center",
                         t.type === "income"
-                          ? "bg-green-500 px-2 py-0 text-[10px] hover:bg-green-600"
-                          : "bg-red-500 px-2 py-0 text-[10px] hover:bg-red-600"
-                      }
+                          ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"
+                          : "bg-rose-500/10 text-rose-600 hover:bg-rose-500/20"
+                      )}
                     >
                       {t.type === "income" ? "Credit" : "Debit"}
                     </Badge>
                   </TableCell>
-                  <TableCell className="max-w-[100px] truncate">
+                  <TableCell className="px-4 py-2.5 text-xs font-medium text-foreground max-w-[100px] truncate">
                     {getCategoryName(t.category_id)}
                   </TableCell>
-                  <TableCell className="hidden md:table-cell">
+                  <TableCell className="hidden px-4 py-2.5 text-xs text-muted-foreground/80 md:table-cell">
                     {t.paid_by || "-"}
                   </TableCell>
-                  <TableCell className="hidden max-w-[150px] truncate sm:table-cell">
+                  <TableCell className="hidden px-4 py-2.5 text-xs text-muted-foreground/80 max-w-[150px] truncate sm:table-cell">
                     {t.note || "-"}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-4 py-2.5">
                     {t.needs_settlement && (
                       <Badge
                         variant="outline"
-                        className="flex w-fit cursor-pointer items-center gap-1 border-yellow-500 px-1 py-0 text-[10px] text-yellow-600"
+                        className="inline-flex cursor-pointer items-center gap-1 border-amber-500/40 bg-amber-500/5 px-2 py-0.5 text-[10px] font-semibold text-amber-600 hover:bg-amber-500/15"
                         onClick={() => toggleSettlement(t.id, false)}
                       >
-                        <AlertCircle className="h-3 w-3" />
-                        <span className="">Settlement</span>
+                        <AlertCircle className="size-3" />
+                        <span>Settlement</span>
                       </Badge>
                     )}
                   </TableCell>
                   <TableCell
-                    className={`text-right font-medium tabular-nums ${t.type === "income" ? "text-green-600" : "text-red-600"}`}
+                    className={cn(
+                      "px-4 py-2.5 text-right text-xs font-semibold tabular-nums",
+                      t.type === "income" ? "text-emerald-600" : "text-rose-600"
+                    )}
                   >
                     {t.type === "income" ? "+" : "-"}₹{t.amount.toFixed(0)}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
+                  <TableCell className="px-4 py-2.5 text-right">
+                    <div className="flex justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                       <AddTransactionDialog
                         transactionToEdit={t}
                         trigger={
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
+                            className="size-7 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground"
                           >
-                            <Edit2 className="h-3.5 w-3.5 text-muted-foreground hover:text-blue-500" />
+                            <Pencil className="size-3.5" />
                           </Button>
                         }
                       />
@@ -399,10 +431,10 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
+                            className="size-7 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                             disabled={deletingId === t.id}
                           >
-                            <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-red-500" />
+                            <Trash2 className="size-3.5" />
                           </Button>
                         }
                       />
@@ -415,7 +447,37 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
         </Table>
       </div>
 
-      {/* Edit Dialog Logic will go here eventually, or we wrap TransactionList rows with AddTransactionDialog in Edit Mode */}
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <p className="text-xs text-muted-foreground">
+            Showing <span className="font-medium text-foreground">{(currentPage - 1) * pageSize + 1}</span> to <span className="font-medium text-foreground">{Math.min(currentPage * pageSize, filteredTransactions.length)}</span> of <span className="font-medium text-foreground">{filteredTransactions.length}</span> entries
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-8 rounded-lg"
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="size-4" />
+            </Button>
+            <div className="text-xs font-medium text-foreground flex items-center justify-center min-w-[2rem]">
+              {currentPage} / {totalPages}
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-8 rounded-lg"
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              <ChevronRight className="size-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

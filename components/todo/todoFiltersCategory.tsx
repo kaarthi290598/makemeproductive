@@ -1,9 +1,6 @@
 "use client";
 
 import React from "react";
-
-import { useSearchParams, usePathname, useRouter } from "next/navigation";
-
 import {
   Select,
   SelectContent,
@@ -13,7 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
+import { Folder } from "lucide-react";
+import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { Categories } from "@/lib/types/type";
 
 const TodoFilterCategory = ({
@@ -52,13 +50,15 @@ const TodoFilterCategory = ({
       onValueChange={handleFilterChange}
       defaultValue=""
     >
-      <SelectTrigger className="border-none bg-secondary">
-        <SelectValue placeholder="Filter by Category" />
+      <SelectTrigger className="h-9 w-[180px] gap-2 rounded-lg border-border/60 bg-background text-sm shadow-none transition-colors hover:bg-accent">
+        <Folder className="size-3.5 shrink-0 text-muted-foreground" />
+        <SelectValue placeholder="Category" />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
-          <SelectLabel>Categories</SelectLabel>
-
+          <SelectLabel className="text-xs text-muted-foreground">
+            Filter by category
+          </SelectLabel>
           {categories.map((category) => (
             <SelectItem key={category.id} value={category.category}>
               {category.category}

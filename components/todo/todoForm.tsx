@@ -15,7 +15,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import { Eraser } from "lucide-react";
+import { Eraser, Filter, Plus, Trash2 } from "lucide-react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { DateRange } from "react-day-picker";
 import { Category, Todos } from "@/lib/types/type";
@@ -51,6 +51,8 @@ const TodoForm = ({
   const pathname = usePathname();
   const isMobile = useIsMobile();
 
+  const hasActiveFilters = !!selectedValue || (!!date?.from && !!date?.to);
+
   function resetFilters() {
     setSelectedValue("");
     setDate(undefined);
@@ -67,94 +69,104 @@ const TodoForm = ({
   // Mobile/Tablet Tab View
   if (isMobile) {
     return (
-      <Tabs defaultValue="add" className="w-full rounded-lg bg-sidebar p-4">
-        <TabsList className="grid grid-cols-3">
-          <TabsTrigger value="add">Add</TabsTrigger>
-          <TabsTrigger value="filter">Filter</TabsTrigger>
-          <TabsTrigger value="delete">Delete/Reset</TabsTrigger>
+      <Tabs
+        defaultValue="add"
+        className="w-full rounded-xl border border-border/50 bg-card p-3 shadow-sm"
+      >
+        <TabsList className="grid w-full grid-cols-3 bg-muted/50">
+          <TabsTrigger
+            value="add"
+            className="gap-1.5 text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm"
+          >
+            <Plus className="size-3.5" /> Add
+          </TabsTrigger>
+          <TabsTrigger
+            value="filter"
+            className="gap-1.5 text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm"
+          >
+            <Filter className="size-3.5" /> Filter
+            {hasActiveFilters && (
+              <span className="flex size-1.5 rounded-full bg-primary" />
+            )}
+          </TabsTrigger>
+          <TabsTrigger
+            value="actions"
+            className="gap-1.5 text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm"
+          >
+            <Trash2 className="size-3.5" /> Actions
+          </TabsTrigger>
         </TabsList>
-        <TabsContent value="add" className="mt-4">
-          <div className="flex flex-col gap-2">
-            <h3 className="text-sm text-muted-foreground">
-              Add tasks/Categories
-            </h3>
-            <div className="flex flex-col gap-4">
-              <TodoAddTask categories={categories} />
-              <TodoAddCategory />
-            </div>
+        <TabsContent value="add" className="mt-3">
+          <div className="flex flex-col gap-3">
+            <TodoAddTask categories={categories} />
+            <TodoAddCategory />
           </div>
         </TabsContent>
-        <TabsContent value="filter" className="mt-4">
-          <div className="flex flex-col gap-2">
-            <h3 className="text-sm text-muted-foreground">Filters</h3>
-            <div className="flex flex-col gap-4">
-              <TodoFilterCategory
-                selectedValue={selectedValue}
-                setSelectedValue={setSelectedValue}
-                categories={categories}
-              />
-              <TodoFilterDeadline date={date} setDate={setDate} />
-            </div>
+        <TabsContent value="filter" className="mt-3">
+          <div className="flex flex-col gap-3">
+            <TodoFilterCategory
+              selectedValue={selectedValue}
+              setSelectedValue={setSelectedValue}
+              categories={categories}
+            />
+            <TodoFilterDeadline date={date} setDate={setDate} />
+            {hasActiveFilters && (
+              <Button
+                onClick={resetFilters}
+                variant="ghost"
+                size="sm"
+                className="self-start text-xs text-muted-foreground hover:text-foreground"
+              >
+                <Eraser className="mr-1.5 size-3.5" />
+                Clear all filters
+              </Button>
+            )}
           </div>
         </TabsContent>
-        <TabsContent value="delete" className="mt-4">
-          <div className="flex flex-col gap-2">
-            <h3 className="text-sm text-muted-foreground">Delete/Reset</h3>
-            <div className="flex flex-col gap-4">
-              <DeleteCompleteTasksButton todos={todos} />
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      onClick={resetFilters}
-                      variant="secondary"
-                      className="flex items-center justify-center"
-                    >
-                      Reset Filter <Eraser className="ml-2" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Reset All Filters</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
+        <TabsContent value="actions" className="mt-3">
+          <div className="flex flex-col gap-3">
+            <DeleteCompleteTasksButton todos={todos} />
           </div>
         </TabsContent>
       </Tabs>
     );
   }
 
-  // Desktop view (multi-column)
+  // Desktop view
   return (
-    <div className="flex flex-col gap-10 overflow-auto rounded-md bg-sidebar p-4 md:flex-row">
-      <div className="flex flex-col gap-2">
-        <h3 className="text-sm text-muted-foreground">Add tasks/Categories</h3>
-        <div className="flex flex-col gap-4 sm:flex-row">
-          <TodoAddTask categories={categories} />
-          <TodoAddCategory />
-        </div>
+    <div className="flex items-center gap-3 rounded-xl border border-border/50 bg-card px-4 py-3 shadow-sm">
+      {/* Add Section */}
+      <div className="flex items-center gap-2">
+        <TodoAddTask categories={categories} />
+        <TodoAddCategory />
       </div>
-      <div className="flex flex-col gap-2">
-        <h3 className="text-sm text-muted-foreground">Filters</h3>
-        <div className="flex flex-col gap-4 sm:flex-row">
-          <TodoFilterCategory
-            selectedValue={selectedValue}
-            setSelectedValue={setSelectedValue}
-            categories={categories}
-          />
-          <TodoFilterDeadline date={date} setDate={setDate} />
-        </div>
+
+      {/* Divider */}
+      <div className="h-8 w-px bg-border/60" />
+
+      {/* Filter Section */}
+      <div className="flex items-center gap-2">
+        <TodoFilterCategory
+          selectedValue={selectedValue}
+          setSelectedValue={setSelectedValue}
+          categories={categories}
+        />
+        <TodoFilterDeadline date={date} setDate={setDate} />
       </div>
-      <div className="flex flex-col gap-2">
-        <h3 className="text-sm text-muted-foreground">Delete/Reset</h3>
-        <div className="flex flex-col gap-4 sm:flex-row">
-          <DeleteCompleteTasksButton todos={todos} />
+
+      {/* Active filter indicator + reset */}
+      {hasActiveFilters && (
+        <>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button onClick={resetFilters} variant="secondary">
-                  Reset Filter <Eraser className="ml-2" />
+                <Button
+                  onClick={resetFilters}
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 text-muted-foreground hover:text-foreground"
+                >
+                  <Eraser className="size-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -162,8 +174,14 @@ const TodoForm = ({
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-        </div>
-      </div>
+        </>
+      )}
+
+      {/* Spacer */}
+      <div className="flex-1" />
+
+      {/* Delete Section */}
+      <DeleteCompleteTasksButton todos={todos} />
     </div>
   );
 };

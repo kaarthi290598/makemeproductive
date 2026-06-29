@@ -1,24 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useExpenseStore } from "@/hooks/use-expense-store";
+import React, { useEffect, useState } from "react";
+import { usePortfolioStore } from "@/hooks/use-portfolio-store";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AddTransactionDialog } from "@/components/expense-tracker/add-transaction-dialog";
 import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "next/navigation";
 import SpinnerLoad from "@/components/spinner";
-import { Suspense } from "react";
-import { PlusCircle, MinusCircle, Wallet } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { PlusCircle, MinusCircle, RefreshCw } from "lucide-react";
+import { AddEditInvestmentDialog, AddEditDebtDialog } from "@/components/portfolio/add-edit-dialogs";
 
-export default function ExpenseTrackerLayout({
+export default function PortfolioLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { initialize, loading, error } = useExpenseStore();
+  const { initialize, loading, error, resetStore } = usePortfolioStore();
   const pathname = usePathname();
   const router = useRouter();
+
+  const [addInvOpen, setAddInvOpen] = useState(false);
+  const [addDebtOpen, setAddDebtOpen] = useState(false);
 
   useEffect(() => {
     initialize();
@@ -27,55 +28,57 @@ export default function ExpenseTrackerLayout({
   const activeTab = pathname.split("/").pop() || "overview";
 
   const handleTabChange = (value: string) => {
-    router.push(`/app/expense-tracker/${value}`);
+    router.push(`/app/portfolio/${value}`);
   };
 
   return (
     <div className="flex h-full w-full flex-col gap-4 overflow-y-auto p-3 lg:gap-6 lg:p-6">
-      {/* Header section matching Todo style */}
+      {/* Header section */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground lg:text-2xl">
-            Expense Tracker
+            Portfolio & Net Worth
           </h1>
           <p className="mt-0.5 text-xs text-muted-foreground lg:text-sm">
-            Monitor budgets, balance sheets, and cash flow in real-time
+            Track assets, coordinate debt payoff, and analyze net worth in real-time
           </p>
         </div>
         
         <div className="flex flex-wrap items-center gap-2">
           {!loading && !error && (
             <>
-              <AddTransactionDialog
-                defaultType="income"
-                trigger={
-                  <Button
-                    size="sm"
-                    className="h-9 gap-1.5 rounded-lg bg-emerald-600 px-3 hover:bg-emerald-700 text-white"
-                  >
-                    <PlusCircle className="size-4" />
-                    <span>Add Credit</span>
-                  </Button>
-                }
-              />
-              <AddTransactionDialog
-                defaultType="expense"
-                trigger={
-                  <Button
-                    size="sm"
-                    className="h-9 gap-1.5 rounded-lg bg-destructive px-3 hover:bg-destructive/90 text-white"
-                  >
-                    <MinusCircle className="size-4" />
-                    <span>Add Debit</span>
-                  </Button>
-                }
-              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={resetStore}
+                className="h-9 gap-1.5 rounded-lg border-border/60 text-xs font-semibold"
+                title="Reset mock data to default values"
+              >
+                <RefreshCw className="size-3.5 text-muted-foreground" />
+                <span>Reset Data</span>
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => setAddInvOpen(true)}
+                className="h-9 gap-1.5 rounded-lg bg-emerald-600 px-3 hover:bg-emerald-700 text-white"
+              >
+                <PlusCircle className="size-4" />
+                <span>Add Investment</span>
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => setAddDebtOpen(true)}
+                className="h-9 gap-1.5 rounded-lg bg-destructive px-3 hover:bg-destructive/90 text-white"
+              >
+                <MinusCircle className="size-4" />
+                <span>Add Liability</span>
+              </Button>
             </>
           )}
         </div>
       </div>
 
-      {/* Tabs list matching modernized navigation */}
+      {/* Tabs list */}
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
@@ -89,22 +92,16 @@ export default function ExpenseTrackerLayout({
             Overview
           </TabsTrigger>
           <TabsTrigger
-            value="transactions"
+            value="investments"
             className="rounded-lg px-4 py-1.5 text-xs font-medium transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm flex-1 sm:flex-none"
           >
-            Transactions
+            Investments
           </TabsTrigger>
           <TabsTrigger
-            value="analytics"
+            value="debts"
             className="rounded-lg px-4 py-1.5 text-xs font-medium transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm flex-1 sm:flex-none"
           >
-            Analytics
-          </TabsTrigger>
-          <TabsTrigger
-            value="settings"
-            className="rounded-lg px-4 py-1.5 text-xs font-medium transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm flex-1 sm:flex-none"
-          >
-            Settings
+            Debts
           </TabsTrigger>
         </TabsList>
 
@@ -118,10 +115,14 @@ export default function ExpenseTrackerLayout({
               Error: {error}
             </div>
           ) : (
-            <Suspense fallback={<SpinnerLoad />}>{children}</Suspense>
+            children
           )}
         </div>
       </Tabs>
+
+      {/* Add Dialogs */}
+      <AddEditInvestmentDialog open={addInvOpen} setOpen={setAddInvOpen} />
+      <AddEditDebtDialog open={addDebtOpen} setOpen={setAddDebtOpen} />
     </div>
   );
 }

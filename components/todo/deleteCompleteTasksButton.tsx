@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Button } from "../ui/button";
-import { Trash } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -37,8 +37,13 @@ const DeleteCompleteTasksButton = ({ todos }: { todos: Todos }) => {
 
   return (
     <>
-      <Button variant="secondary" onClick={handleDeleteClick}>
-        Delete completed <Trash />
+      <Button
+        variant="ghost"
+        onClick={handleDeleteClick}
+        className="gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
+      >
+        <Trash2 className="size-4" />
+        Delete completed
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>

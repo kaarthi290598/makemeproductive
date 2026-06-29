@@ -1,9 +1,10 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useExpenseStore } from "@/hooks/use-expense-store";
-import { ArrowDownIcon, ArrowUpIcon, Wallet } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Activity } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface OverviewProps {
   dateFilterType?: "all" | "month" | "year";
@@ -46,52 +47,72 @@ export function Overview({
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Income</CardTitle>
-          <ArrowUpIcon className="h-4 w-4 text-green-500" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-green-500">
-            +₹{totalIncome.toFixed(2)}
+      {/* Income Card */}
+      <Card className="overflow-hidden border border-border/50 bg-card shadow-sm transition-all hover:shadow-md">
+        <CardContent className="p-5 flex items-center gap-4">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10">
+            <ArrowUpRight className="size-5 text-emerald-600" />
           </div>
-          <p className="text-xs text-muted-foreground">Total money in</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Income</p>
+            <p className="text-3xl font-bold tracking-tight text-emerald-600 truncate mt-0.5">
+              ₹{totalIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Total money credited</p>
+          </div>
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Expenses</CardTitle>
-          <ArrowDownIcon className="h-4 w-4 text-red-500" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-red-500">
-            -₹{totalExpense.toFixed(2)}
+
+      {/* Expenses Card */}
+      <Card className="overflow-hidden border border-border/50 bg-card shadow-sm transition-all hover:shadow-md">
+        <CardContent className="p-5 flex items-center gap-4">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-rose-500/10">
+            <ArrowDownRight className="size-5 text-rose-600" />
           </div>
-          <p className="text-xs text-muted-foreground">Total money out</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Expenses</p>
+            <p className="text-3xl font-bold tracking-tight text-rose-600 truncate mt-0.5">
+              ₹{totalExpense.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Total money debited</p>
+          </div>
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Budget Health</CardTitle>
-          <span className="text-xs text-muted-foreground">
-            {totalSpent.toFixed(0)} / {totalBudget.toFixed(0)}
-          </span>
-        </CardHeader>
-        <CardContent>
-          <Progress
-            value={budgetProgress}
-            className="mt-2 h-2"
-            indicatorClassName={
-              budgetProgress > 100
-                ? "bg-red-500"
-                : budgetProgress > 80
-                  ? "bg-yellow-500"
-                  : "bg-green-500"
-            }
-          />
-          <p className="mt-2 text-xs text-muted-foreground">
-            {budgetProgress.toFixed(1)}% of budget used
-          </p>
+
+      {/* Budget Health Card */}
+      <Card className="overflow-hidden border border-border/50 bg-card shadow-sm transition-all hover:shadow-md">
+        <CardContent className="p-5 flex flex-col justify-between h-full gap-2">
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10">
+                <Activity className="size-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Budget Health</p>
+                <p className="text-2xl font-bold tracking-tight text-foreground mt-0.5">
+                  {budgetProgress.toFixed(1)}% Used
+                </p>
+              </div>
+            </div>
+            <span className="text-[11px] font-semibold text-muted-foreground bg-muted px-2 py-1 rounded-md">
+              ₹{totalSpent.toFixed(0)} / ₹{totalBudget.toFixed(0)}
+            </span>
+          </div>
+
+          <div className="w-full mt-1">
+            <Progress
+              value={budgetProgress}
+              className="h-2 rounded-full bg-muted"
+              indicatorClassName={cn(
+                "rounded-full transition-all",
+                budgetProgress > 100
+                  ? "bg-rose-500"
+                  : budgetProgress > 80
+                    ? "bg-amber-500"
+                    : "bg-emerald-500"
+              )}
+            />
+          </div>
         </CardContent>
       </Card>
     </div>
