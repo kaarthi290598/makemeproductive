@@ -11,6 +11,9 @@ import {
   createPortfolioDebt,
   updatePortfolioDebt,
   deletePortfolioDebt,
+  createDebtPayment,
+  updateDebtPayment,
+  deleteDebtPayment,
 } from "@/lib/actions/portfolioData";
 
 export interface InvestmentContribution {
@@ -29,16 +32,27 @@ export interface Investment {
   contributions: InvestmentContribution[];
 }
 
+export interface DebtPayment {
+  id: string;
+  principalAmount: number;
+  interestAmount: number;
+  date: string;
+  note?: string;
+}
+
 export interface Debt {
   id: string;
   name: string;
   category: "Home Loan" | "Personal Loan" | "Credit Card" | "Car Loan" | "Student Loan" | "Other";
   totalAmount: number;
   remainingAmount: number;
-  interestRate: number; // in %
-  monthlyPayment: number; // EMI
-  dueDate?: string;
-  note?: string;
+  interestRate?: number | null; // in %
+  monthlyPayment?: number | null; // EMI
+  dueDate?: string | null;
+  note?: string | null;
+  interestAmount?: number | null;
+  remainingInterestAmount?: number | null;
+  payments: DebtPayment[];
 }
 
 interface PortfolioStore {
@@ -64,10 +78,15 @@ interface PortfolioStore {
   updateContribution: (investmentId: string, contribId: string, updates: Partial<InvestmentContribution>) => Promise<void>;
   deleteContribution: (investmentId: string, contribId: string) => Promise<void>;
 
-  addDebt: (debt: Omit<Debt, "id">) => Promise<void>;
-  updateDebt: (id: string, updates: Partial<Debt>) => Promise<void>;
+  addDebt: (debt: Omit<Debt, "id" | "payments">) => Promise<void>;
+  updateDebt: (id: string, updates: Partial<Omit<Debt, "payments">>) => Promise<void>;
   deleteDebt: (id: string) => Promise<void>;
-  payDebt: (id: string, amount: number) => Promise<void>;
+  
+  // Debt Payment Actions
+  addDebtPayment: (debtId: string, payment: Omit<DebtPayment, "id">) => Promise<void>;
+  updateDebtPayment: (debtId: string, paymentId: string, updates: Partial<DebtPayment>) => Promise<void>;
+  deleteDebtPayment: (debtId: string, paymentId: string) => Promise<void>;
+  
   resetStore: () => void;
 }
 
@@ -234,16 +253,125 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
     }
   },
 
-  payDebt: async (id, amount) => {
+  addDebtPayment: async (debtId, payment) => {
     try {
-      const debt = get().debts.find((d) => d.id === id);
+      const debt = get().debts.find((d) => d.id === debtId);
       if (!debt) return;
+
+      const newPayment = await createDebtPayment(debtId, payment);
       
-      const remaining = Math.max(0, debt.remainingAmount - amount);
-      const updated = await updatePortfolioDebt(id, { remainingAmount: remaining });
+      // Also update the parent debt balances in DB
+      const payload: Partial<Debt> = {};
+      if (payment.principalAmount > 0) {
+        payload.remainingAmount = Math.max(0, debt.remainingAmount - payment.principalAmount);
+      }
+      if (payment.interestAmount > 0) {
+        payload.interestAmount = (debt.interestAmount || 0) + payment.interestAmount;
+      }
+      
+      let updatedDebt = debt;
+      if (Object.keys(payload).length > 0) {
+        updatedDebt = await updatePortfolioDebt(debtId, payload) as Debt;
+      }
       
       set((state) => ({
-        debts: state.debts.map((d) => (d.id === id ? { ...d, ...updated } : d)),
+        debts: state.debts.map((d) => {
+          if (d.id === debtId) {
+            return {
+              ...d,
+              ...payload,
+              payments: [newPayment as DebtPayment, ...(d.payments || [])],
+            };
+          }
+          return d;
+        }),
+      }));
+    } catch (err: any) {
+      set({ error: err.message });
+      throw err;
+    }
+  },
+
+  updateDebtPayment: async (debtId, paymentId, updates) => {
+    try {
+      const debt = get().debts.find((d) => d.id === debtId);
+      if (!debt) return;
+      
+      const oldPayment = (debt.payments || []).find(p => p.id === paymentId);
+      if (!oldPayment) return;
+
+      const updatedPayment = await updateDebtPayment(paymentId, updates);
+      
+      // Calculate diff to adjust parent debt
+      const principalDiff = (updates.principalAmount !== undefined ? updates.principalAmount : oldPayment.principalAmount) - oldPayment.principalAmount;
+      const interestDiff = (updates.interestAmount !== undefined ? updates.interestAmount : oldPayment.interestAmount) - oldPayment.interestAmount;
+      
+      const payload: Partial<Debt> = {};
+      if (principalDiff !== 0) {
+        payload.remainingAmount = Math.max(0, debt.remainingAmount - principalDiff);
+      }
+      if (interestDiff !== 0) {
+        payload.interestAmount = Math.max(0, (debt.interestAmount || 0) + interestDiff);
+      }
+
+      if (Object.keys(payload).length > 0) {
+        await updatePortfolioDebt(debtId, payload);
+      }
+      
+      set((state) => ({
+        debts: state.debts.map((d) => {
+          if (d.id === debtId) {
+            return {
+              ...d,
+              ...payload,
+              payments: (d.payments || []).map((p) =>
+                p.id === paymentId ? { ...p, ...updatedPayment } : p
+              ),
+            };
+          }
+          return d;
+        }),
+      }));
+    } catch (err: any) {
+      set({ error: err.message });
+      throw err;
+    }
+  },
+
+  deleteDebtPayment: async (debtId, paymentId) => {
+    try {
+      const debt = get().debts.find((d) => d.id === debtId);
+      if (!debt) return;
+      
+      const paymentToDelete = (debt.payments || []).find(p => p.id === paymentId);
+      if (!paymentToDelete) return;
+
+      await deleteDebtPayment(paymentId);
+      
+      // Revert parent debt balances
+      const payload: Partial<Debt> = {};
+      if (paymentToDelete.principalAmount > 0) {
+        payload.remainingAmount = debt.remainingAmount + paymentToDelete.principalAmount;
+      }
+      if (paymentToDelete.interestAmount > 0) {
+        payload.interestAmount = Math.max(0, (debt.interestAmount || 0) - paymentToDelete.interestAmount);
+      }
+
+      if (Object.keys(payload).length > 0) {
+        await updatePortfolioDebt(debtId, payload);
+      }
+      
+      set((state) => ({
+        debts: state.debts.map((d) => {
+          if (d.id === debtId) {
+            return {
+              ...d,
+              ...payload,
+              payments: (d.payments || []).filter((p) => p.id !== paymentId),
+            };
+          }
+          return d;
+        }),
       }));
     } catch (err: any) {
       set({ error: err.message });

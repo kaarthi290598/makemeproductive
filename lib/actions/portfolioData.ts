@@ -21,16 +21,27 @@ export interface Investment {
   contributions: InvestmentContribution[];
 }
 
+export interface DebtPayment {
+  id: string;
+  principalAmount: number;
+  interestAmount: number;
+  date: string;
+  note?: string;
+}
+
 export interface Debt {
   id: string;
   name: string;
   category: "Home Loan" | "Personal Loan" | "Credit Card" | "Car Loan" | "Student Loan" | "Other";
   totalAmount: number;
   remainingAmount: number;
-  interestRate: number;
-  monthlyPayment: number;
-  dueDate?: string;
-  note?: string;
+  interestRate?: number | null;
+  monthlyPayment?: number | null;
+  dueDate?: string | null;
+  note?: string | null;
+  interestAmount?: number | null;
+  remainingInterestAmount?: number | null;
+  payments: DebtPayment[];
 }
 
 /**
@@ -272,29 +283,54 @@ export async function fetchPortfolioDebts() {
   const { userId } = await auth();
   if (!userId) throw new Error("User is not authenticated.");
 
-  const { data, error } = await supabase
+  const { data: debtsData, error: debtsError } = await supabase
     .from("portfolio_debts")
     .select("*")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
-  if (error) throw new Error(`Error fetching debts: ${error.message}`);
+  if (debtsError) throw new Error(`Error fetching debts: ${debtsError.message}`);
+
+  const { data: paymentsData, error: paymentsError } = await supabase
+    .from("portfolio_debt_payments")
+    .select("*")
+    .eq("user_id", userId)
+    .order("date", { ascending: false });
+
+  if (paymentsError) throw new Error(`Error fetching debt payments: ${paymentsError.message}`);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (data || []).map((d: any) => ({
-    id: d.id,
-    name: d.name,
-    category: d.category,
-    totalAmount: Number(d.total_amount),
-    remainingAmount: Number(d.remaining_amount),
-    interestRate: Number(d.interest_rate),
-    monthlyPayment: Number(d.monthly_payment),
-    dueDate: d.due_date || undefined,
-    note: d.note || undefined,
-  })) as Debt[];
+  return (debtsData || []).map((d: any) => {
+    const debtPayments = (paymentsData || [])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .filter((p: any) => p.debt_id === d.id)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((p: any) => ({
+        id: p.id,
+        principalAmount: Number(p.principal_amount),
+        interestAmount: Number(p.interest_amount),
+        date: p.date,
+        note: p.note || undefined,
+      }));
+
+    return {
+      id: d.id,
+      name: d.name,
+      category: d.category,
+      totalAmount: Number(d.total_amount),
+      remainingAmount: Number(d.remaining_amount),
+      interestRate: d.interest_rate !== null && d.interest_rate !== undefined ? Number(d.interest_rate) : undefined,
+      monthlyPayment: d.monthly_payment !== null && d.monthly_payment !== undefined ? Number(d.monthly_payment) : undefined,
+      dueDate: d.due_date || undefined,
+      note: d.note || undefined,
+      interestAmount: d.interest_amount !== null && d.interest_amount !== undefined ? Number(d.interest_amount) : undefined,
+      remainingInterestAmount: d.remaining_interest_amount !== null && d.remaining_interest_amount !== undefined ? Number(d.remaining_interest_amount) : undefined,
+      payments: debtPayments,
+    } as Debt;
+  });
 }
 
-export async function createPortfolioDebt(debt: Omit<Debt, "id">) {
+export async function createPortfolioDebt(debt: Omit<Debt, "id" | "payments">) {
   const { userId } = await auth();
   if (!userId) throw new Error("User is not authenticated.");
 
@@ -310,6 +346,8 @@ export async function createPortfolioDebt(debt: Omit<Debt, "id">) {
       monthly_payment: debt.monthlyPayment,
       due_date: debt.dueDate,
       note: debt.note,
+      interest_amount: debt.interestAmount,
+      remaining_interest_amount: debt.remainingInterestAmount,
     })
     .select()
     .single();
@@ -323,14 +361,17 @@ export async function createPortfolioDebt(debt: Omit<Debt, "id">) {
     category: data.category,
     totalAmount: Number(data.total_amount),
     remainingAmount: Number(data.remaining_amount),
-    interestRate: Number(data.interest_rate),
-    monthlyPayment: Number(data.monthly_payment),
+    interestRate: data.interest_rate !== null && data.interest_rate !== undefined ? Number(data.interest_rate) : undefined,
+    monthlyPayment: data.monthly_payment !== null && data.monthly_payment !== undefined ? Number(data.monthly_payment) : undefined,
     dueDate: data.due_date || undefined,
     note: data.note || undefined,
+    interestAmount: data.interest_amount !== null && data.interest_amount !== undefined ? Number(data.interest_amount) : undefined,
+    remainingInterestAmount: data.remaining_interest_amount !== null && data.remaining_interest_amount !== undefined ? Number(data.remaining_interest_amount) : undefined,
+    payments: [],
   } as Debt;
 }
 
-export async function updatePortfolioDebt(id: string, updates: Partial<Omit<Debt, "id">>) {
+export async function updatePortfolioDebt(id: string, updates: Partial<Omit<Debt, "id" | "payments">>) {
   const { userId } = await auth();
   if (!userId) throw new Error("User is not authenticated.");
 
@@ -344,6 +385,8 @@ export async function updatePortfolioDebt(id: string, updates: Partial<Omit<Debt
   if (updates.monthlyPayment !== undefined) payload.monthly_payment = updates.monthlyPayment;
   if (updates.dueDate !== undefined) payload.due_date = updates.dueDate;
   if (updates.note !== undefined) payload.note = updates.note;
+  if (updates.interestAmount !== undefined) payload.interest_amount = updates.interestAmount;
+  if (updates.remainingInterestAmount !== undefined) payload.remaining_interest_amount = updates.remainingInterestAmount;
 
   const { data, error } = await supabase
     .from("portfolio_debts")
@@ -362,10 +405,12 @@ export async function updatePortfolioDebt(id: string, updates: Partial<Omit<Debt
     category: data.category,
     totalAmount: Number(data.total_amount),
     remainingAmount: Number(data.remaining_amount),
-    interestRate: Number(data.interest_rate),
-    monthlyPayment: Number(data.monthly_payment),
+    interestRate: data.interest_rate !== null && data.interest_rate !== undefined ? Number(data.interest_rate) : undefined,
+    monthlyPayment: data.monthly_payment !== null && data.monthly_payment !== undefined ? Number(data.monthly_payment) : undefined,
     dueDate: data.due_date || undefined,
     note: data.note || undefined,
+    interestAmount: data.interest_amount !== null && data.interest_amount !== undefined ? Number(data.interest_amount) : undefined,
+    remainingInterestAmount: data.remaining_interest_amount !== null && data.remaining_interest_amount !== undefined ? Number(data.remaining_interest_amount) : undefined,
   } as Debt;
 }
 
@@ -382,3 +427,84 @@ export async function deletePortfolioDebt(id: string) {
   if (error) throw new Error(`Error deleting debt: ${error.message}`);
   revalidatePath("/app/portfolio");
 }
+
+export async function createDebtPayment(
+  debtId: string,
+  payment: Omit<DebtPayment, "id">
+) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("User is not authenticated.");
+
+  const { data, error } = await supabase
+    .from("portfolio_debt_payments")
+    .insert({
+      user_id: userId,
+      debt_id: debtId,
+      principal_amount: payment.principalAmount,
+      interest_amount: payment.interestAmount,
+      date: payment.date,
+      note: payment.note,
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Error creating debt payment: ${error.message}`);
+  revalidatePath("/app/portfolio");
+  
+  return {
+    id: data.id,
+    principalAmount: Number(data.principal_amount),
+    interestAmount: Number(data.interest_amount),
+    date: data.date,
+    note: data.note || undefined,
+  } as DebtPayment;
+}
+
+export async function updateDebtPayment(
+  id: string,
+  updates: Partial<Omit<DebtPayment, "id">>
+) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("User is not authenticated.");
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const payload: any = {};
+  if (updates.principalAmount !== undefined) payload.principal_amount = updates.principalAmount;
+  if (updates.interestAmount !== undefined) payload.interest_amount = updates.interestAmount;
+  if (updates.date !== undefined) payload.date = updates.date;
+  if (updates.note !== undefined) payload.note = updates.note;
+
+  const { data, error } = await supabase
+    .from("portfolio_debt_payments")
+    .update(payload)
+    .eq("id", id)
+    .eq("user_id", userId)
+    .select()
+    .single();
+
+  if (error) throw new Error(`Error updating debt payment: ${error.message}`);
+  revalidatePath("/app/portfolio");
+  
+  return {
+    id: data.id,
+    principalAmount: Number(data.principal_amount),
+    interestAmount: Number(data.interest_amount),
+    date: data.date,
+    note: data.note || undefined,
+  } as DebtPayment;
+}
+
+export async function deleteDebtPayment(id: string) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("User is not authenticated.");
+
+  const { error } = await supabase
+    .from("portfolio_debt_payments")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId);
+
+  if (error) throw new Error(`Error deleting debt payment: ${error.message}`);
+  revalidatePath("/app/portfolio");
+}
+

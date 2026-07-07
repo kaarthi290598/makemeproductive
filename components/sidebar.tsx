@@ -7,6 +7,7 @@ import {
   Sparkles,
   ChevronRight,
   Landmark,
+  LayoutDashboard,
 } from "lucide-react";
 
 import {
@@ -26,6 +27,12 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const items = [
+  {
+    title: "Dashboard",
+    url: "/app",
+    icon: LayoutDashboard,
+    description: "Overview",
+  },
   {
     title: "To-do",
     url: "/app/todo",
@@ -52,6 +59,7 @@ const SidebarApp = () => {
   const isCollapsed = state === "collapsed";
 
   const isActive = (url: string) => {
+    if (url === "/app") return pathname === "/app";
     if (url === "/app/todo") return pathname.startsWith("/app/todo");
     if (url.includes("expense-tracker"))
       return pathname.startsWith("/app/expense-tracker");

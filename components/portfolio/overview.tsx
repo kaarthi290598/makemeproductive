@@ -257,7 +257,7 @@ export function PortfolioOverview() {
                           <span className="text-muted-foreground font-medium">₹{d.remainingAmount.toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between items-center text-[10px] text-muted-foreground">
-                          <span>EMI: ₹{d.monthlyPayment.toLocaleString()}/mo</span>
+                          <span>{d.monthlyPayment !== undefined && d.monthlyPayment !== null ? `EMI: ₹${d.monthlyPayment.toLocaleString()}/mo` : 'No EMI set'}</span>
                           <span>{percentPaid.toFixed(0)}% paid</span>
                         </div>
                       </div>

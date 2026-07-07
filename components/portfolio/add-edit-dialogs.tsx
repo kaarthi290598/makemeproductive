@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { usePortfolioStore, Investment, Debt, InvestmentContribution } from "@/hooks/use-portfolio-store";
+import { Checkbox } from "@/components/ui/checkbox";
+import { usePortfolioStore, Investment, Debt, InvestmentContribution, DebtPayment } from "@/hooks/use-portfolio-store";
 import { toast } from "sonner";
 
 interface InvestmentDialogProps {
@@ -357,6 +358,7 @@ export function AddEditDebtDialog({
   const [category, setCategory] = useState<Debt["category"]>("Home Loan");
   const [totalAmount, setTotalAmount] = useState("");
   const [remainingAmount, setRemainingAmount] = useState("");
+  const [hasInterestAndEmi, setHasInterestAndEmi] = useState(false);
   const [interestRate, setInterestRate] = useState("");
   const [monthlyPayment, setMonthlyPayment] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -368,8 +370,11 @@ export function AddEditDebtDialog({
       setCategory(debtToEdit.category);
       setTotalAmount(debtToEdit.totalAmount.toString());
       setRemainingAmount(debtToEdit.remainingAmount.toString());
-      setInterestRate(debtToEdit.interestRate.toString());
-      setMonthlyPayment(debtToEdit.monthlyPayment.toString());
+      setHasInterestAndEmi(
+        debtToEdit.interestRate !== undefined && debtToEdit.interestRate !== null
+      );
+      setInterestRate(debtToEdit.interestRate?.toString() || "");
+      setMonthlyPayment(debtToEdit.monthlyPayment?.toString() || "");
       setDueDate(debtToEdit.dueDate || "");
       setNote(debtToEdit.note || "");
     } else {
@@ -377,6 +382,7 @@ export function AddEditDebtDialog({
       setCategory("Home Loan");
       setTotalAmount("");
       setRemainingAmount("");
+      setHasInterestAndEmi(false);
       setInterestRate("");
       setMonthlyPayment("");
       setDueDate("");
@@ -394,8 +400,9 @@ export function AddEditDebtDialog({
 
     const totalVal = parseFloat(totalAmount);
     const remainingVal = parseFloat(remainingAmount);
-    const rateVal = parseFloat(interestRate);
-    const emiVal = parseFloat(monthlyPayment);
+    const rateVal = hasInterestAndEmi && interestRate.trim() ? parseFloat(interestRate) : 0;
+    const emiVal = hasInterestAndEmi && monthlyPayment.trim() ? parseFloat(monthlyPayment) : null;
+    const dueVal = hasInterestAndEmi && dueDate.trim() ? dueDate.trim() : null;
 
     if (isNaN(totalVal) || totalVal <= 0) {
       toast.error("Please enter a valid loan amount");
@@ -407,14 +414,16 @@ export function AddEditDebtDialog({
       return;
     }
 
-    if (isNaN(rateVal) || rateVal < 0) {
-      toast.error("Interest rate cannot be negative");
-      return;
-    }
+    if (hasInterestAndEmi) {
+      if (interestRate.trim() && (isNaN(rateVal) || rateVal < 0)) {
+        toast.error("Interest rate cannot be negative");
+        return;
+      }
 
-    if (isNaN(emiVal) || emiVal <= 0) {
-      toast.error("Please enter a valid monthly payment (EMI)");
-      return;
+      if (monthlyPayment.trim() && emiVal !== null && (isNaN(emiVal) || emiVal <= 0)) {
+        toast.error("Please enter a valid monthly payment (EMI) greater than 0");
+        return;
+      }
     }
 
     const payload = {
@@ -424,7 +433,7 @@ export function AddEditDebtDialog({
       remainingAmount: remainingVal,
       interestRate: rateVal,
       monthlyPayment: emiVal,
-      dueDate: dueDate.trim() || undefined,
+      dueDate: dueVal,
       note: note.trim() || undefined,
     };
 
@@ -461,38 +470,24 @@ export function AddEditDebtDialog({
               className="rounded-lg h-9"
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="debt-category" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Category</Label>
-              <Select
-                value={category}
-                onValueChange={(val) => setCategory(val as Debt["category"])}
-              >
-                <SelectTrigger id="debt-category" className="h-9 rounded-lg">
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Home Loan">Home Loan</SelectItem>
-                  <SelectItem value="Personal Loan">Personal Loan</SelectItem>
-                  <SelectItem value="Credit Card">Credit Card</SelectItem>
-                  <SelectItem value="Car Loan">Car Loan</SelectItem>
-                  <SelectItem value="Student Loan">Student Loan</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="debt-rate" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Interest Rate (% p.a.)</Label>
-              <Input
-                id="debt-rate"
-                type="number"
-                step="0.01"
-                placeholder="8.50"
-                value={interestRate}
-                onChange={(e) => setInterestRate(e.target.value)}
-                className="rounded-lg h-9"
-              />
-            </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="debt-category" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Category</Label>
+            <Select
+              value={category}
+              onValueChange={(val) => setCategory(val as Debt["category"])}
+            >
+              <SelectTrigger id="debt-category" className="h-9 rounded-lg w-full">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Home Loan">Home Loan</SelectItem>
+                <SelectItem value="Personal Loan">Personal Loan</SelectItem>
+                <SelectItem value="Credit Card">Credit Card</SelectItem>
+                <SelectItem value="Car Loan">Car Loan</SelectItem>
+                <SelectItem value="Student Loan">Student Loan</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -518,29 +513,55 @@ export function AddEditDebtDialog({
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="debt-emi" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Monthly Payment / EMI (₹)</Label>
-              <Input
-                id="debt-emi"
-                type="number"
-                placeholder="12000"
-                value={monthlyPayment}
-                onChange={(e) => setMonthlyPayment(e.target.value)}
-                className="rounded-lg h-9"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="debt-due" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Due Date (Optional)</Label>
-              <Input
-                id="debt-due"
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="rounded-lg h-9"
-              />
-            </div>
+          <div className="flex items-center space-x-2 py-1 bg-muted/30 p-2 rounded-lg border border-dashed">
+            <Checkbox
+              id="has-interest-emi"
+              checked={hasInterestAndEmi}
+              onCheckedChange={(checked) => setHasInterestAndEmi(!!checked)}
+            />
+            <Label htmlFor="has-interest-emi" className="text-xs font-medium cursor-pointer text-foreground">
+              Track Interest Rate, EMI & Due Date
+            </Label>
           </div>
+          {hasInterestAndEmi && (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="debt-rate" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Interest Rate (% p.a.) (Optional)</Label>
+                  <Input
+                    id="debt-rate"
+                    type="number"
+                    step="0.01"
+                    placeholder="8.50"
+                    value={interestRate}
+                    onChange={(e) => setInterestRate(e.target.value)}
+                    className="rounded-lg h-9"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="debt-emi" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Monthly Payment / EMI (₹) (Optional)</Label>
+                  <Input
+                    id="debt-emi"
+                    type="number"
+                    placeholder="12000"
+                    value={monthlyPayment}
+                    onChange={(e) => setMonthlyPayment(e.target.value)}
+                    className="rounded-lg h-9"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="debt-due" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Due Date (Optional)</Label>
+                <Input
+                  id="debt-due"
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  className="rounded-lg h-9"
+                />
+              </div>
+            </>
+          )}
           <div className="space-y-1.5">
             <Label htmlFor="debt-note" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Notes (Optional)</Label>
             <Input
@@ -565,65 +586,234 @@ export function AddEditDebtDialog({
   );
 }
 
-interface PayDebtDialogProps {
+interface AddEditDebtPaymentDialogProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   debt: Debt | null;
+  paymentToEdit?: DebtPayment | null;
 }
 
-export function PayDebtDialog({ open, setOpen, debt }: PayDebtDialogProps) {
-  const { payDebt } = usePortfolioStore();
+export function AddEditDebtPaymentDialog({ open, setOpen, debt, paymentToEdit }: AddEditDebtPaymentDialogProps) {
+  const { addDebtPayment, updateDebtPayment } = usePortfolioStore();
+  const [splitPayment, setSplitPayment] = useState(false);
   const [amount, setAmount] = useState("");
+  const [principalAmount, setPrincipalAmount] = useState("");
+  const [interestAmount, setInterestAmount] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [note, setNote] = useState("");
+  
+  // Calculate automatic split if applicable
+  const autoInterest = useMemo(() => {
+    if (splitPayment || !debt || !debt.interestRate || debt.interestRate <= 0) return 0;
+    const val = parseFloat(amount) || 0;
+    if (val <= 0) return 0;
+    
+    // Standard EMI interest calculation: (Principal * Annual Rate) / 12
+    const monthlyInterest = debt.remainingAmount * (debt.interestRate / 100 / 12);
+    return Math.min(val, monthlyInterest); // Caps interest at payment amount
+  }, [amount, debt, splitPayment]);
+
+  const autoPrincipal = useMemo(() => {
+    const val = parseFloat(amount) || 0;
+    return val - autoInterest;
+  }, [amount, autoInterest]);
+
+  useEffect(() => {
+    if (paymentToEdit) {
+      setSplitPayment(paymentToEdit.interestAmount > 0);
+      setPrincipalAmount(paymentToEdit.principalAmount.toString());
+      setInterestAmount(paymentToEdit.interestAmount.toString());
+      if (paymentToEdit.interestAmount === 0) {
+        setAmount(paymentToEdit.principalAmount.toString());
+      }
+      setDate(paymentToEdit.date);
+      setNote(paymentToEdit.note || "");
+    } else if (!open) {
+      setSplitPayment(false);
+      setAmount("");
+      setPrincipalAmount("");
+      setInterestAmount("");
+      setDate(new Date().toISOString().slice(0, 10));
+      setNote("");
+    }
+  }, [paymentToEdit, open]);
 
   const handlePay = (e: React.FormEvent) => {
     e.preventDefault();
     if (!debt) return;
 
-    const val = parseFloat(amount);
-    if (isNaN(val) || val <= 0) {
-      toast.error("Please enter a valid payment amount");
-      return;
+    if (!splitPayment) {
+      const val = parseFloat(amount);
+      if (isNaN(val) || val <= 0) {
+        toast.error("Please enter a valid payment amount");
+        return;
+      }
+      
+      const princVal = debt.interestRate && debt.interestRate > 0 ? autoPrincipal : val;
+      const intVal = debt.interestRate && debt.interestRate > 0 ? autoInterest : 0;
+      
+      if (princVal > debt.remainingAmount && (!paymentToEdit || princVal - paymentToEdit.principalAmount > debt.remainingAmount)) {
+        toast.error(`Principal payment cannot exceed remaining principal (₹${debt.remainingAmount})`);
+        return;
+      }
+      
+      const payload = {
+        principalAmount: princVal,
+        interestAmount: intVal,
+        date,
+        note: note.trim() || undefined,
+      };
+
+      if (paymentToEdit) {
+        updateDebtPayment(debt.id, paymentToEdit.id, payload);
+        toast.success(`Updated payment of ₹${val.toLocaleString()}`);
+      } else {
+        addDebtPayment(debt.id, payload);
+        toast.success(`Logged payment of ₹${val.toLocaleString()} to ${debt.name}`);
+      }
+    } else {
+      const princVal = parseFloat(principalAmount) || 0;
+      const intVal = parseFloat(interestAmount) || 0;
+      
+      if (princVal <= 0 && intVal <= 0) {
+        toast.error("Please enter a valid payment amount greater than 0");
+        return;
+      }
+
+      if (princVal > debt.remainingAmount && (!paymentToEdit || princVal - paymentToEdit.principalAmount > debt.remainingAmount)) {
+        toast.error(`Principal payment cannot exceed remaining principal (₹${debt.remainingAmount})`);
+        return;
+      }
+      
+      const payload = {
+        principalAmount: princVal,
+        interestAmount: intVal,
+        date,
+        note: note.trim() || undefined,
+      };
+
+      if (paymentToEdit) {
+        updateDebtPayment(debt.id, paymentToEdit.id, payload);
+        toast.success(`Updated payment of ₹${(princVal + intVal).toLocaleString()}`);
+      } else {
+        addDebtPayment(debt.id, payload);
+        toast.success(`Logged payment of ₹${(princVal + intVal).toLocaleString()} to ${debt.name}`);
+      }
     }
 
-    if (val > debt.remainingAmount) {
-      toast.error(`Payment cannot exceed remaining debt amount (₹${debt.remainingAmount})`);
-      return;
-    }
-
-    payDebt(debt.id, val);
-    toast.success(`Logged payment of ₹${val.toLocaleString()} to ${debt.name}`);
     setOpen(false);
-    setAmount("");
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[400px] rounded-xl">
         <DialogHeader>
-          <DialogTitle>Log Payment - {debt?.name}</DialogTitle>
+          <DialogTitle>{paymentToEdit ? "Edit Payment" : `Log Payment - ${debt?.name}`}</DialogTitle>
           <DialogDescription>
-            Reduce the outstanding principal on this liability.
+            {paymentToEdit ? "Modify the details of this payment log." : "Reduce the outstanding principal on this liability or record interest."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handlePay} className="space-y-4 py-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="pay-amount" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Payment Amount (₹)</Label>
-            <Input
-              id="pay-amount"
-              type="number"
-              placeholder={`Max: ${debt?.remainingAmount}`}
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="rounded-lg h-9"
+          <div className="flex items-center space-x-2 py-1 bg-muted/30 p-2 rounded-lg border border-dashed mb-2">
+            <Checkbox
+              id="split-payment"
+              checked={splitPayment}
+              onCheckedChange={(checked) => setSplitPayment(!!checked)}
             />
-            <p className="text-[10px] text-muted-foreground">Remaining balance: ₹{debt?.remainingAmount.toLocaleString()}</p>
+            <Label htmlFor="split-payment" className="text-xs font-medium cursor-pointer text-foreground">
+              Log Interest Payment Separately
+            </Label>
           </div>
+
+          {!splitPayment ? (
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="pay-amount" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Payment Amount (₹)</Label>
+                <Input
+                  id="pay-amount"
+                  type="number"
+                  placeholder={`Remaining: ${debt?.remainingAmount}`}
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="rounded-lg h-9"
+                />
+                {!debt?.interestRate && (
+                  <p className="text-[10px] text-muted-foreground">Reduces principal balance. Remaining: ₹{debt?.remainingAmount.toLocaleString()}</p>
+                )}
+              </div>
+              
+              {debt?.interestRate ? (
+                <div className="flex gap-4 p-2 bg-muted/20 rounded-lg border text-xs">
+                  <div className="flex-1">
+                    <span className="text-[10px] uppercase font-semibold text-muted-foreground block">To Principal</span>
+                    <span className="font-semibold text-foreground">₹{autoPrincipal.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="flex-1 border-l pl-4">
+                    <span className="text-[10px] uppercase font-semibold text-muted-foreground block">To Interest</span>
+                    <span className="font-semibold text-emerald-600">₹{autoInterest.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="pay-principal" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Principal Payment (₹)</Label>
+                <Input
+                  id="pay-principal"
+                  type="number"
+                  placeholder={`Max: ${debt?.remainingAmount}`}
+                  value={principalAmount}
+                  onChange={(e) => setPrincipalAmount(e.target.value)}
+                  className="rounded-lg h-9"
+                />
+                <p className="text-[10px] text-muted-foreground">Reduces principal balance.</p>
+              </div>
+              
+              <div className="space-y-1.5">
+                <Label htmlFor="pay-interest" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Interest Payment (₹)</Label>
+                <Input
+                  id="pay-interest"
+                  type="number"
+                  placeholder="e.g. 2000"
+                  value={interestAmount}
+                  onChange={(e) => setInterestAmount(e.target.value)}
+                  className="rounded-lg h-9"
+                />
+                <p className="text-[10px] text-muted-foreground">Accumulated separately, does not reduce principal.</p>
+              </div>
+            </div>
+          )}
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="pay-date" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Payment Date</Label>
+              <Input
+                id="pay-date"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="rounded-lg h-9"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="pay-note" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Note (Optional)</Label>
+              <Input
+                id="pay-note"
+                placeholder="e.g. Extra principal"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                className="rounded-lg h-9"
+              />
+            </div>
+          </div>
+          
           <DialogFooter className="pt-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)} className="rounded-lg h-9 text-xs font-semibold">
               Cancel
             </Button>
             <Button type="submit" className="rounded-lg h-9 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white">
-              Log Payment
+              {paymentToEdit ? "Save Changes" : "Log Payment"}
             </Button>
           </DialogFooter>
         </form>

@@ -1,16 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import Dashboard from "@/components/dashboard/dashboard";
 
-const Page = () => {
-  const router = useRouter();
-
-  useEffect(() => {
-    router.push("/app/todo");
-  }, [router]);
-
-  return null; // Optionally, you can render a loading indicator here
-};
-
-export default Page;
+export default function DashboardPage() {
+  return (
+    <div className="flex h-full w-full flex-col gap-4 overflow-y-auto p-3 lg:gap-6 lg:p-6">
+      <Dashboard />
+    </div>
+  );
+}

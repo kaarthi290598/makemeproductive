@@ -13,7 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AddEditDebtDialog, PayDebtDialog } from "./add-edit-dialogs";
+import { AddEditDebtDialog, AddEditDebtPaymentDialog } from "./add-edit-dialogs";
+import { DebtPaymentsDialog } from "./debt-payments-dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Pencil,
@@ -43,8 +44,10 @@ export function DebtsList() {
   // Modal State
   const [editDebt, setEditDebt] = useState<Debt | null>(null);
   const [editOpen, setEditOpen] = useState(false);
-  const [payDebtSelected, setPayDebtSelected] = useState<Debt | null>(null);
-  const [payOpen, setPayOpen] = useState(false);
+  const [payDialogOpen, setPayDialogOpen] = useState(false);
+  const [addPaymentOpen, setAddPaymentOpen] = useState(false);
+  const [debtToPayId, setDebtToPayId] = useState<string | null>(null);
+  const activeDebtToPay = debts.find((d) => d.id === debtToPayId) || null;
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const filteredDebts = debts.filter((d) => {
@@ -71,7 +74,7 @@ export function DebtsList() {
     const list = [...debts].filter((d) => d.remainingAmount > 0);
     if (payoffStrategy === "avalanche") {
       // Sort by highest interest rate
-      return list.sort((a, b) => b.interestRate - a.interestRate);
+      return list.sort((a, b) => (b.interestRate || 0) - (a.interestRate || 0));
     } else {
       // Sort by lowest remaining amount (Snowball)
       return list.sort((a, b) => a.remainingAmount - b.remainingAmount);
@@ -128,7 +131,7 @@ export function DebtsList() {
                       {d.name}
                     </span>
                     <span className="text-[10px] text-muted-foreground">
-                      {payoffStrategy === "avalanche" ? `${d.interestRate}%` : `₹${d.remainingAmount.toLocaleString()}`}
+                      {payoffStrategy === "avalanche" ? (d.interestRate !== undefined && d.interestRate !== null ? `${d.interestRate}%` : 'N/A') : `₹${d.remainingAmount.toLocaleString()}`}
                     </span>
                   </div>
                   {index < sortedStrategyDebts.length - 1 && (
@@ -244,12 +247,21 @@ export function DebtsList() {
                       ₹{d.remainingAmount.toLocaleString()}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider">Interest Rate</p>
-                    <p className="text-base font-bold text-foreground mt-0.5">
-                      {d.interestRate}% <span className="text-[10px] font-normal text-muted-foreground">p.a.</span>
-                    </p>
-                  </div>
+                  {d.interestAmount ? (
+                    <div>
+                      <p className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider">Interest Paid</p>
+                      <p className="text-base font-bold text-emerald-600 mt-0.5">
+                        ₹{d.interestAmount.toLocaleString()}
+                      </p>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider">Interest Rate</p>
+                      <p className="text-base font-bold text-foreground mt-0.5">
+                        {d.interestRate !== undefined && d.interestRate !== null ? `${d.interestRate}%` : "N/A"} <span className="text-[10px] font-normal text-muted-foreground">{d.interestRate !== undefined && d.interestRate !== null ? 'p.a.' : ''}</span>
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Progress bar */}
@@ -264,24 +276,33 @@ export function DebtsList() {
                 {/* Payoff Action & Info Footer */}
                 <div className="flex items-center justify-between bg-muted/30 -mx-5 -mb-5 px-5 py-3 border-t border-border/20">
                   <div className="text-[10px] text-muted-foreground font-medium">
-                    EMI: ₹{d.monthlyPayment.toLocaleString()}/mo
+                    {d.monthlyPayment !== undefined && d.monthlyPayment !== null ? `EMI: ₹${d.monthlyPayment.toLocaleString()}/mo` : 'No EMI set'}
                   </div>
-                  {!isCleared ? (
+                  <div className="flex items-center gap-2">
                     <Button
                       size="sm"
+                      variant="outline"
                       onClick={() => {
-                        setPayDebtSelected(d);
-                        setPayOpen(true);
+                        setDebtToPayId(d.id);
+                        setPayDialogOpen(true);
                       }}
-                      className="h-7 px-2.5 text-[10px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
+                      className="h-7 px-2.5 text-[10px] font-semibold bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-600 border-emerald-600/20 rounded-lg"
                     >
-                      Log Payment
+                      View Payments
                     </Button>
-                  ) : (
-                    <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider flex items-center gap-1">
-                      Cleared 🎉
-                    </span>
-                  )}
+                    {!isCleared && (
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setDebtToPayId(d.id);
+                          setAddPaymentOpen(true);
+                        }}
+                        className="h-7 px-2.5 text-[10px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
+                      >
+                        Log Payment
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -303,10 +324,16 @@ export function DebtsList() {
         debtToEdit={editDebt}
       />
 
-      <PayDebtDialog
-        open={payOpen}
-        setOpen={setPayOpen}
-        debt={payDebtSelected}
+      <DebtPaymentsDialog
+        open={payDialogOpen}
+        setOpen={setPayDialogOpen}
+        debt={activeDebtToPay}
+      />
+
+      <AddEditDebtPaymentDialog
+        open={addPaymentOpen}
+        setOpen={setAddPaymentOpen}
+        debt={activeDebtToPay}
       />
     </div>
   );
