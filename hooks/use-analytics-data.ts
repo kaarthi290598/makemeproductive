@@ -16,23 +16,26 @@ const palette = [
 
 export function useAnalyticsData(
   dateFilterType: "all" | "month" | "year",
-  selectedDate: string,
+  selectedDates: string[],
+  personFilter: string = "all"
 ) {
   const { categories, transactions } = useExpenseStore();
 
-  // Filter Transactions based on Date
+  // Filter Transactions based on Date & Person
   const filteredTransactions = useMemo(() => {
     return transactions.filter((t) => {
-      if (dateFilterType === "all") return true;
+      let matchesDate = true;
       if (dateFilterType === "month") {
-        return t.date.startsWith(selectedDate);
+        matchesDate = selectedDates.some(date => t.date.startsWith(date));
+      } else if (dateFilterType === "year") {
+        matchesDate = selectedDates.some(date => t.date.startsWith(date.slice(0, 4)));
       }
-      if (dateFilterType === "year") {
-        return t.date.startsWith(selectedDate.slice(0, 4));
-      }
-      return true;
+
+      const matchesPerson = personFilter === "all" || t.paid_by === personFilter;
+
+      return matchesDate && matchesPerson;
     });
-  }, [transactions, dateFilterType, selectedDate]);
+  }, [transactions, dateFilterType, selectedDates, personFilter]);
 
   // Aggregate Data for Charts
   const categoryData = useMemo(() => {

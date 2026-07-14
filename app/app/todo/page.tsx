@@ -1,4 +1,4 @@
-import SpinnerLoad from "@/components/spinner";
+import { TodoSkeleton } from "@/components/module-skeleton";
 import TodoAnalytics from "@/components/todo/todoAnalytics";
 
 import TodoForm from "@/components/todo/todoForm";
@@ -30,7 +30,7 @@ const page = async () => {
       {/* Content */}
       <div className="flex flex-1 flex-col gap-4 lg:flex-row lg:overflow-hidden">
         <div className="lg:w-[60%]">
-          <Suspense fallback={<SpinnerLoad />}>
+          <Suspense fallback={<TodoSkeleton />}>
             <TodoList todos={todos} categories={categories} />
           </Suspense>
         </div>

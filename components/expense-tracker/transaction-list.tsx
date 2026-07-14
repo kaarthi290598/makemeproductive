@@ -23,8 +23,16 @@ import {
   Filter,
   ChevronLeft,
   ChevronRight,
+  MoreHorizontal,
+  Pen,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -51,9 +59,6 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
     toggleSettlement,
   } = useExpenseStore();
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState<"all" | "income" | "expense">(
-    "all",
-  );
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterPaidBy, setFilterPaidBy] = useState<string>("all");
   const [filterSettlement, setFilterSettlement] = useState<
@@ -62,11 +67,14 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
   const [dateFilterType, setDateFilterType] = useState<
     "all" | "month" | "year"
   >("month");
-  const [selectedDate, setSelectedDate] = useState<string>(
+  const [selectedDates, setSelectedDates] = useState<string[]>([
     formatDateToLocalISO(new Date()).slice(0, 7),
-  ); // YYYY-MM
+  ]); // Array of YYYY-MM
+  const [filterType, setFilterType] = useState<"all" | "income" | "expense">(
+    "all",
+  );
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 40;
@@ -103,9 +111,9 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
 
     let matchesDate = true;
     if (dateFilterType === "month") {
-      matchesDate = t.date.startsWith(selectedDate);
+      matchesDate = selectedDates.some(date => t.date.startsWith(date));
     } else if (dateFilterType === "year") {
-      matchesDate = t.date.startsWith(selectedDate.slice(0, 4));
+      matchesDate = selectedDates.some(date => t.date.startsWith(date.slice(0, 4)));
     }
 
     return (
@@ -274,12 +282,15 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
 
             {(dateFilterType === "month" || dateFilterType === "year") && (
               <Select
-                value={selectedDate.slice(0, 4)}
+                value={selectedDates.length > 0 ? selectedDates[0].slice(0, 4) : new Date().getFullYear().toString()}
                 onValueChange={(year) => {
-                  const currentMonth =
-                    selectedDate.slice(5, 7) ||
-                    new Date().toISOString().slice(5, 7);
-                  setSelectedDate(`${year}-${currentMonth}`);
+                  setSelectedDates((prev) => {
+                    if (prev.length === 0) {
+                      const currentMonth = new Date().toISOString().slice(5, 7);
+                      return [`${year}-${currentMonth}`];
+                    }
+                    return prev.map((d) => `${year}-${d.slice(5, 7)}`);
+                  });
                 }}
               >
                 <SelectTrigger className="h-9 w-[100px] rounded-lg border-border/60 bg-background text-sm shadow-none transition-colors hover:bg-accent">
@@ -299,29 +310,41 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
             )}
 
             {dateFilterType === "month" && (
-              <Select
-                value={selectedDate.slice(5, 7)}
-                onValueChange={(month) => {
-                  const currentYear = selectedDate.slice(0, 4);
-                  setSelectedDate(`${currentYear}-${month}`);
-                }}
-              >
-                <SelectTrigger className="h-9 w-[120px] rounded-lg border-border/60 bg-background text-sm shadow-none transition-colors hover:bg-accent">
-                  <SelectValue placeholder="Month" />
-                </SelectTrigger>
-                <SelectContent>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="h-9 min-w-[120px] justify-between rounded-lg border-border/60 bg-background text-sm shadow-none transition-colors hover:bg-accent font-normal">
+                    {selectedDates.length === 0 ? "Select Month" : selectedDates.length === 1 ? format(new Date(0, parseInt(selectedDates[0].slice(5, 7)) - 1), "MMMM") : `${selectedDates.length} Months`}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-[150px]">
                   {Array.from({ length: 12 }, (_, i) => {
                     const date = new Date(0, i);
                     const monthStr = format(date, "MM");
                     const monthName = format(date, "MMMM");
-                    return { value: monthStr, label: monthName };
-                  }).map((m) => (
-                    <SelectItem key={m.value} value={m.value}>
-                      {m.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    
+                    const currentYear = selectedDates.length > 0 ? selectedDates[0].slice(0, 4) : new Date().getFullYear().toString();
+                    const value = `${currentYear}-${monthStr}`;
+                    const isSelected = selectedDates.includes(value);
+
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={monthStr}
+                        checked={isSelected}
+                        onSelect={(e) => e.preventDefault()}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedDates((prev) => [...prev, value].sort());
+                          } else {
+                            setSelectedDates((prev) => prev.filter((d) => d !== value));
+                          }
+                        }}
+                      >
+                        {monthName}
+                      </DropdownMenuCheckboxItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
 
             <Button

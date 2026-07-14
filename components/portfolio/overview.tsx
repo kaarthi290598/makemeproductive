@@ -38,7 +38,9 @@ export function PortfolioOverview() {
 
   const totalAssets = useMemo(() => {
     return investments.reduce((acc, inv) => {
-      const current = inv.contributions?.reduce((sum, c) => sum + c.currentValue, 0) || 0;
+      const current = inv.contributions && inv.contributions.length > 0
+        ? [...inv.contributions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].currentValue
+        : 0;
       return acc + current;
     }, 0);
   }, [investments]);
@@ -62,7 +64,9 @@ export function PortfolioOverview() {
   const assetAllocationData = useMemo(() => {
     const categories: Record<string, number> = {};
     investments.forEach((inv) => {
-      const current = inv.contributions?.reduce((sum, c) => sum + c.currentValue, 0) || 0;
+      const current = inv.contributions && inv.contributions.length > 0
+        ? [...inv.contributions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].currentValue
+        : 0;
       categories[inv.category] = (categories[inv.category] || 0) + current;
     });
 

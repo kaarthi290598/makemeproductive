@@ -1,9 +1,8 @@
-// Spinner.tsx
-import SpinnerLoad from "@/components/spinner";
+import { TodoSkeleton } from "@/components/module-skeleton";
 import React from "react";
 
 const Loader = () => {
-  return <SpinnerLoad />;
+  return <TodoSkeleton />;
 };
 
 export default Loader;

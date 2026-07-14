@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AddTransactionDialog } from "@/components/expense-tracker/add-transaction-dialog";
 import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "next/navigation";
-import SpinnerLoad from "@/components/spinner";
+import { ModuleSkeleton } from "@/components/module-skeleton";
 import { Suspense } from "react";
 import { PlusCircle, MinusCircle, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -110,15 +110,15 @@ export default function ExpenseTrackerLayout({
 
         <div className="mt-4 min-h-[400px]">
           {loading ? (
-            <div className="flex h-[400px] w-full items-center justify-center">
-              <SpinnerLoad />
+            <div className="w-full">
+              <ModuleSkeleton />
             </div>
           ) : error ? (
             <div className="flex h-[400px] w-full items-center justify-center text-destructive font-medium">
               Error: {error}
             </div>
           ) : (
-            <Suspense fallback={<SpinnerLoad />}>{children}</Suspense>
+            <Suspense fallback={<ModuleSkeleton />}>{children}</Suspense>
           )}
         </div>
       </Tabs>

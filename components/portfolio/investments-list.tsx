@@ -120,7 +120,9 @@ export function InvestmentsList() {
         {filteredInvestments.map((inv) => {
           // Calculate sums
           const investedAmount = inv.contributions.reduce((acc, c) => acc + c.amount, 0);
-          const currentValue = inv.contributions.reduce((acc, c) => acc + c.currentValue, 0);
+          const currentValue = inv.contributions.length > 0
+            ? [...inv.contributions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].currentValue
+            : 0;
           const returns = currentValue - investedAmount;
           const roi = investedAmount > 0 ? (returns / investedAmount) * 100 : 0;
           const isProfitable = returns >= 0;
@@ -249,25 +251,17 @@ export function InvestmentsList() {
                             <th className="py-2 px-3">Note</th>
                             <th className="py-2 px-3 text-right">Invested (₹)</th>
                             <th className="py-2 px-3 text-right">Current Value (₹)</th>
-                            <th className="py-2 px-3 text-right">Returns</th>
                             <th className="py-2 px-3 w-[70px]"></th>
                           </tr>
                         </thead>
                         <tbody>
                           {inv.contributions.map((c) => {
-                            const cReturns = c.currentValue - c.amount;
-                            const cRoi = c.amount > 0 ? (cReturns / c.amount) * 100 : 0;
-                            const cProfitable = cReturns >= 0;
-
                             return (
                               <tr key={c.id} className="border-b border-border/30 last:border-0 hover:bg-muted/10">
                                 <td className="py-2 px-3 font-medium whitespace-nowrap">{c.date}</td>
                                 <td className="py-2 px-3 text-muted-foreground truncate max-w-[120px]">{c.note || "-"}</td>
                                 <td className="py-2 px-3 text-right font-medium tabular-nums">₹{c.amount.toLocaleString()}</td>
                                 <td className="py-2 px-3 text-right font-medium tabular-nums">₹{c.currentValue.toLocaleString()}</td>
-                                <td className={cn("py-2 px-3 text-right font-semibold tabular-nums", cProfitable ? "text-emerald-600" : "text-rose-600")}>
-                                  {cProfitable ? "+" : ""}{cRoi.toFixed(0)}%
-                                </td>
                                 <td className="py-2 px-3 text-right">
                                   <div className="flex justify-end gap-1">
                                     <Button

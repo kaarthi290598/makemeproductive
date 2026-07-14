@@ -17,34 +17,34 @@ import { cn } from "@/lib/utils";
 
 interface RecentTransactionsProps {
   dateFilterType?: "all" | "month" | "year";
-  selectedDate?: string;
+  selectedDates?: string[];
   limit?: number;
   global?: boolean;
+  personFilter?: string;
   title?: string;
 }
 
 export function RecentTransactions({
   dateFilterType = "month",
-  selectedDate = new Date().toISOString().slice(0, 7),
+  selectedDates = [new Date().toISOString().slice(0, 7)],
   limit = 5,
   global = false,
+  personFilter = "all",
   title = "Recent Transactions",
 }: RecentTransactionsProps) {
   const { transactions, categories } = useExpenseStore();
 
-  // Get transactions either globally or filtered by period
-  const baseTransactions = global
-    ? transactions
-    : transactions.filter((t) => {
-        if (dateFilterType === "all") return true;
-        if (dateFilterType === "month") {
-          return t.date.startsWith(selectedDate);
-        }
-        if (dateFilterType === "year") {
-          return t.date.startsWith(selectedDate.slice(0, 4));
-        }
-        return true;
-      });
+  // Get transactions either globally or filtered by period, and apply person filter
+  const baseTransactions = transactions.filter((t) => {
+    if (!global) {
+      if (dateFilterType === "month" && !selectedDates.some(date => t.date.startsWith(date))) return false;
+      if (dateFilterType === "year" && !selectedDates.some(date => t.date.startsWith(date.slice(0, 4)))) return false;
+    }
+    
+    if (personFilter !== "all" && t.paid_by !== personFilter) return false;
+    
+    return true;
+  });
 
   // Sort by arrival order (created_at or updated_at) as requested
   const sortedTransactions = [...baseTransactions].sort((a, b) => {

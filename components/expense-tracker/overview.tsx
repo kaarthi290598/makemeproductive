@@ -8,25 +8,29 @@ import { cn } from "@/lib/utils";
 
 interface OverviewProps {
   dateFilterType?: "all" | "month" | "year";
-  selectedDate?: string;
+  selectedDates?: string[];
+  personFilter?: string;
 }
 
 export function Overview({
   dateFilterType = "month",
-  selectedDate = new Date().toISOString().slice(0, 7),
+  selectedDates = [new Date().toISOString().slice(0, 7)],
+  personFilter = "all",
 }: OverviewProps) {
   const { transactions, categories } = useExpenseStore();
 
-  // Monthly Activity (Selected Period)
+  // Monthly Activity (Selected Period + Selected Person)
   const filteredTransactions = transactions.filter((t) => {
-    if (dateFilterType === "all") return true;
+    let matchesDate = true;
     if (dateFilterType === "month") {
-      return t.date.startsWith(selectedDate);
+      matchesDate = selectedDates.some(date => t.date.startsWith(date));
+    } else if (dateFilterType === "year") {
+      matchesDate = selectedDates.some(date => t.date.startsWith(date.slice(0, 4)));
     }
-    if (dateFilterType === "year") {
-      return t.date.startsWith(selectedDate.slice(0, 4));
-    }
-    return true;
+
+    const matchesPerson = personFilter === "all" || t.paid_by === personFilter;
+
+    return matchesDate && matchesPerson;
   });
 
   const totalIncome = filteredTransactions

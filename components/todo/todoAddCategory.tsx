@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { fetchCategories } from "@/lib/actions/todosData";
 import { Button } from "../ui/button";
-import { BadgeInfo, Plus } from "lucide-react";
+import { BadgeInfo, Settings2 } from "lucide-react";
 import AddCategoryForm from "./addCategoryForm";
 import { useQuery } from "@tanstack/react-query";
 
@@ -30,8 +30,9 @@ const TodoAddCategory = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus /> Add / Delete Category
+        <Button variant="outline" size="sm" className="h-9 gap-1.5 rounded-lg border-border/60 px-3 text-sm font-medium shadow-sm">
+          <Settings2 className="size-3.5 text-muted-foreground" />
+          <span>Categories</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">

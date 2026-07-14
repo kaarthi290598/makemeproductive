@@ -1,5 +1,5 @@
-import SpinnerLoad from "@/components/spinner";
+import { ModuleSkeleton } from "@/components/module-skeleton";
 
 export default function TransactionsLoading() {
-  return <SpinnerLoad />;
+  return <ModuleSkeleton />;
 }

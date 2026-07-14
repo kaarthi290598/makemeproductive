@@ -65,7 +65,7 @@ const TodoFilterDeadline = ({
           id="date"
           variant="outline"
           className={cn(
-            "h-9 justify-start gap-2 rounded-lg border-border/60 text-left text-sm font-normal shadow-none transition-colors hover:bg-accent",
+            "h-9 justify-start gap-2 rounded-lg border-border/60 text-left text-sm font-medium shadow-none transition-colors hover:bg-accent",
             !date && "text-muted-foreground",
           )}
         >

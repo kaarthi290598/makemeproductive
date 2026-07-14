@@ -1,5 +1,10 @@
-import SpinnerLoad from "@/components/spinner";
+import { ModuleSkeleton } from "@/components/module-skeleton";
+import React from "react";
+
+const Loader = () => {
+  return <ModuleSkeleton />;
+};
 
 export default function OverviewLoading() {
-  return <SpinnerLoad />;
+  return <Loader />;
 }

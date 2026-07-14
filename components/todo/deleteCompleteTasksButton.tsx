@@ -39,8 +39,9 @@ const DeleteCompleteTasksButton = ({ todos }: { todos: Todos }) => {
     <>
       <Button
         variant="ghost"
+        size="sm"
         onClick={handleDeleteClick}
-        className="gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
+        className="h-9 gap-2 text-sm font-medium text-destructive hover:bg-destructive/10 hover:text-destructive"
       >
         <Trash2 className="size-4" />
         Delete completed

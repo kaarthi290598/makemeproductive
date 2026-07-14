@@ -5,8 +5,8 @@ import { usePortfolioStore } from "@/hooks/use-portfolio-store";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "next/navigation";
-import SpinnerLoad from "@/components/spinner";
-import { PlusCircle, MinusCircle, RefreshCw } from "lucide-react";
+import { ModuleSkeleton } from "@/components/module-skeleton";
+import { PlusCircle, MinusCircle } from "lucide-react";
 import { AddEditInvestmentDialog, AddEditDebtDialog } from "@/components/portfolio/add-edit-dialogs";
 
 export default function PortfolioLayout({
@@ -14,7 +14,7 @@ export default function PortfolioLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { initialize, loading, error, resetStore } = usePortfolioStore();
+  const { initialize, loading, error } = usePortfolioStore();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -47,16 +47,6 @@ export default function PortfolioLayout({
         <div className="flex flex-wrap items-center gap-2">
           {!loading && !error && (
             <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={resetStore}
-                className="h-9 gap-1.5 rounded-lg border-border/60 text-xs font-semibold"
-                title="Reset mock data to default values"
-              >
-                <RefreshCw className="size-3.5 text-muted-foreground" />
-                <span>Reset Data</span>
-              </Button>
               <Button
                 size="sm"
                 onClick={() => setAddInvOpen(true)}
@@ -107,8 +97,8 @@ export default function PortfolioLayout({
 
         <div className="mt-4 min-h-[400px]">
           {loading ? (
-            <div className="flex h-[400px] w-full items-center justify-center">
-              <SpinnerLoad />
+            <div className="w-full">
+              <ModuleSkeleton />
             </div>
           ) : error ? (
             <div className="flex h-[400px] w-full items-center justify-center text-destructive font-medium">
