@@ -3,7 +3,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabaseClient";
 import { revalidatePath } from "next/cache";
-import { QueryClient } from "@tanstack/react-query";
 import { Todo, TodoInput } from "../types/type";
 
 export async function fetchTodoList() {

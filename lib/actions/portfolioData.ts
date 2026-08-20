@@ -18,6 +18,10 @@ export interface Investment {
   name: string;
   category: "Stocks" | "Mutual Funds" | "Crypto" | "Real Estate" | "Gold" | "Other";
   note?: string;
+  investedAmount: number;
+  currentValue: number;
+  contributionCount: number;
+  historyLoaded?: boolean;
   contributions: InvestmentContribution[];
 }
 
@@ -41,6 +45,7 @@ export interface Debt {
   note?: string | null;
   interestAmount?: number | null;
   remainingInterestAmount?: number | null;
+  paymentsLoaded?: boolean;
   payments: DebtPayment[];
 }
 
@@ -54,53 +59,84 @@ export async function fetchPortfolioInvestments() {
   const { userId } = await auth();
   if (!userId) throw new Error("User is not authenticated.");
 
-  // Fetch investments
   const { data: investmentsData, error: investmentsError } = await supabase
     .from("portfolio_investments")
-    .select("*")
+    .select("id, name, category, note")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
   if (investmentsError) throw new Error(`Error fetching investments: ${investmentsError.message}`);
 
-  // Fetch all contributions for this user
   const { data: contributionsData, error: contribsError } = await supabase
     .from("portfolio_contributions")
-    .select("*")
+    .select("investment_id, amount, current_value, date")
     .eq("user_id", userId)
     .order("date", { ascending: false });
 
   if (contribsError) throw new Error(`Error fetching contributions: ${contribsError.message}`);
 
-  // Map contributions into their parent investments
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mappedInvestments: Investment[] = (investmentsData || []).map((inv: any) => {
-    const invContribs = (contributionsData || [])
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .filter((c: any) => c.investment_id === inv.id)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .map((c: any) => ({
-        id: c.id,
-        amount: Number(c.amount),
-        currentValue: Number(c.current_value),
-        date: c.date,
-        note: c.note || undefined,
-      }));
+  const totals = new Map<
+    string,
+    { investedAmount: number; currentValue: number; contributionCount: number }
+  >();
+  for (const c of contributionsData || []) {
+    const existing = totals.get(c.investment_id) || {
+      investedAmount: 0,
+      currentValue: 0,
+      contributionCount: 0,
+    };
+    existing.investedAmount += Number(c.amount);
+    existing.contributionCount += 1;
+    if (existing.contributionCount === 1) {
+      existing.currentValue = Number(c.current_value);
+    }
+    totals.set(c.investment_id, existing);
+  }
 
+  return (investmentsData || []).map((inv) => {
+    const computed = totals.get(inv.id) || {
+      investedAmount: 0,
+      currentValue: 0,
+      contributionCount: 0,
+    };
     return {
       id: inv.id,
       name: inv.name,
       category: inv.category,
       note: inv.note || undefined,
-      contributions: invContribs,
-    };
+      investedAmount: computed.investedAmount,
+      currentValue: computed.currentValue,
+      contributionCount: computed.contributionCount,
+      historyLoaded: false,
+      contributions: [],
+    } as Investment;
   });
+}
 
-  return mappedInvestments;
+export async function fetchInvestmentContributions(investmentId: string) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("User is not authenticated.");
+
+  const { data, error } = await supabase
+    .from("portfolio_contributions")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("investment_id", investmentId)
+    .order("date", { ascending: false });
+
+  if (error) throw new Error(`Error fetching contributions: ${error.message}`);
+
+  return (data || []).map((c) => ({
+    id: c.id,
+    amount: Number(c.amount),
+    currentValue: Number(c.current_value),
+    date: c.date,
+    note: c.note || undefined,
+  })) as InvestmentContribution[];
 }
 
 export async function createPortfolioInvestment(
-  inv: Omit<Investment, "id" | "contributions">,
+  inv: Pick<Investment, "name" | "category" | "note">,
   initialAmount: number,
   initialCurrentValue: number,
   date: string,
@@ -150,6 +186,10 @@ export async function createPortfolioInvestment(
     name: newInv.name,
     category: newInv.category,
     note: newInv.note || undefined,
+    investedAmount: Number(newContrib.amount),
+    currentValue: Number(newContrib.current_value),
+    contributionCount: 1,
+    historyLoaded: true,
     contributions: [
       {
         id: newContrib.id,
@@ -291,43 +331,43 @@ export async function fetchPortfolioDebts() {
 
   if (debtsError) throw new Error(`Error fetching debts: ${debtsError.message}`);
 
-  const { data: paymentsData, error: paymentsError } = await supabase
+  return (debtsData || []).map((d) => ({
+    id: d.id,
+    name: d.name,
+    category: d.category,
+    totalAmount: Number(d.total_amount),
+    remainingAmount: Number(d.remaining_amount),
+    interestRate: d.interest_rate !== null && d.interest_rate !== undefined ? Number(d.interest_rate) : undefined,
+    monthlyPayment: d.monthly_payment !== null && d.monthly_payment !== undefined ? Number(d.monthly_payment) : undefined,
+    dueDate: d.due_date || undefined,
+    note: d.note || undefined,
+    interestAmount: d.interest_amount !== null && d.interest_amount !== undefined ? Number(d.interest_amount) : undefined,
+    remainingInterestAmount: d.remaining_interest_amount !== null && d.remaining_interest_amount !== undefined ? Number(d.remaining_interest_amount) : undefined,
+    paymentsLoaded: false,
+    payments: [],
+  })) as Debt[];
+}
+
+export async function fetchDebtPayments(debtId: string) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("User is not authenticated.");
+
+  const { data, error } = await supabase
     .from("portfolio_debt_payments")
     .select("*")
     .eq("user_id", userId)
+    .eq("debt_id", debtId)
     .order("date", { ascending: false });
 
-  if (paymentsError) throw new Error(`Error fetching debt payments: ${paymentsError.message}`);
+  if (error) throw new Error(`Error fetching debt payments: ${error.message}`);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (debtsData || []).map((d: any) => {
-    const debtPayments = (paymentsData || [])
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .filter((p: any) => p.debt_id === d.id)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .map((p: any) => ({
-        id: p.id,
-        principalAmount: Number(p.principal_amount),
-        interestAmount: Number(p.interest_amount),
-        date: p.date,
-        note: p.note || undefined,
-      }));
-
-    return {
-      id: d.id,
-      name: d.name,
-      category: d.category,
-      totalAmount: Number(d.total_amount),
-      remainingAmount: Number(d.remaining_amount),
-      interestRate: d.interest_rate !== null && d.interest_rate !== undefined ? Number(d.interest_rate) : undefined,
-      monthlyPayment: d.monthly_payment !== null && d.monthly_payment !== undefined ? Number(d.monthly_payment) : undefined,
-      dueDate: d.due_date || undefined,
-      note: d.note || undefined,
-      interestAmount: d.interest_amount !== null && d.interest_amount !== undefined ? Number(d.interest_amount) : undefined,
-      remainingInterestAmount: d.remaining_interest_amount !== null && d.remaining_interest_amount !== undefined ? Number(d.remaining_interest_amount) : undefined,
-      payments: debtPayments,
-    } as Debt;
-  });
+  return (data || []).map((p) => ({
+    id: p.id,
+    principalAmount: Number(p.principal_amount),
+    interestAmount: Number(p.interest_amount),
+    date: p.date,
+    note: p.note || undefined,
+  })) as DebtPayment[];
 }
 
 export async function createPortfolioDebt(debt: Omit<Debt, "id" | "payments">) {
@@ -367,6 +407,7 @@ export async function createPortfolioDebt(debt: Omit<Debt, "id" | "payments">) {
     note: data.note || undefined,
     interestAmount: data.interest_amount !== null && data.interest_amount !== undefined ? Number(data.interest_amount) : undefined,
     remainingInterestAmount: data.remaining_interest_amount !== null && data.remaining_interest_amount !== undefined ? Number(data.remaining_interest_amount) : undefined,
+    paymentsLoaded: true,
     payments: [],
   } as Debt;
 }

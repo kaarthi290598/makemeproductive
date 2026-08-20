@@ -97,103 +97,116 @@ export function AddEditInvestmentDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[425px] rounded-xl">
-        <DialogHeader>
-          <DialogTitle>{investmentToEdit ? "Edit Asset Name & Category" : "Add Investment"}</DialogTitle>
+      <DialogContent className="gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-[420px]">
+        <DialogHeader className="space-y-1 border-b border-border/40 px-5 py-4">
+          <DialogTitle className="text-lg">
+            {investmentToEdit ? "Edit asset" : "Add asset"}
+          </DialogTitle>
           <DialogDescription>
             {investmentToEdit
-              ? "Modify the branding and category of this asset portfolio."
-              : "Log a new asset along with its first transaction batch."}
+              ? "Update name, category, and notes."
+              : "Name it and log the first purchase."}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="inv-name" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Asset Name</Label>
-            <Input
-              id="inv-name"
-              placeholder="e.g. Nifty 50 ETF, Gold, BTC"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="rounded-lg h-9"
-            />
-          </div>
-          
-          <div className="space-y-1.5">
-            <Label htmlFor="inv-category" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Category</Label>
-            <Select
-              value={category}
-              onValueChange={(val) => setCategory(val as Investment["category"])}
-            >
-              <SelectTrigger id="inv-category" className="h-9 rounded-lg">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Stocks">Stocks</SelectItem>
-                <SelectItem value="Mutual Funds">Mutual Funds</SelectItem>
-                <SelectItem value="Crypto">Crypto</SelectItem>
-                <SelectItem value="Real Estate">Real Estate</SelectItem>
-                <SelectItem value="Gold">Gold</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4 px-5 py-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="inv-name">Name</Label>
+              <Input
+                id="inv-name"
+                placeholder="e.g. Nifty 50 ETF"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="h-10 rounded-xl"
+                autoFocus
+              />
+            </div>
 
-          {!investmentToEdit && (
-            <>
-              <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="inv-category">Category</Label>
+              <Select
+                value={category}
+                onValueChange={(val) => setCategory(val as Investment["category"])}
+              >
+                <SelectTrigger id="inv-category" className="h-10 rounded-xl">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Stocks">Stocks</SelectItem>
+                  <SelectItem value="Mutual Funds">Mutual Funds</SelectItem>
+                  <SelectItem value="Crypto">Crypto</SelectItem>
+                  <SelectItem value="Real Estate">Real Estate</SelectItem>
+                  <SelectItem value="Gold">Gold</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {!investmentToEdit && (
+              <>
                 <div className="space-y-1.5">
-                  <Label htmlFor="inv-invested" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Invested Amount (₹)</Label>
+                  <Label htmlFor="inv-invested">Invested (₹)</Label>
                   <Input
                     id="inv-invested"
                     type="number"
-                    placeholder="10000"
+                    placeholder="0"
                     value={investedAmount}
-                    onChange={(e) => setInvestedAmount(e.target.value)}
-                    className="rounded-lg h-9"
+                    onChange={(e) => {
+                      const next = e.target.value;
+                      setInvestedAmount(next);
+                      if (!currentValue || currentValue === investedAmount) {
+                        setCurrentValue(next);
+                      }
+                    }}
+                    className="h-11 rounded-xl text-lg font-semibold"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="inv-current" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Current Value (₹)</Label>
+                  <Label htmlFor="inv-current">Current value (₹)</Label>
                   <Input
                     id="inv-current"
                     type="number"
-                    placeholder="12000"
+                    placeholder="Same as invested if new"
                     value={currentValue}
                     onChange={(e) => setCurrentValue(e.target.value)}
-                    className="rounded-lg h-9"
+                    className="h-10 rounded-xl"
                   />
                 </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="inv-date" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Date Invested</Label>
-                <Input
-                  id="inv-date"
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="rounded-lg h-9"
-                />
-              </div>
-            </>
-          )}
+                <div className="space-y-1.5">
+                  <Label htmlFor="inv-date">Date</Label>
+                  <Input
+                    id="inv-date"
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="h-10 rounded-xl"
+                  />
+                </div>
+              </>
+            )}
 
-          <div className="space-y-1.5">
-            <Label htmlFor="inv-note" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Description / Notes</Label>
-            <Input
-              id="inv-note"
-              placeholder="Add details, target goals, etc."
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              className="rounded-lg h-9"
-            />
+            <div className="space-y-1.5">
+              <Label htmlFor="inv-note">Note</Label>
+              <Input
+                id="inv-note"
+                placeholder="Optional"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                className="h-10 rounded-xl"
+              />
+            </div>
           </div>
-          
-          <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="rounded-lg h-9 text-xs font-semibold">
+          <DialogFooter className="border-t border-border/40 px-5 py-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              className="h-10 rounded-full"
+            >
               Cancel
             </Button>
-            <Button type="submit" className="rounded-lg h-9 text-xs font-semibold">
-              {investmentToEdit ? "Save Changes" : "Add Asset"}
+            <Button type="submit" className="h-10 rounded-full px-5">
+              {investmentToEdit ? "Save" : "Add asset"}
             </Button>
           </DialogFooter>
         </form>
@@ -272,68 +285,80 @@ export function AddEditContributionDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[400px] rounded-xl">
-        <DialogHeader>
-          <DialogTitle>
-            {contributionToEdit ? "Edit Contribution" : "Log Another Transaction"}
+      <DialogContent className="gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-[400px]">
+        <DialogHeader className="space-y-1 border-b border-border/40 px-5 py-4">
+          <DialogTitle className="text-lg">
+            {contributionToEdit ? "Edit contribution" : "Log purchase"}
           </DialogTitle>
           <DialogDescription>
             {contributionToEdit
-              ? "Update transaction details for this batch."
-              : `Add a new purchase batch or SIP contribution to ${investment?.name}.`}
+              ? "Update this batch."
+              : `Add a purchase or SIP to ${investment?.name}.`}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-2">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4 px-5 py-4">
             <div className="space-y-1.5">
-              <Label htmlFor="c-amount" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Invested Amount (₹)</Label>
+              <Label htmlFor="c-amount">Invested (₹)</Label>
               <Input
                 id="c-amount"
                 type="number"
-                placeholder="10000"
+                placeholder="0"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="rounded-lg h-9"
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setAmount(next);
+                  if (!currentValue || currentValue === amount) {
+                    setCurrentValue(next);
+                  }
+                }}
+                className="h-11 rounded-xl text-lg font-semibold"
+                autoFocus
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="c-current" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Current Value (₹)</Label>
+              <Label htmlFor="c-current">Current value (₹)</Label>
               <Input
                 id="c-current"
                 type="number"
-                placeholder="12000"
+                placeholder="Same as invested if new"
                 value={currentValue}
                 onChange={(e) => setCurrentValue(e.target.value)}
-                className="rounded-lg h-9"
+                className="h-10 rounded-xl"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="c-date">Date</Label>
+              <Input
+                id="c-date"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="h-10 rounded-xl"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="c-note">Note</Label>
+              <Input
+                id="c-note"
+                placeholder="Optional"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                className="h-10 rounded-xl"
               />
             </div>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="c-date" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Transaction Date</Label>
-            <Input
-              id="c-date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="rounded-lg h-9"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="c-note" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Note (Optional)</Label>
-            <Input
-              id="c-note"
-              placeholder="e.g. Monthly SIP purchase, Bonus top-up"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              className="rounded-lg h-9"
-            />
-          </div>
-          <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="rounded-lg h-9 text-xs font-semibold">
+          <DialogFooter className="border-t border-border/40 px-5 py-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              className="h-10 rounded-full"
+            >
               Cancel
             </Button>
-            <Button type="submit" className="rounded-lg h-9 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white">
-              {contributionToEdit ? "Save Changes" : "Log Contribution"}
+            <Button type="submit" className="h-10 rounded-full px-5">
+              {contributionToEdit ? "Save" : "Log"}
             </Button>
           </DialogFooter>
         </form>
@@ -450,134 +475,146 @@ export function AddEditDebtDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[425px] rounded-xl">
-        <DialogHeader>
-          <DialogTitle>{debtToEdit ? "Edit Liability" : "Add Liability"}</DialogTitle>
+      <DialogContent className="gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-[420px]">
+        <DialogHeader className="space-y-1 border-b border-border/40 px-5 py-4">
+          <DialogTitle className="text-lg">
+            {debtToEdit ? "Edit debt" : "Add debt"}
+          </DialogTitle>
           <DialogDescription>
             {debtToEdit
-              ? "Update your loan parameters below."
-              : "Log a new debt or credit line to track payoff progress."}
+              ? "Update loan details."
+              : "Track a loan or credit line."}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="debt-name" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Loan / Creditor Name</Label>
-            <Input
-              id="debt-name"
-              placeholder="e.g. SBI Home Loan, Personal Credit Card"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="rounded-lg h-9"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="debt-category" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Category</Label>
-            <Select
-              value={category}
-              onValueChange={(val) => setCategory(val as Debt["category"])}
-            >
-              <SelectTrigger id="debt-category" className="h-9 rounded-lg w-full">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Home Loan">Home Loan</SelectItem>
-                <SelectItem value="Personal Loan">Personal Loan</SelectItem>
-                <SelectItem value="Credit Card">Credit Card</SelectItem>
-                <SelectItem value="Car Loan">Car Loan</SelectItem>
-                <SelectItem value="Student Loan">Student Loan</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4 px-5 py-4">
             <div className="space-y-1.5">
-              <Label htmlFor="debt-total" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Principal Loan (₹)</Label>
+              <Label htmlFor="debt-name">Name</Label>
+              <Input
+                id="debt-name"
+                placeholder="e.g. SBI Home Loan"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="h-10 rounded-xl"
+                autoFocus
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="debt-category">Category</Label>
+              <Select
+                value={category}
+                onValueChange={(val) => setCategory(val as Debt["category"])}
+              >
+                <SelectTrigger id="debt-category" className="h-10 w-full rounded-xl">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Home Loan">Home Loan</SelectItem>
+                  <SelectItem value="Personal Loan">Personal Loan</SelectItem>
+                  <SelectItem value="Credit Card">Credit Card</SelectItem>
+                  <SelectItem value="Car Loan">Car Loan</SelectItem>
+                  <SelectItem value="Student Loan">Student Loan</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="debt-total">Principal (₹)</Label>
               <Input
                 id="debt-total"
                 type="number"
-                placeholder="100000"
+                placeholder="0"
                 value={totalAmount}
-                onChange={(e) => setTotalAmount(e.target.value)}
-                className="rounded-lg h-9"
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setTotalAmount(next);
+                  if (!remainingAmount || remainingAmount === totalAmount) {
+                    setRemainingAmount(next);
+                  }
+                }}
+                className="h-11 rounded-xl text-lg font-semibold"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="debt-remaining" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Remaining Owed (₹)</Label>
+              <Label htmlFor="debt-remaining">Remaining (₹)</Label>
               <Input
                 id="debt-remaining"
                 type="number"
-                placeholder="90000"
+                placeholder="Same as principal if new"
                 value={remainingAmount}
                 onChange={(e) => setRemainingAmount(e.target.value)}
-                className="rounded-lg h-9"
+                className="h-10 rounded-xl"
+              />
+            </div>
+            <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border/50 px-3 py-2.5">
+              <Checkbox
+                id="has-interest-emi"
+                checked={hasInterestAndEmi}
+                onCheckedChange={(checked) => setHasInterestAndEmi(!!checked)}
+              />
+              <span className="text-sm">Track interest, EMI & due date</span>
+            </label>
+            {hasInterestAndEmi && (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="debt-rate">Rate (% p.a.)</Label>
+                    <Input
+                      id="debt-rate"
+                      type="number"
+                      step="0.01"
+                      placeholder="8.50"
+                      value={interestRate}
+                      onChange={(e) => setInterestRate(e.target.value)}
+                      className="h-10 rounded-xl"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="debt-emi">EMI (₹)</Label>
+                    <Input
+                      id="debt-emi"
+                      type="number"
+                      placeholder="Optional"
+                      value={monthlyPayment}
+                      onChange={(e) => setMonthlyPayment(e.target.value)}
+                      className="h-10 rounded-xl"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="debt-due">Due date</Label>
+                  <Input
+                    id="debt-due"
+                    type="date"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                    className="h-10 rounded-xl"
+                  />
+                </div>
+              </>
+            )}
+            <div className="space-y-1.5">
+              <Label htmlFor="debt-note">Note</Label>
+              <Input
+                id="debt-note"
+                placeholder="Optional"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                className="h-10 rounded-xl"
               />
             </div>
           </div>
-          <div className="flex items-center space-x-2 py-1 bg-muted/30 p-2 rounded-lg border border-dashed">
-            <Checkbox
-              id="has-interest-emi"
-              checked={hasInterestAndEmi}
-              onCheckedChange={(checked) => setHasInterestAndEmi(!!checked)}
-            />
-            <Label htmlFor="has-interest-emi" className="text-xs font-medium cursor-pointer text-foreground">
-              Track Interest Rate, EMI & Due Date
-            </Label>
-          </div>
-          {hasInterestAndEmi && (
-            <>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="debt-rate" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Interest Rate (% p.a.) (Optional)</Label>
-                  <Input
-                    id="debt-rate"
-                    type="number"
-                    step="0.01"
-                    placeholder="8.50"
-                    value={interestRate}
-                    onChange={(e) => setInterestRate(e.target.value)}
-                    className="rounded-lg h-9"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="debt-emi" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Monthly Payment / EMI (₹) (Optional)</Label>
-                  <Input
-                    id="debt-emi"
-                    type="number"
-                    placeholder="12000"
-                    value={monthlyPayment}
-                    onChange={(e) => setMonthlyPayment(e.target.value)}
-                    className="rounded-lg h-9"
-                  />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="debt-due" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Due Date (Optional)</Label>
-                <Input
-                  id="debt-due"
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className="rounded-lg h-9"
-                />
-              </div>
-            </>
-          )}
-          <div className="space-y-1.5">
-            <Label htmlFor="debt-note" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Notes (Optional)</Label>
-            <Input
-              id="debt-note"
-              placeholder="e.g. Avalanche goal, monthly autopay"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              className="rounded-lg h-9"
-            />
-          </div>
-          <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="rounded-lg h-9 text-xs font-semibold">
+          <DialogFooter className="border-t border-border/40 px-5 py-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              className="h-10 rounded-full"
+            >
               Cancel
             </Button>
-            <Button type="submit" className="rounded-lg h-9 text-xs font-semibold">
-              {debtToEdit ? "Save Changes" : "Add Loan"}
+            <Button type="submit" className="h-10 rounded-full px-5">
+              {debtToEdit ? "Save" : "Add debt"}
             </Button>
           </DialogFooter>
         </form>
@@ -706,114 +743,130 @@ export function AddEditDebtPaymentDialog({ open, setOpen, debt, paymentToEdit }:
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[400px] rounded-xl">
-        <DialogHeader>
-          <DialogTitle>{paymentToEdit ? "Edit Payment" : `Log Payment - ${debt?.name}`}</DialogTitle>
+      <DialogContent className="gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-[400px]">
+        <DialogHeader className="space-y-1 border-b border-border/40 px-5 py-4">
+          <DialogTitle className="text-lg">
+            {paymentToEdit ? "Edit payment" : `Pay ${debt?.name ?? ""}`}
+          </DialogTitle>
           <DialogDescription>
-            {paymentToEdit ? "Modify the details of this payment log." : "Reduce the outstanding principal on this liability or record interest."}
+            {paymentToEdit
+              ? "Update this payment."
+              : "Reduce principal or record interest."}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handlePay} className="space-y-4 py-2">
-          <div className="flex items-center space-x-2 py-1 bg-muted/30 p-2 rounded-lg border border-dashed mb-2">
-            <Checkbox
-              id="split-payment"
-              checked={splitPayment}
-              onCheckedChange={(checked) => setSplitPayment(!!checked)}
-            />
-            <Label htmlFor="split-payment" className="text-xs font-medium cursor-pointer text-foreground">
-              Log Interest Payment Separately
-            </Label>
-          </div>
+        <form onSubmit={handlePay}>
+          <div className="space-y-4 px-5 py-4">
+            <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border/50 px-3 py-2.5">
+              <Checkbox
+                id="split-payment"
+                checked={splitPayment}
+                onCheckedChange={(checked) => setSplitPayment(!!checked)}
+              />
+              <span className="text-sm">Split interest separately</span>
+            </label>
 
-          {!splitPayment ? (
-            <div className="space-y-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="pay-amount" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Payment Amount (₹)</Label>
-                <Input
-                  id="pay-amount"
-                  type="number"
-                  placeholder={`Remaining: ${debt?.remainingAmount}`}
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="rounded-lg h-9"
-                />
-                {!debt?.interestRate && (
-                  <p className="text-[10px] text-muted-foreground">Reduces principal balance. Remaining: ₹{debt?.remainingAmount.toLocaleString()}</p>
-                )}
-              </div>
-              
-              {debt?.interestRate ? (
-                <div className="flex gap-4 p-2 bg-muted/20 rounded-lg border text-xs">
-                  <div className="flex-1">
-                    <span className="text-[10px] uppercase font-semibold text-muted-foreground block">To Principal</span>
-                    <span className="font-semibold text-foreground">₹{autoPrincipal.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-                  </div>
-                  <div className="flex-1 border-l pl-4">
-                    <span className="text-[10px] uppercase font-semibold text-muted-foreground block">To Interest</span>
-                    <span className="font-semibold text-emerald-600">₹{autoInterest.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-                  </div>
+            {!splitPayment ? (
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="pay-amount">Amount (₹)</Label>
+                  <Input
+                    id="pay-amount"
+                    type="number"
+                    placeholder={`Remaining ${debt?.remainingAmount ?? 0}`}
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="h-11 rounded-xl text-lg font-semibold"
+                    autoFocus
+                  />
+                  {!debt?.interestRate && (
+                    <p className="text-xs text-muted-foreground">
+                      Remaining: ₹{debt?.remainingAmount.toLocaleString("en-IN")}
+                    </p>
+                  )}
                 </div>
-              ) : null}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="pay-principal" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Principal Payment (₹)</Label>
-                <Input
-                  id="pay-principal"
-                  type="number"
-                  placeholder={`Max: ${debt?.remainingAmount}`}
-                  value={principalAmount}
-                  onChange={(e) => setPrincipalAmount(e.target.value)}
-                  className="rounded-lg h-9"
-                />
-                <p className="text-[10px] text-muted-foreground">Reduces principal balance.</p>
+
+                {debt?.interestRate ? (
+                  <div className="grid grid-cols-2 gap-3 rounded-xl border border-border/40 bg-muted/30 p-3 text-sm">
+                    <div>
+                      <p className="text-[11px] text-muted-foreground">Principal</p>
+                      <p className="font-semibold tabular-nums">
+                        ₹
+                        {autoPrincipal.toLocaleString("en-IN", {
+                          maximumFractionDigits: 2,
+                        })}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-muted-foreground">Interest</p>
+                      <p className="font-semibold tabular-nums text-emerald-600">
+                        ₹
+                        {autoInterest.toLocaleString("en-IN", {
+                          maximumFractionDigits: 2,
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
               </div>
-              
-              <div className="space-y-1.5">
-                <Label htmlFor="pay-interest" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Interest Payment (₹)</Label>
-                <Input
-                  id="pay-interest"
-                  type="number"
-                  placeholder="e.g. 2000"
-                  value={interestAmount}
-                  onChange={(e) => setInterestAmount(e.target.value)}
-                  className="rounded-lg h-9"
-                />
-                <p className="text-[10px] text-muted-foreground">Accumulated separately, does not reduce principal.</p>
+            ) : (
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="pay-principal">Principal (₹)</Label>
+                  <Input
+                    id="pay-principal"
+                    type="number"
+                    placeholder={`Max ${debt?.remainingAmount ?? 0}`}
+                    value={principalAmount}
+                    onChange={(e) => setPrincipalAmount(e.target.value)}
+                    className="h-10 rounded-xl"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="pay-interest">Interest (₹)</Label>
+                  <Input
+                    id="pay-interest"
+                    type="number"
+                    placeholder="0"
+                    value={interestAmount}
+                    onChange={(e) => setInterestAmount(e.target.value)}
+                    className="h-10 rounded-xl"
+                  />
+                </div>
               </div>
-            </div>
-          )}
-          
-          <div className="grid grid-cols-2 gap-4">
+            )}
+
             <div className="space-y-1.5">
-              <Label htmlFor="pay-date" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Payment Date</Label>
+              <Label htmlFor="pay-date">Date</Label>
               <Input
                 id="pay-date"
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="rounded-lg h-9"
+                className="h-10 rounded-xl"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="pay-note" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Note (Optional)</Label>
+              <Label htmlFor="pay-note">Note</Label>
               <Input
                 id="pay-note"
-                placeholder="e.g. Extra principal"
+                placeholder="Optional"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                className="rounded-lg h-9"
+                className="h-10 rounded-xl"
               />
             </div>
           </div>
-          
-          <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="rounded-lg h-9 text-xs font-semibold">
+          <DialogFooter className="border-t border-border/40 px-5 py-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              className="h-10 rounded-full"
+            >
               Cancel
             </Button>
-            <Button type="submit" className="rounded-lg h-9 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white">
-              {paymentToEdit ? "Save Changes" : "Log Payment"}
+            <Button type="submit" className="h-10 rounded-full px-5">
+              {paymentToEdit ? "Save" : "Log payment"}
             </Button>
           </DialogFooter>
         </form>

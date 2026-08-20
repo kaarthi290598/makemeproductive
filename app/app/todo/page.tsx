@@ -36,7 +36,7 @@ const page = async () => {
         </div>
 
         <div className="lg:w-[40%]">
-          <TodoAnalytics />
+          <TodoAnalytics todos={todos} />
         </div>
       </div>
     </div>

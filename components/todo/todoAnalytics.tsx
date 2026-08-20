@@ -1,9 +1,7 @@
 import React from "react";
 
 import TodoChart from "./todoChart";
-import { fetchTodoList } from "@/lib/actions/todosData";
 import { Todos } from "@/lib/types/type";
-import Image from "next/image";
 import {
   ListTodo,
   AlertTriangle,
@@ -12,8 +10,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-const TodoAnalytics = async () => {
-  const todos = await fetchTodoList();
+const TodoAnalytics = ({ todos }: { todos: Todos }) => {
 
   const pendingTodos = todos.filter((todo) => !todo.isCompleted);
   const completedTodos = todos.filter((todo) => todo.isCompleted);

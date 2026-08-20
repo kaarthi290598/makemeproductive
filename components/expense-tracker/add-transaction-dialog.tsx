@@ -21,14 +21,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PlusCircle, Plus, Minus, Loader2 } from "lucide-react";
+import { PlusCircle, Loader2 } from "lucide-react";
 import { cn, formatDateToLocalISO, parseLocalISODate } from "@/lib/utils";
-import { CalendarIcon } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CustomDatePicker } from "../customDatePicker";
 
 import { toast } from "sonner";
 import { Transaction } from "@/types/expense";
+import { useInvalidateExpense } from "@/hooks/use-expense-queries";
 
 interface AddTransactionDialogProps {
   defaultType?: "income" | "expense";
@@ -43,8 +43,11 @@ export function AddTransactionDialog({
   transactionToEdit,
   onOpenChange,
 }: AddTransactionDialogProps) {
-  const { categories, addTransaction, updateTransaction, persons } =
-    useExpenseStore();
+  const categories = useExpenseStore((s) => s.categories);
+  const persons = useExpenseStore((s) => s.persons);
+  const addTransaction = useExpenseStore((s) => s.addTransaction);
+  const updateTransaction = useExpenseStore((s) => s.updateTransaction);
+  const invalidateExpense = useInvalidateExpense();
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<"income" | "expense">(defaultType);
   const [amount, setAmount] = useState("");
@@ -128,6 +131,7 @@ export function AddTransactionDialog({
         await addTransaction(transactionData);
         toast.success("Transaction added successfully!");
       }
+      await invalidateExpense();
 
       if (!isEditMode && addAnother) {
         resetForm();
@@ -172,148 +176,145 @@ export function AddTransactionDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>
+      <DialogContent className="gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-[420px]">
+        <DialogHeader className="space-y-1 border-b border-border/40 px-5 py-4">
+          <DialogTitle className="text-lg">
             {isEditMode ? "Edit" : "Add"}{" "}
-            {type === "income" ? "Credit" : "Debit"}
+            {type === "income" ? "credit" : "debit"}
           </DialogTitle>
           <DialogDescription>
-            {isEditMode ? "Update details." : `Record a new ${type}.`}
+            {isEditMode ? "Update this entry." : "Takes a few seconds."}
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            {/* Hidden Type Select or readonly if we want to enforce buttons */}
-            <Label htmlFor="type" className="text-right">
-              Type
-            </Label>
-            <Select
-              value={type}
-              onValueChange={(val: "income" | "expense") => setType(val)}
+        <div className="space-y-4 px-5 py-4">
+          <div className="inline-flex w-full rounded-full bg-muted/80 p-1">
+            <button
+              type="button"
+              onClick={() => setType("income")}
+              className={cn(
+                "flex-1 rounded-full py-2 text-xs font-semibold transition-all",
+                type === "income"
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
             >
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="income">Income (Credit)</SelectItem>
-                <SelectItem value="expense">Expense (Debit)</SelectItem>
-              </SelectContent>
-            </Select>
+              Credit
+            </button>
+            <button
+              type="button"
+              onClick={() => setType("expense")}
+              className={cn(
+                "flex-1 rounded-full py-2 text-xs font-semibold transition-all",
+                type === "expense"
+                  ? "bg-foreground text-background shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              Debit
+            </button>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="amount" className="text-right">
-              Amount
-            </Label>
-            <Input
-              id="amount"
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="col-span-3"
-              placeholder="0.00"
-            />
-          </div>
-          {type === "expense" && (
-            <>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="category" className="text-right">
-                  Category
-                </Label>
-                <Select value={categoryId} onValueChange={setCategoryId}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </>
-          )}
 
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="paidBy" className="text-right">
-              Paid By
-            </Label>
-            <Select value={paidBy} onValueChange={setPaidBy}>
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Paid By" />
-              </SelectTrigger>
-              <SelectContent>
-                {persons.map((p) => (
-                  <SelectItem key={p.id} value={p.name}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="space-y-1.5">
+            <Label htmlFor="amount">Amount</Label>
+            <div className="relative">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                ₹
+              </span>
+              <Input
+                id="amount"
+                type="number"
+                autoFocus
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="h-11 rounded-xl pl-7 text-lg font-semibold"
+                placeholder="0"
+              />
+            </div>
           </div>
 
           {type === "expense" && (
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="settlement" className="text-right">
-                Settlement
-              </Label>
-              <div className="col-span-3 flex items-center space-x-2">
-                <Checkbox
-                  id="settlement"
-                  checked={needsSettlement}
-                  onCheckedChange={(c) => setNeedsSettlement(!!c)}
-                />
-                <label
-                  htmlFor="settlement"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Need to Settle
-                </label>
-              </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="category">Category</Label>
+              <Select value={categoryId} onValueChange={setCategoryId}>
+                <SelectTrigger className="h-10 rounded-xl">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label className="text-right">Date</Label>
-            <div className="col-span-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="paidBy">Paid by</Label>
+              <Select value={paidBy} onValueChange={setPaidBy}>
+                <SelectTrigger className="h-10 rounded-xl">
+                  <SelectValue placeholder="Who paid" />
+                </SelectTrigger>
+                <SelectContent>
+                  {persons.map((p) => (
+                    <SelectItem key={p.id} value={p.name}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Date</Label>
               <CustomDatePicker value={date} onChange={setDate} />
             </div>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="note" className="text-right">
-              Note
-            </Label>
+
+          {type === "expense" && (
+            <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border/50 px-3 py-2.5">
+              <Checkbox
+                id="settlement"
+                checked={needsSettlement}
+                onCheckedChange={(c) => setNeedsSettlement(!!c)}
+              />
+              <span className="text-sm">Needs settlement</span>
+            </label>
+          )}
+
+          <div className="space-y-1.5">
+            <Label htmlFor="note">Note</Label>
             <Input
               id="note"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              className="col-span-3"
-              placeholder="Optional note"
+              className="h-10 rounded-xl"
+              placeholder="Optional"
             />
           </div>
         </div>
-        <DialogFooter>
-          {!isEditMode && (
-            <div className="mr-auto flex items-center space-x-2">
+        <DialogFooter className="border-t border-border/40 px-5 py-4 sm:justify-between">
+          {!isEditMode ? (
+            <label className="flex items-center gap-2 text-sm">
               <Checkbox
                 id="addAnother"
                 checked={addAnother}
                 onCheckedChange={(c) => setAddAnother(!!c)}
               />
-              <label
-                htmlFor="addAnother"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Add another
-              </label>
-            </div>
+              Add another
+            </label>
+          ) : (
+            <span />
           )}
-          <Button type="submit" onClick={handleSubmit} disabled={isSubmitting}>
+          <Button
+            type="submit"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="h-10 rounded-full px-5"
+          >
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isEditMode ? "Update" : "Save"}{" "}
-            {type === "income" ? "Credit" : "Debit"}
+            {isEditMode ? "Update" : "Save"}
           </Button>
         </DialogFooter>
       </DialogContent>

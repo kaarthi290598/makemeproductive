@@ -1,6 +1,7 @@
 "use client";
 
 import { useExpenseStore } from "@/hooks/use-expense-store";
+import { useRecentExpenseTransactions } from "@/hooks/use-expense-queries";
 import {
   Table,
   TableBody,
@@ -25,36 +26,15 @@ interface RecentTransactionsProps {
 }
 
 export function RecentTransactions({
-  dateFilterType = "month",
-  selectedDates = [new Date().toISOString().slice(0, 7)],
   limit = 5,
-  global = false,
   personFilter = "all",
   title = "Recent Transactions",
 }: RecentTransactionsProps) {
-  const { transactions, categories } = useExpenseStore();
-
-  // Get transactions either globally or filtered by period, and apply person filter
-  const baseTransactions = transactions.filter((t) => {
-    if (!global) {
-      if (dateFilterType === "month" && !selectedDates.some(date => t.date.startsWith(date))) return false;
-      if (dateFilterType === "year" && !selectedDates.some(date => t.date.startsWith(date.slice(0, 4)))) return false;
-    }
-    
-    if (personFilter !== "all" && t.paid_by !== personFilter) return false;
-    
-    return true;
-  });
-
-  // Sort by arrival order (created_at or updated_at) as requested
-  const sortedTransactions = [...baseTransactions].sort((a, b) => {
-    const timeA = new Date(a.updated_at || a.created_at || a.date).getTime();
-    const timeB = new Date(b.updated_at || b.created_at || b.date).getTime();
-    return timeB - timeA;
-  });
-
-  // Get recent transactions
-  const recentTransactions = sortedTransactions.slice(0, limit);
+  const categories = useExpenseStore((s) => s.categories);
+  const { data: recentTransactions = [] } = useRecentExpenseTransactions(
+    limit,
+    personFilter,
+  );
 
   const getCategoryName = (id?: string) => {
     if (!id) return "-";

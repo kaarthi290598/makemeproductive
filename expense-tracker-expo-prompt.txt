@@ -1,0 +1,368 @@
+You are working in an existing Expo (Expo Go) React Native project. Do not scaffold a new Expo app from scratch. Build on top of the current project structure and replace/extend the dummy app as needed.
+
+## Goal
+Convert this Expo project into a mobile app that recreates the existing web **Expense Tracker** from a Next.js product (Toolcity / Make Me Productive).
+
+Implement **full feature parity** with the existing Expense Tracker only.
+
+Do not invent new Expense Tracker functionality.
+Do not redesign product scope.
+Reuse the same business logic, calculations, data model, filters, and flows.
+
+The app will eventually include:
+- Todo
+- Investments
+
+For this version:
+- Implement Expense Tracker fully
+- Show Todo as a placeholder: **Coming Soon**
+- Show Investments as a placeholder: **Coming Soon**
+- Do not create backend logic, database functionality, or real features for Todo or Investments
+
+Keep architecture clean so Todo and Investments can be implemented later.
+
+## Tech stack
+Use / install as needed in this existing Expo project:
+- Expo Router
+- TypeScript
+- Clerk (`@clerk/expo`) with custom sign-in / sign-up that works in Expo Go
+- Supabase (`@supabase/supabase-js`)
+- Zustand for Expense Tracker state
+- date-fns
+- Expo Go–compatible chart library (do not use Recharts)
+- expo-secure-store and Clerk tokenCache
+- Never hardcode secrets or credentials
+
+## Auth + backend pattern
+Match the existing web app behavior:
+- Auth via Clerk
+- Data via Supabase
+- Every expense-related row is scoped by `user_id = Clerk userId`
+- Use Supabase anon client + explicit `user_id` filters
+- No Prisma
+- No Zod validation for Expense Tracker forms (use toast/alert validation like the web app)
+
+Existing Supabase tables:
+- `expense_categories`
+- `expense_transactions`
+- `expense_persons`
+- `expense_monthly_summaries`
+
+## Environment variables
+Create/update `.env` and `.env.example` in this Expo project with these keys:
+
+```env
+# Clerk (required)
+EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=
+
+# Supabase (required)
+EXPO_PUBLIC_SUPABASE_URL=
+EXPO_PUBLIC_SUPABASE_ANON_KEY=
+```
+
+Map from the existing web app env like this:
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` → `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- `NEXT_PUBLIC_SUPABASE_URL` → `EXPO_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` → `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+
+Do NOT put these into the Expo client env:
+- `CLERK_SECRET_KEY` (server-only)
+- `NEXT_PUBLIC_CLERK_SIGN_IN_URL` (Next.js web routing)
+- `NEXT_PUBLIC_CLERK_SIGN_UP_URL` (Next.js web routing)
+
+Rules:
+- Use `EXPO_PUBLIC_` prefix for client-accessible values
+- Put real values only in local `.env`
+- Put empty placeholders only in `.env.example`
+- Never commit secrets
+- Document that Clerk Dashboard → Native applications → Native API must be enabled for Expo
+
+## App navigation / modules
+Use tab navigation (or equivalent clean navigation):
+
+1. **Expense Tracker** — fully implemented
+2. **Todo** — Coming Soon placeholder only
+3. **Investments** — Coming Soon placeholder only
+
+Organize code into clean modules so other modules can be added later.
+
+## Expense Tracker screens
+Implement these sections exactly like the live web Expense Tracker:
+
+1. Overview
+2. Transactions
+3. Analytics
+4. Settings
+
+Global header actions always available:
+- Add Credit
+- Add Debit
+
+Terminology:
+- Credit = `type: "income"`
+- Debit = `type: "expense"`
+- Currency UI: INR (`₹`, `en-IN`)
+
+## Data models
+```ts
+export type TransactionType = "income" | "expense";
+
+export interface Category {
+  id: string;
+  user_id: string;
+  name: string;
+  monthly_budget: number;
+  spent: number;
+  color: string;
+  default_payer?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Transaction {
+  id: string;
+  user_id: string;
+  amount: number;
+  type: TransactionType;
+  category_id?: string;
+  expense_categories?: Category;
+  date: string; // YYYY-MM-DD
+  note?: string;
+  needs_settlement?: boolean;
+  paid_by?: string; // person name
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Person {
+  id: string;
+  user_id: string;
+  name: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface MonthlySummary {
+  id: string;
+  user_id: string;
+  month: string; // YYYY-MM
+  total_income: number;
+  total_expense: number;
+  carry_over: number;
+  created_at?: string;
+  updated_at?: string;
+}
+```
+
+## Supabase operations to implement
+Always authenticate via Clerk and filter by `user_id`.
+
+### Categories
+- fetch all for user, order by `name` ASC
+- create (`spent: 0`)
+- update by `id` + `user_id`
+- delete by `id` + `user_id`
+
+### Transactions
+- fetch all for user with join `expense_categories(*)`
+- order by `date` DESC, then `created_at` DESC
+- create
+- update
+- toggle settlement (`needs_settlement`)
+- delete
+
+### Persons
+- fetch all for user, order by `name` ASC
+- create
+- update (can exist in store/API even if UI has no rename screen)
+- delete
+
+### Monthly summaries
+- fetch all for user, order by `month` DESC
+- upsert on conflict `user_id, month`
+
+## Zustand store behavior
+Mirror the web store pattern:
+- `initialize()` loads categories, transactions, persons, monthly summaries
+- optimistic local updates for CRUD
+- after transaction create/update/delete, refresh categories in background to sync spent amounts
+- settlement toggle is optimistic with revert on failure
+
+## Transactions feature details
+Form fields:
+- type (`income` | `expense`)
+- amount (required)
+- category (required for expenses; omitted for income)
+- paid by (required; person name)
+- need to settle (expenses only)
+- date (required, local YYYY-MM-DD)
+- note (optional)
+- add another checkbox (add mode only)
+
+Validation:
+- amount + date required
+- expense requires category
+- paid_by required
+
+Behaviors:
+- create / edit / delete with confirmation
+- settlement badge tap clears settlement (`needs_settlement = false`)
+- selecting a category auto-fills `paid_by` from category `default_payer`
+- “Add another” keeps dialog/form open after successful add
+- income does not send category_id / settlement
+
+## Categories feature details (Settings)
+Create/edit fields:
+- name (required)
+- monthly_budget (required)
+- default_payer (optional)
+- color: random hex on create (`#` + Math.floor(Math.random()*16777215).toString(16))
+
+List each category with current-month progress:
+```
+spent = Σ expense.amount where date.startsWith(currentMonth) && category_id matches
+percentage = monthly_budget > 0 ? (spent / monthly_budget) * 100 : 0
+isOver = percentage > 100
+```
+UI states:
+- EXCEEDED / OVER when over budget
+- progress color: red >100, yellow >80, else green
+- delete with confirmation
+
+## Persons feature details (Settings)
+- create person by name
+- delete person with confirmation
+- no rename UI required
+- persons power Paid By selectors
+
+## Filters
+### Transactions page
+- note search
+- type: all / credits / debits
+- category
+- paid by
+- settlement: all / needs settlement
+- date: all / month / year
+- multi-month select when monthly
+- year picker: current year and previous 4 years
+
+### Overview page
+- date filters (all / month / year, multi-month, year picker)
+- person filter
+
+### Analytics page
+- date filters only (no person filter)
+
+## Sorting, pagination, export
+- Transactions list order: date DESC, created_at DESC
+- Recent activity: sort by `updated_at || created_at || date` DESC, limit 10, global
+- Pagination: 40 per page
+- CSV export of currently filtered rows
+- CSV columns:
+  `Date, Type, Category, Amount, Paid By, Note, Settlement Status`
+- filename:
+  `transactions_yyyyMMdd_HHmmss.csv`
+- Use Expo-compatible file write + share approach
+
+## Overview calculations
+```
+totalIncome  = Σ amount where type === "income" (after date + person filters)
+totalExpense = Σ amount where type === "expense" (same filters)
+
+totalBudget =
+  month → Σ category.monthly_budget
+  year  → Σ category.monthly_budget * 12
+  all   → 0
+
+budgetProgress = totalBudget > 0 ? (totalExpense / totalBudget) * 100 : 0
+```
+
+Cards:
+1. Income
+2. Expenses
+3. Budget Health (`{budgetProgress}% Used`, spent/budget, progress bar)
+
+Progress colors:
+- >100 rose/red
+- >80 amber/yellow
+- else emerald/green
+
+Also show:
+- category spending chart
+- recent activity list (limit 10)
+
+## Analytics calculations / charts
+Use the same aggregation logic as the web analytics hook.
+
+Filtered transactions by date (+ person only when used by Overview).
+
+Category data:
+```
+spent[cat] = Σ expense.amount for filtered txs with that category_id
+budget[cat] =
+  month → monthly_budget
+  year  → monthly_budget * 12
+  all   → 0
+```
+Keep rows if `spent > 0 || budget > 0`
+Sort by spent DESC
+
+Charts:
+1. Spending by Category (horizontal bars)
+2. Income vs Expense Ratio (donut/pie)
+   - Credits color `#10b981`
+   - Debits color `#f43f5e`
+3. Budget vs Actual Performance (grouped bars)
+
+Fallback palette:
+`#6366f1, #8b5cf6, #ec4899, #f43f5e, #f59e0b, #10b981, #06b6d4, #3b82f6`
+
+Empty states:
+- “No expenses found for this period.”
+- “No data available for this period.”
+- “No data to compare.”
+- “No transactions found.”
+- “No recent activity.”
+
+## Date helpers
+Implement and use:
+```ts
+formatDateToLocalISO(date: Date): string // YYYY-MM-DD local
+parseLocalISODate(dateStr: string): Date // local midnight
+```
+
+## Auth UX
+- Sign in screen
+- Sign up screen
+- Signed-in app shell with module navigation
+- Sign out available in account/settings area
+- Must work in Expo Go
+- Prefer custom Clerk hooks (`useSignIn`, `useSignUp`, `useAuth`) over native-only Clerk components that require a development build
+
+## Explicitly do NOT implement
+- Todo functionality beyond Coming Soon
+- Investments functionality beyond Coming Soon
+- Recurring expenses
+- Receipts / attachments
+- Multi-currency
+- Hardcoded category catalog
+- Close Month / budget rollover UI
+- Reset data UI
+- Any feature not already present in the live Expense Tracker
+
+## Deliverables
+1. Working Expo Go app built on this existing project
+2. Clerk authentication configured and working
+3. Full Expense Tracker feature parity with Supabase
+4. Todo and Investments Coming Soon placeholders
+5. `.env` and `.env.example` with all required Expo keys
+6. Short README/setup notes covering:
+   - fill env values
+   - enable Clerk Native API
+   - run with Expo Go (`npx expo start`)
+
+## Implementation style
+- Keep architecture modular and clean
+- Prefer adapting existing Expense Tracker business logic, not inventing new logic
+- Mobile-adapt UI for React Native, but preserve the same flows and functionality
+- Do not leave missing Expense Tracker features from the list above

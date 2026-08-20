@@ -1,7 +1,6 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PieChart as PieIcon } from "lucide-react";
 import {
   PieChart,
   Pie,
@@ -27,15 +26,10 @@ export function IncomeExpenseRatioChart({
   height = 300,
 }: IncomeExpenseRatioChartProps) {
   return (
-    <Card className="border border-border/50 bg-card shadow-sm rounded-xl overflow-hidden">
-      <CardHeader className="flex flex-row items-center gap-2 border-b border-border/50 py-3">
-        <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10">
-          <PieIcon className="size-3.5 text-primary" />
-        </div>
-        <div>
-          <CardTitle className="text-sm font-semibold">Income vs Expense Ratio</CardTitle>
-          <p className="text-[10px] text-muted-foreground mt-0.5">Ratio of incoming vs outgoing cash flow</p>
-        </div>
+    <Card className="overflow-hidden rounded-2xl border-border/40 shadow-none">
+      <CardHeader className="border-b border-border/40 px-5 py-4">
+        <CardTitle className="text-sm font-semibold">Credits vs debits</CardTitle>
+        <p className="text-xs text-muted-foreground">Cash in versus cash out</p>
       </CardHeader>
       <CardContent className="pt-6">
         <div

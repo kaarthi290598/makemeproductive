@@ -1,7 +1,6 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3 } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -31,15 +30,10 @@ export function CategorySpendingChart({
   height = 400,
 }: CategorySpendingChartProps) {
   return (
-    <Card className="border border-border/50 bg-card shadow-sm rounded-xl overflow-hidden">
-      <CardHeader className="flex flex-row items-center gap-2 border-b border-border/50 py-3">
-        <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10">
-          <BarChart3 className="size-3.5 text-primary" />
-        </div>
-        <div>
-          <CardTitle className="text-sm font-semibold">Spending by Category</CardTitle>
-          <p className="text-[10px] text-muted-foreground mt-0.5">Total spent per category</p>
-        </div>
+    <Card className="overflow-hidden rounded-2xl border-border/40 shadow-none">
+      <CardHeader className="border-b border-border/40 px-5 py-4">
+        <CardTitle className="text-sm font-semibold">Spending by category</CardTitle>
+        <p className="text-xs text-muted-foreground">Total spent per category</p>
       </CardHeader>
       <CardContent className="pt-6">
         <div

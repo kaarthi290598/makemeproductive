@@ -1,19 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useExpenseStore } from "@/hooks/use-expense-store";
+import { useExpenseStats } from "@/hooks/use-expense-queries";
 import { Category } from "@/types/expense";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Plus, Trash2, UserPlus, Edit2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Plus, Trash2, UserPlus, Pencil } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -26,42 +21,31 @@ import {
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { cn, formatDateToLocalISO } from "@/lib/utils";
+import {
+  tabListClassName,
+  tabTriggerClassName,
+} from "@/components/finance/page-header";
 
 export function Settings() {
-  const {
-    categories,
-    transactions,
-    addCategory,
-    updateCategory,
-    deleteCategory,
-    persons,
-    addPerson,
-    deletePerson,
-  } = useExpenseStore();
+  const categories = useExpenseStore((s) => s.categories);
+  const persons = useExpenseStore((s) => s.persons);
+  const addCategory = useExpenseStore((s) => s.addCategory);
+  const updateCategory = useExpenseStore((s) => s.updateCategory);
+  const deleteCategory = useExpenseStore((s) => s.deleteCategory);
+  const addPerson = useExpenseStore((s) => s.addPerson);
+  const deletePerson = useExpenseStore((s) => s.deletePerson);
 
-  const currentMonth = formatDateToLocalISO(new Date()).slice(0, 7); // YYYY-MM
+  const currentMonth = formatDateToLocalISO(new Date()).slice(0, 7);
+  const { data: stats } = useExpenseStats("month", [currentMonth], "all");
 
-  const spentByCategory = useMemo(() => {
-    const map = new Map<string, number>();
-    transactions.forEach((t) => {
-      if (t.type !== "expense" || !t.date.startsWith(currentMonth)) return;
-      if (t.category_id) {
-        const current = map.get(t.category_id) || 0;
-        map.set(t.category_id, current + t.amount);
-      }
-    });
-    return map;
-  }, [transactions, currentMonth]);
+  const spentByCategory = stats?.spentByCategory || {};
 
-  // Category State
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(
     null,
   );
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryBudget, setNewCategoryBudget] = useState("");
   const [defaultPayer, setDefaultPayer] = useState("");
-
-  // Person State
   const [newPersonName, setNewPersonName] = useState("");
 
   const handleAddOrUpdateCategory = () => {
@@ -82,7 +66,7 @@ export function Settings() {
       addCategory({
         name: newCategoryName,
         monthly_budget: parseFloat(newCategoryBudget),
-        color: "#" + Math.floor(Math.random() * 16777215).toString(16), // Random color
+        color: "#" + Math.floor(Math.random() * 16777215).toString(16),
         default_payer: defaultPayer || undefined,
       });
       toast.success("Category added successfully!");
@@ -118,50 +102,51 @@ export function Settings() {
   };
 
   return (
-    <Tabs defaultValue="categories" className="space-y-4">
-      <TabsList>
-        <TabsTrigger value="categories">Categories</TabsTrigger>
-        <TabsTrigger value="persons">Persons</TabsTrigger>
+    <Tabs defaultValue="categories" className="space-y-5">
+      <TabsList className={tabListClassName()}>
+        <TabsTrigger value="categories" className={tabTriggerClassName()}>
+          Categories
+        </TabsTrigger>
+        <TabsTrigger value="persons" className={tabTriggerClassName()}>
+          People
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="categories" className="space-y-4">
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                {editingCategoryId ? "Edit Category" : "Add New Category"}
+        <div className="grid gap-5 md:grid-cols-2">
+          <Card className="h-fit rounded-2xl border-border/40 shadow-none">
+            <CardHeader className="px-5 pb-3 pt-5">
+              <CardTitle className="text-base">
+                {editingCategoryId ? "Edit category" : "New category"}
               </CardTitle>
-              <CardDescription>
-                {editingCategoryId
-                  ? "Update category details."
-                  : "Create a new budget category."}
-              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
+            <CardContent className="space-y-4 px-5 pb-5">
+              <div className="space-y-1.5">
                 <Label htmlFor="c-name">Name</Label>
                 <Input
                   id="c-name"
                   placeholder="e.g. Groceries"
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
+                  className="h-10 rounded-xl"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="c-budget">Monthly Budget (₹)</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="c-budget">Monthly budget (₹)</Label>
                 <Input
                   id="c-budget"
                   type="number"
-                  placeholder="500"
+                  placeholder="5000"
                   value={newCategoryBudget}
                   onChange={(e) => setNewCategoryBudget(e.target.value)}
+                  className="h-10 rounded-xl"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="c-payer">Default Payer (Optional)</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="c-payer">Default payer</Label>
                 <Select value={defaultPayer} onValueChange={setDefaultPayer}>
-                  <SelectTrigger id="c-payer">
-                    <SelectValue placeholder="Select Default Payer" />
+                  <SelectTrigger id="c-payer" className="h-10 rounded-xl">
+                    <SelectValue placeholder="Optional" />
                   </SelectTrigger>
                   <SelectContent>
                     {persons.map((p) => (
@@ -173,17 +158,24 @@ export function Settings() {
                 </Select>
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleAddOrUpdateCategory} className="flex-1">
+                <Button
+                  onClick={handleAddOrUpdateCategory}
+                  className="h-10 flex-1 rounded-full"
+                >
                   {editingCategoryId ? (
-                    "Update Category"
+                    "Save"
                   ) : (
                     <>
-                      <Plus className="mr-2 h-4 w-4" /> Add Category
+                      <Plus className="mr-1.5 size-4" /> Add
                     </>
                   )}
                 </Button>
                 {editingCategoryId && (
-                  <Button variant="outline" onClick={handleCancelEditCategory}>
+                  <Button
+                    variant="outline"
+                    onClick={handleCancelEditCategory}
+                    className="h-10 rounded-full"
+                  >
                     Cancel
                   </Button>
                 )}
@@ -191,42 +183,45 @@ export function Settings() {
             </CardContent>
           </Card>
 
-          <div className="custom-scrollbar max-h-[560px] space-y-4 overflow-y-auto pr-2">
-            {categories.map((category) => {
-              const spent = spentByCategory.get(category.id) || 0;
-              const percentage =
-                category.monthly_budget > 0
-                  ? (spent / category.monthly_budget) * 100
-                  : 0;
-              const isOver = percentage > 100;
+          <div className="custom-scrollbar max-h-[560px] space-y-3 overflow-y-auto pr-1">
+            {categories.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-border/60 px-4 py-12 text-center text-sm text-muted-foreground">
+                Add a category to start budgeting.
+              </p>
+            ) : (
+              categories.map((category) => {
+                const spent = spentByCategory[category.id] || 0;
+                const percentage =
+                  category.monthly_budget > 0
+                    ? (spent / category.monthly_budget) * 100
+                    : 0;
+                const isOver = percentage > 100;
 
-              return (
-                <Card
-                  key={category.id}
-                  className={cn(
-                    "group transition-all duration-200 hover:border-primary/50 hover:shadow-md",
-                    editingCategoryId === category.id
-                      ? "border-primary bg-primary/5 shadow-sm"
-                      : "",
-                  )}
-                >
-                  <CardHeader className="px-3 py-2.5">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-2 text-sm font-bold tracking-tight">
+                return (
+                  <Card
+                    key={category.id}
+                    className={cn(
+                      "rounded-2xl border-border/40 shadow-none",
+                      editingCategoryId === category.id &&
+                        "border-primary/40 bg-primary/5",
+                    )}
+                  >
+                    <CardContent className="space-y-3 p-4">
+                      <div className="flex items-center gap-2">
                         <div
-                          className="h-2.5 w-2.5 rounded-full shadow-sm"
+                          className="size-2.5 shrink-0 rounded-full"
                           style={{ backgroundColor: category.color }}
                         />
-                        {category.name}
-                      </CardTitle>
-                      <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                        <p className="min-w-0 flex-1 truncate text-sm font-semibold">
+                          {category.name}
+                        </p>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 hover:bg-blue-50 hover:text-blue-600"
+                          className="size-8 rounded-full text-muted-foreground"
                           onClick={() => handleEditCategory(category)}
                         >
-                          <Edit2 className="h-3.5 w-3.5" />
+                          <Pencil className="size-3.5" />
                         </Button>
                         <ConfirmDialog
                           title="Delete Category"
@@ -241,143 +236,121 @@ export function Settings() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-7 w-7 hover:bg-red-50 hover:text-red-600"
+                              className="size-8 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <Trash2 className="size-3.5" />
                             </Button>
                           }
                         />
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="px-3 py-2.5 pt-0">
-                    <div className="mb-2 flex items-end justify-between">
-                      <div className="flex flex-col">
-                        <span className="mb-0.5 text-[9px] font-bold uppercase leading-none tracking-wider text-muted-foreground">
-                          Spent
-                        </span>
-                        <span className="text-xs font-bold tabular-nums">
+                      <div className="flex items-end justify-between text-xs">
+                        <span className="font-semibold tabular-nums">
                           ₹
                           {spent.toLocaleString("en-IN", {
-                            minimumFractionDigits: 1,
+                            maximumFractionDigits: 0,
                           })}
                         </span>
-                      </div>
-                      <div className="flex flex-col text-right">
-                        <span className="mb-0.5 text-[9px] font-bold uppercase leading-none tracking-wider text-muted-foreground">
-                          Budget
-                        </span>
-                        <span className="text-xs font-medium tabular-nums text-muted-foreground">
+                        <span className="text-muted-foreground">
                           ₹
                           {category.monthly_budget.toLocaleString("en-IN", {
-                            minimumFractionDigits: 1,
+                            maximumFractionDigits: 0,
                           })}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-[9px] font-bold leading-none">
-                        <div className="flex items-center gap-1">
-                          <span
-                            className={cn(
-                              "rounded-sm px-1 py-0.5",
-                              isOver
-                                ? "bg-red-100 text-red-700"
-                                : "bg-primary/10 text-primary",
-                            )}
-                          >
-                            {isOver ? "EXCEEDED" : "USAGE"}
-                          </span>
-                          <span
-                            className={
-                              isOver
-                                ? "font-bold text-red-600"
-                                : "text-muted-foreground"
-                            }
-                          >
-                            {percentage.toFixed(0)}%
-                          </span>
-                        </div>
-                        <span
-                          className={
-                            isOver ? "text-red-600" : "font-bold text-green-600"
-                          }
-                        >
-                          {isOver ? "OVER" : "OK"}
                         </span>
                       </div>
                       <Progress
                         value={Math.min(percentage, 100)}
-                        className="h-1.5"
+                        className="h-1.5 rounded-full"
                         indicatorClassName={cn(
-                          "transition-all duration-500",
+                          "rounded-full",
                           isOver
-                            ? "bg-red-500"
+                            ? "bg-rose-500"
                             : percentage > 80
-                              ? "bg-yellow-500"
-                              : "bg-green-500",
+                              ? "bg-amber-500"
+                              : "bg-emerald-500",
                         )}
                       />
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                      <p
+                        className={cn(
+                          "text-[11px] font-semibold",
+                          isOver ? "text-rose-600" : "text-muted-foreground",
+                        )}
+                      >
+                        {percentage.toFixed(0)}% used
+                        {isOver ? " · over budget" : ""}
+                      </p>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
           </div>
         </div>
       </TabsContent>
 
       <TabsContent value="persons" className="space-y-4">
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Add New Person</CardTitle>
-              <CardDescription>
-                Add people who can pay for expenses.
-              </CardDescription>
+        <div className="grid gap-5 md:grid-cols-2">
+          <Card className="h-fit rounded-2xl border-border/40 shadow-none">
+            <CardHeader className="px-5 pb-3 pt-5">
+              <CardTitle className="text-base">Add person</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
+            <CardContent className="space-y-4 px-5 pb-5">
+              <div className="space-y-1.5">
                 <Label htmlFor="p-name">Name</Label>
                 <Input
                   id="p-name"
                   placeholder="e.g. John"
                   value={newPersonName}
                   onChange={(e) => setNewPersonName(e.target.value)}
+                  className="h-10 rounded-xl"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleAddPerson();
+                  }}
                 />
               </div>
-              <Button onClick={handleAddPerson} className="w-full">
-                <UserPlus className="mr-2 h-4 w-4" /> Add Person
+              <Button onClick={handleAddPerson} className="h-10 w-full rounded-full">
+                <UserPlus className="mr-1.5 size-4" /> Add
               </Button>
             </CardContent>
           </Card>
 
-          <div className="space-y-4">
-            {persons.map((person) => (
-              <Card key={person.id}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-base font-medium">
-                    {person.name}
-                  </CardTitle>
-                  <ConfirmDialog
-                    title="Delete Person"
-                    description="Are you sure you want to delete this person?"
-                    onConfirm={() => {
-                      deletePerson(person.id);
-                      toast.success("Person deleted");
-                    }}
-                    variant="destructive"
-                    confirmText="Delete"
-                    trigger={
-                      <Button variant="ghost" size="icon">
-                        <Trash2 className="h-4 w-4 text-muted-foreground hover:text-red-500" />
-                      </Button>
-                    }
-                  />
-                </CardHeader>
-              </Card>
-            ))}
+          <div className="overflow-hidden rounded-2xl border border-border/40 bg-card">
+            {persons.length === 0 ? (
+              <p className="px-4 py-12 text-center text-sm text-muted-foreground">
+                No people yet.
+              </p>
+            ) : (
+              <div className="divide-y divide-border/40">
+                {persons.map((person) => (
+                  <div
+                    key={person.id}
+                    className="flex items-center gap-3 px-4 py-3.5"
+                  >
+                    <p className="min-w-0 flex-1 truncate text-sm font-medium">
+                      {person.name}
+                    </p>
+                    <ConfirmDialog
+                      title="Delete Person"
+                      description="Are you sure you want to delete this person?"
+                      onConfirm={() => {
+                        deletePerson(person.id);
+                        toast.success("Person deleted");
+                      }}
+                      variant="destructive"
+                      confirmText="Delete"
+                      trigger={
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-8 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </Button>
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </TabsContent>

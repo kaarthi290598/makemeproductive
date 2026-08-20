@@ -1,22 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, Suspense } from "react";
 import { useExpenseStore } from "@/hooks/use-expense-store";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AddTransactionDialog } from "@/components/expense-tracker/add-transaction-dialog";
 import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "next/navigation";
 import { ModuleSkeleton } from "@/components/module-skeleton";
-import { Suspense } from "react";
-import { PlusCircle, MinusCircle, Wallet } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Plus, Minus } from "lucide-react";
+import {
+  FinancePageHeader,
+  tabListClassName,
+  tabTriggerClassName,
+} from "@/components/finance/page-header";
 
 export default function ExpenseTrackerLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { initialize, loading, error } = useExpenseStore();
+  const initialize = useExpenseStore((s) => s.initialize);
+  const loading = useExpenseStore((s) => s.loading);
+  const error = useExpenseStore((s) => s.error);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -31,30 +36,23 @@ export default function ExpenseTrackerLayout({
   };
 
   return (
-    <div className="flex h-full w-full flex-col gap-4 overflow-y-auto p-3 lg:gap-6 lg:p-6">
-      {/* Header section matching Todo style */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground lg:text-2xl">
-            Expense Tracker
-          </h1>
-          <p className="mt-0.5 text-xs text-muted-foreground lg:text-sm">
-            Monitor budgets, balance sheets, and cash flow in real-time
-          </p>
-        </div>
-        
-        <div className="flex flex-wrap items-center gap-2">
-          {!loading && !error && (
+    <div className="flex h-full w-full flex-col gap-5 overflow-y-auto p-4 lg:gap-6 lg:p-8">
+      <FinancePageHeader
+        title="Expenses"
+        subtitle="Track cash flow, budgets, and settlements"
+        actions={
+          !loading && !error ? (
             <>
               <AddTransactionDialog
                 defaultType="income"
                 trigger={
                   <Button
                     size="sm"
-                    className="h-9 gap-1.5 rounded-lg bg-emerald-600 px-3 hover:bg-emerald-700 text-white"
+                    variant="outline"
+                    className="h-10 gap-1.5 rounded-full border-emerald-500/30 bg-emerald-500/10 px-4 text-emerald-700 hover:bg-emerald-500/15 dark:text-emerald-400"
                   >
-                    <PlusCircle className="size-4" />
-                    <span>Add Credit</span>
+                    <Plus className="size-4" />
+                    Credit
                   </Button>
                 }
               />
@@ -63,59 +61,45 @@ export default function ExpenseTrackerLayout({
                 trigger={
                   <Button
                     size="sm"
-                    className="h-9 gap-1.5 rounded-lg bg-destructive px-3 hover:bg-destructive/90 text-white"
+                    variant="outline"
+                    className="h-10 gap-1.5 rounded-full border-rose-500/30 bg-rose-500/10 px-4 text-rose-700 hover:bg-rose-500/15 dark:text-rose-400"
                   >
-                    <MinusCircle className="size-4" />
-                    <span>Add Debit</span>
+                    <Minus className="size-4" />
+                    Debit
                   </Button>
                 }
               />
             </>
-          )}
-        </div>
-      </div>
+          ) : undefined
+        }
+      />
 
-      {/* Tabs list matching modernized navigation */}
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
-        className="w-full space-y-4"
+        className="flex min-h-0 w-full flex-1 flex-col"
       >
-        <TabsList className="bg-muted/50 p-1 rounded-xl h-10 w-full sm:w-auto sm:inline-flex flex">
-          <TabsTrigger
-            value="overview"
-            className="rounded-lg px-4 py-1.5 text-xs font-medium transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm flex-1 sm:flex-none"
-          >
+        <TabsList className={tabListClassName()}>
+          <TabsTrigger value="overview" className={tabTriggerClassName()}>
             Overview
           </TabsTrigger>
-          <TabsTrigger
-            value="transactions"
-            className="rounded-lg px-4 py-1.5 text-xs font-medium transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm flex-1 sm:flex-none"
-          >
+          <TabsTrigger value="transactions" className={tabTriggerClassName()}>
             Transactions
           </TabsTrigger>
-          <TabsTrigger
-            value="analytics"
-            className="rounded-lg px-4 py-1.5 text-xs font-medium transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm flex-1 sm:flex-none"
-          >
+          <TabsTrigger value="analytics" className={tabTriggerClassName()}>
             Analytics
           </TabsTrigger>
-          <TabsTrigger
-            value="settings"
-            className="rounded-lg px-4 py-1.5 text-xs font-medium transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm flex-1 sm:flex-none"
-          >
+          <TabsTrigger value="settings" className={tabTriggerClassName()}>
             Settings
           </TabsTrigger>
         </TabsList>
 
-        <div className="mt-4 min-h-[400px]">
+        <div className="mt-5 min-h-[400px] flex-1">
           {loading ? (
-            <div className="w-full">
-              <ModuleSkeleton />
-            </div>
+            <ModuleSkeleton />
           ) : error ? (
-            <div className="flex h-[400px] w-full items-center justify-center text-destructive font-medium">
-              Error: {error}
+            <div className="flex h-[320px] w-full items-center justify-center rounded-2xl border border-destructive/20 bg-destructive/5 text-sm font-medium text-destructive">
+              {error}
             </div>
           ) : (
             <Suspense fallback={<ModuleSkeleton />}>{children}</Suspense>

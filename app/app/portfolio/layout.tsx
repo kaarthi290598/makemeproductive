@@ -1,20 +1,30 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { usePortfolioStore } from "@/hooks/use-portfolio-store";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "next/navigation";
 import { ModuleSkeleton } from "@/components/module-skeleton";
-import { PlusCircle, MinusCircle } from "lucide-react";
-import { AddEditInvestmentDialog, AddEditDebtDialog } from "@/components/portfolio/add-edit-dialogs";
+import { Plus, Minus } from "lucide-react";
+import {
+  AddEditInvestmentDialog,
+  AddEditDebtDialog,
+} from "@/components/portfolio/add-edit-dialogs";
+import {
+  FinancePageHeader,
+  tabListClassName,
+  tabTriggerClassName,
+} from "@/components/finance/page-header";
 
 export default function PortfolioLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { initialize, loading, error } = usePortfolioStore();
+  const initialize = usePortfolioStore((s) => s.initialize);
+  const loading = usePortfolioStore((s) => s.loading);
+  const error = usePortfolioStore((s) => s.error);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -32,77 +42,59 @@ export default function PortfolioLayout({
   };
 
   return (
-    <div className="flex h-full w-full flex-col gap-4 overflow-y-auto p-3 lg:gap-6 lg:p-6">
-      {/* Header section */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground lg:text-2xl">
-            Portfolio & Net Worth
-          </h1>
-          <p className="mt-0.5 text-xs text-muted-foreground lg:text-sm">
-            Track assets, coordinate debt payoff, and analyze net worth in real-time
-          </p>
-        </div>
-        
-        <div className="flex flex-wrap items-center gap-2">
-          {!loading && !error && (
+    <div className="flex h-full w-full flex-col gap-5 overflow-y-auto p-4 lg:gap-6 lg:p-8">
+      <FinancePageHeader
+        title="Investments"
+        subtitle="Net worth, assets, and liabilities in one place"
+        actions={
+          !loading && !error ? (
             <>
               <Button
                 size="sm"
-                onClick={() => setAddInvOpen(true)}
-                className="h-9 gap-1.5 rounded-lg bg-emerald-600 px-3 hover:bg-emerald-700 text-white"
+                variant="outline"
+                onClick={() => setAddDebtOpen(true)}
+                className="h-10 gap-1.5 rounded-full border-rose-500/30 bg-rose-500/10 px-4 text-rose-700 hover:bg-rose-500/15 dark:text-rose-400"
               >
-                <PlusCircle className="size-4" />
-                <span>Add Investment</span>
+                <Minus className="size-4" />
+                Add debt
               </Button>
               <Button
                 size="sm"
-                onClick={() => setAddDebtOpen(true)}
-                className="h-9 gap-1.5 rounded-lg bg-destructive px-3 hover:bg-destructive/90 text-white"
+                variant="outline"
+                onClick={() => setAddInvOpen(true)}
+                className="h-10 gap-1.5 rounded-full border-emerald-500/30 bg-emerald-500/10 px-4 text-emerald-700 hover:bg-emerald-500/15 dark:text-emerald-400"
               >
-                <MinusCircle className="size-4" />
-                <span>Add Liability</span>
+                <Plus className="size-4" />
+                Add asset
               </Button>
             </>
-          )}
-        </div>
-      </div>
+          ) : undefined
+        }
+      />
 
-      {/* Tabs list */}
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
-        className="w-full space-y-4"
+        className="flex min-h-0 w-full flex-1 flex-col"
       >
-        <TabsList className="bg-muted/50 p-1 rounded-xl h-10 w-full sm:w-auto sm:inline-flex flex">
-          <TabsTrigger
-            value="overview"
-            className="rounded-lg px-4 py-1.5 text-xs font-medium transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm flex-1 sm:flex-none"
-          >
+        <TabsList className={tabListClassName()}>
+          <TabsTrigger value="overview" className={tabTriggerClassName()}>
             Overview
           </TabsTrigger>
-          <TabsTrigger
-            value="investments"
-            className="rounded-lg px-4 py-1.5 text-xs font-medium transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm flex-1 sm:flex-none"
-          >
-            Investments
+          <TabsTrigger value="investments" className={tabTriggerClassName()}>
+            Assets
           </TabsTrigger>
-          <TabsTrigger
-            value="debts"
-            className="rounded-lg px-4 py-1.5 text-xs font-medium transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm flex-1 sm:flex-none"
-          >
+          <TabsTrigger value="debts" className={tabTriggerClassName()}>
             Debts
           </TabsTrigger>
         </TabsList>
 
-        <div className="mt-4 min-h-[400px]">
+        <div className="mt-5 min-h-[400px] flex-1">
           {loading ? (
-            <div className="w-full">
-              <ModuleSkeleton />
-            </div>
+            <ModuleSkeleton />
           ) : error ? (
-            <div className="flex h-[400px] w-full items-center justify-center text-destructive font-medium">
-              Error: {error}
+            <div className="flex h-[320px] w-full items-center justify-center rounded-2xl border border-destructive/20 bg-destructive/5 text-sm font-medium text-destructive">
+              {error}
             </div>
           ) : (
             children
@@ -110,7 +102,6 @@ export default function PortfolioLayout({
         </div>
       </Tabs>
 
-      {/* Add Dialogs */}
       <AddEditInvestmentDialog open={addInvOpen} setOpen={setAddInvOpen} />
       <AddEditDebtDialog open={addDebtOpen} setOpen={setAddDebtOpen} />
     </div>

@@ -5,12 +5,16 @@ import { supabase } from "@/lib/supabaseClient";
 
 export interface DashboardData {
   todos: {
-    id: number;
-    name: string;
-    isCompleted: boolean;
-    deadline?: string | null;
-    category?: { id: number; category: string } | null;
-  }[];
+    items: {
+      id: number;
+      name: string;
+      isCompleted: boolean;
+      deadline?: string | null;
+      category?: { id: number; category: string } | null;
+    }[];
+    pendingCount: number;
+    completedCount: number;
+  };
   expenses: {
     transactions: {
       id: string;
@@ -64,6 +68,8 @@ export async function fetchDashboardData(): Promise<DashboardData> {
   // Run all queries in parallel
   const [
     todosResult,
+    pendingCountResult,
+    completedCountResult,
     transactionsResult,
     monthlyTransactionsResult,
     categoriesResult,
@@ -71,12 +77,25 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     contributionsResult,
     debtsResult,
   ] = await Promise.all([
-    // Todos
     supabase
       .from("todos")
       .select("id, name, isCompleted, deadline, category(id, category)")
       .eq("user_Id", userId)
-      .order("order", { ascending: true }),
+      .eq("isCompleted", false)
+      .order("order", { ascending: true })
+      .limit(8),
+
+    supabase
+      .from("todos")
+      .select("id", { count: "exact", head: true })
+      .eq("user_Id", userId)
+      .eq("isCompleted", false),
+
+    supabase
+      .from("todos")
+      .select("id", { count: "exact", head: true })
+      .eq("user_Id", userId)
+      .eq("isCompleted", true),
 
     // Expense transactions (recent 10 for display)
     supabase
@@ -110,7 +129,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     // Portfolio contributions
     supabase
       .from("portfolio_contributions")
-      .select("investment_id, amount, current_value")
+      .select("investment_id, amount, current_value, date")
       .eq("user_id", userId),
 
     // Portfolio debts
@@ -122,13 +141,17 @@ export async function fetchDashboardData(): Promise<DashboardData> {
 
   // Process todos
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const todos = (todosResult.data || []).map((t: any) => ({
-    id: t.id,
-    name: t.name,
-    isCompleted: t.isCompleted,
-    deadline: t.deadline,
-    category: t.category,
-  }));
+  const todos = {
+    items: (todosResult.data || []).map((t: any) => ({
+      id: t.id,
+      name: t.name,
+      isCompleted: t.isCompleted,
+      deadline: t.deadline,
+      category: t.category,
+    })),
+    pendingCount: pendingCountResult.count ?? 0,
+    completedCount: completedCountResult.count ?? 0,
+  };
 
   // Process recent expenses (for display)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -164,15 +187,19 @@ export async function fetchDashboardData(): Promise<DashboardData> {
   // Process investments with contributions
   const contributionsByInvestment = new Map<
     string,
-    { totalInvested: number; currentValue: number }
+    { totalInvested: number; currentValue: number; latestDate: string }
   >();
   for (const c of contributionsResult.data || []) {
     const existing = contributionsByInvestment.get(c.investment_id) || {
       totalInvested: 0,
       currentValue: 0,
+      latestDate: "",
     };
     existing.totalInvested += Number(c.amount);
-    existing.currentValue += Number(c.current_value);
+    if (!existing.latestDate || c.date > existing.latestDate) {
+      existing.latestDate = c.date;
+      existing.currentValue = Number(c.current_value);
+    }
     contributionsByInvestment.set(c.investment_id, existing);
   }
 
@@ -181,6 +208,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     const contribs = contributionsByInvestment.get(inv.id) || {
       totalInvested: 0,
       currentValue: 0,
+      latestDate: "",
     };
     return {
       id: inv.id,

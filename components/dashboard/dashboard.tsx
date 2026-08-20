@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { format, isToday, isTomorrow, isPast, parseISO } from "date-fns";
@@ -40,8 +40,9 @@ import {
 } from "recharts";
 import {
   fetchDashboardData,
-  type DashboardData,
 } from "@/lib/actions/dashboardData";
+import { useQuery } from "@tanstack/react-query";
+import { dashboardQueryKey } from "@/lib/query-keys";
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 
@@ -193,30 +194,23 @@ function StatCard({
 // ─── Main Dashboard ──────────────────────────────────────────────────
 
 export default function Dashboard() {
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error } = useQuery({
+    queryKey: dashboardQueryKey,
+    queryFn: fetchDashboardData,
+  });
 
-  useEffect(() => {
-    fetchDashboardData()
-      .then(setData)
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) return <DashboardSkeleton />;
+  if (isLoading) return <DashboardSkeleton />;
   if (error)
     return (
       <div className="flex h-[400px] items-center justify-center text-destructive">
-        Error: {error}
+        Error: {error instanceof Error ? error.message : "Failed to load"}
       </div>
     );
   if (!data) return null;
 
-  // ── Computed values ──────────────────────────────────────────────
-  const pendingTodos = data.todos.filter((t) => !t.isCompleted);
-  const completedCount = data.todos.filter((t) => t.isCompleted).length;
-  const totalTodos = data.todos.length;
+  const pendingTodos = data.todos.items;
+  const completedCount = data.todos.completedCount;
+  const totalTodos = data.todos.pendingCount + data.todos.completedCount;
   const completionPct = totalTodos > 0 ? Math.round((completedCount / totalTodos) * 100) : 0;
 
   const { totalBudget, totalSpentThisMonth, totalIncomeThisMonth } = data.expenses;
@@ -312,7 +306,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Tasks"
-          value={`${pendingTodos.length} pending`}
+            value={`${data.todos.pendingCount} pending`}
           subtitle={
             totalTodos > 0
               ? `${completedCount}/${totalTodos} done · ${completionPct}%`
@@ -451,7 +445,7 @@ export default function Dashboard() {
                   ))}
                   {pendingTodos.length > 5 && (
                     <p className="px-2 pt-1 text-xs text-muted-foreground/60">
-                      +{pendingTodos.length - 5} more tasks
+                      +{Math.max(0, data.todos.pendingCount - 5)} more tasks
                     </p>
                   )}
                 </div>

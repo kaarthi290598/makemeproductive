@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import {
   fetchPortfolioInvestments,
+  fetchInvestmentContributions,
+  fetchDebtPayments,
   createPortfolioInvestment,
   updatePortfolioInvestment,
   deletePortfolioInvestment,
@@ -29,6 +31,10 @@ export interface Investment {
   name: string;
   category: "Stocks" | "Mutual Funds" | "Crypto" | "Real Estate" | "Gold" | "Other";
   note?: string;
+  investedAmount: number;
+  currentValue: number;
+  contributionCount: number;
+  historyLoaded?: boolean;
   contributions: InvestmentContribution[];
 }
 
@@ -52,6 +58,7 @@ export interface Debt {
   note?: string | null;
   interestAmount?: number | null;
   remainingInterestAmount?: number | null;
+  paymentsLoaded?: boolean;
   payments: DebtPayment[];
 }
 
@@ -60,11 +67,13 @@ interface PortfolioStore {
   debts: Debt[];
   loading: boolean;
   error: string | null;
+  loadedAt: number | null;
 
-  // Actions
-  initialize: () => Promise<void>;
+  initialize: (options?: { force?: boolean }) => Promise<void>;
+  loadInvestmentHistory: (investmentId: string) => Promise<void>;
+  loadDebtPayments: (debtId: string) => Promise<void>;
   addInvestment: (
-    inv: Omit<Investment, "id" | "contributions">,
+    inv: Pick<Investment, "name" | "category" | "note">,
     amount: number,
     currentValue: number,
     date: string,
@@ -90,28 +99,79 @@ interface PortfolioStore {
   resetStore: () => void;
 }
 
+const INIT_TTL_MS = 60_000;
+let initializePromise: Promise<void> | null = null;
+
 export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
   investments: [],
   debts: [],
   loading: false,
   error: null,
+  loadedAt: null,
 
-  initialize: async () => {
-    set({ loading: true, error: null });
+  initialize: async (options = {}) => {
+    const { force = false } = options;
+    const { loadedAt } = get();
+    if (!force && loadedAt && Date.now() - loadedAt < INIT_TTL_MS) {
+      return;
+    }
+    if (initializePromise) return initializePromise;
+
+    initializePromise = (async () => {
+      set({ loading: true, error: null });
+      try {
+        const [investments, debts] = await Promise.all([
+          fetchPortfolioInvestments(),
+          fetchPortfolioDebts(),
+        ]);
+        set({
+          investments: investments as Investment[],
+          debts: debts as Debt[],
+          loading: false,
+          loadedAt: Date.now(),
+        });
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Failed to load";
+        set({ error: message, loading: false });
+      } finally {
+        initializePromise = null;
+      }
+    })();
+
+    return initializePromise;
+  },
+
+  loadInvestmentHistory: async (investmentId) => {
+    const current = get().investments.find((inv) => inv.id === investmentId);
+    if (current?.historyLoaded) return;
     try {
-      const [investments, debts] = await Promise.all([
-        fetchPortfolioInvestments(),
-        fetchPortfolioDebts(),
-      ]);
+      const contributions = await fetchInvestmentContributions(investmentId);
+      set((state) => ({
+        investments: state.investments.map((inv) =>
+          inv.id === investmentId
+            ? { ...inv, contributions, historyLoaded: true, contributionCount: contributions.length }
+            : inv,
+        ),
+      }));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to load history";
+      set({ error: message });
+    }
+  },
 
-      // Assert types correctly after fetching
-      set({
-        investments: investments as Investment[],
-        debts: debts as Debt[],
-        loading: false,
-      });
-    } catch (err: any) {
-      set({ error: err.message, loading: false });
+  loadDebtPayments: async (debtId) => {
+    const current = get().debts.find((d) => d.id === debtId);
+    if (current?.paymentsLoaded) return;
+    try {
+      const payments = await fetchDebtPayments(debtId);
+      set((state) => ({
+        debts: state.debts.map((d) =>
+          d.id === debtId ? { ...d, payments, paymentsLoaded: true } : d,
+        ),
+      }));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to load payments";
+      set({ error: message });
     }
   },
 
@@ -162,13 +222,22 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
       const newContrib = await createPortfolioContribution(investmentId, contrib);
       set((state) => ({
         investments: state.investments.map((inv) => {
-          if (inv.id === investmentId) {
-            return {
-              ...inv,
-              contributions: [newContrib as InvestmentContribution, ...inv.contributions],
-            };
-          }
-          return inv;
+          if (inv.id !== investmentId) return inv;
+          const contributions = inv.historyLoaded
+            ? [newContrib as InvestmentContribution, ...inv.contributions]
+            : inv.contributions;
+          const latest = contributions.length
+            ? [...contributions].sort(
+                (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+              )[0]
+            : (newContrib as InvestmentContribution);
+          return {
+            ...inv,
+            contributions,
+            contributionCount: inv.contributionCount + 1,
+            investedAmount: inv.investedAmount + newContrib.amount,
+            currentValue: latest.currentValue,
+          };
         }),
       }));
     } catch (err: any) {
@@ -182,15 +251,24 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
       const updated = await updatePortfolioContribution(contribId, updates);
       set((state) => ({
         investments: state.investments.map((inv) => {
-          if (inv.id === investmentId) {
-            return {
-              ...inv,
-              contributions: inv.contributions.map((c) =>
-                c.id === contribId ? { ...c, ...updated } : c
-              ),
-            };
-          }
-          return inv;
+          if (inv.id !== investmentId) return inv;
+          const contributions = inv.contributions.map((c) =>
+            c.id === contribId ? { ...c, ...updated } : c,
+          );
+          const investedAmount = inv.historyLoaded
+            ? contributions.reduce((sum, c) => sum + c.amount, 0)
+            : inv.investedAmount;
+          const latest = contributions.length
+            ? [...contributions].sort(
+                (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+              )[0]
+            : null;
+          return {
+            ...inv,
+            contributions,
+            investedAmount,
+            currentValue: latest ? latest.currentValue : inv.currentValue,
+          };
         }),
       }));
     } catch (err: any) {
@@ -204,13 +282,23 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
       await deletePortfolioContribution(contribId);
       set((state) => ({
         investments: state.investments.map((inv) => {
-          if (inv.id === investmentId) {
-            return {
-              ...inv,
-              contributions: inv.contributions.filter((c) => c.id !== contribId),
-            };
-          }
-          return inv;
+          if (inv.id !== investmentId) return inv;
+          const removed = inv.contributions.find((c) => c.id === contribId);
+          const contributions = inv.contributions.filter((c) => c.id !== contribId);
+          const latest = contributions.length
+            ? [...contributions].sort(
+                (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+              )[0]
+            : null;
+          return {
+            ...inv,
+            contributions,
+            contributionCount: Math.max(0, inv.contributionCount - 1),
+            investedAmount: removed
+              ? inv.investedAmount - removed.amount
+              : inv.investedAmount,
+            currentValue: latest ? latest.currentValue : 0,
+          };
         }),
       }));
     } catch (err: any) {
@@ -380,6 +468,6 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
   },
 
   resetStore: () => {
-    set({ investments: [], debts: [] });
+    set({ investments: [], debts: [], loadedAt: null });
   },
 }));

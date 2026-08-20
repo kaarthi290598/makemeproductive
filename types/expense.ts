@@ -46,9 +46,27 @@ export interface MonthlySummary {
   updated_at?: string;
 }
 
+export type DateFilterType = "all" | "month" | "year";
+
+export interface ExpenseTransactionFilters {
+  dateFilterType: DateFilterType;
+  selectedDates: string[];
+  searchTerm?: string;
+  filterType?: "all" | "income" | "expense";
+  filterCategory?: string;
+  filterPaidBy?: string;
+  filterSettlement?: "all" | "settlement";
+  personFilter?: string;
+}
+
+export interface ExpenseStats {
+  totalIncome: number;
+  totalExpense: number;
+  spentByCategory: Record<string, number>;
+}
+
 export interface ExpenseState {
   categories: Category[];
-  transactions: Transaction[];
   monthlySummaries: MonthlySummary[];
   persons: Person[];
   loading: boolean;
