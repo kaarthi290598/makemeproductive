@@ -139,50 +139,54 @@ export async function fetchDashboardData(): Promise<DashboardData> {
       .eq("user_id", userId),
   ]);
 
-  // Process todos
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const todos = {
-    items: (todosResult.data || []).map((t: any) => ({
-      id: t.id,
-      name: t.name,
-      isCompleted: t.isCompleted,
-      deadline: t.deadline,
-      category: t.category,
-    })),
+    items: (todosResult.data || []).map((t) => {
+      const joined = t.category as
+        | { id: number; category: string }
+        | { id: number; category: string }[]
+        | null;
+      const category = Array.isArray(joined) ? joined[0] ?? null : joined;
+      return {
+        id: Number(t.id),
+        name: String(t.name),
+        isCompleted: Boolean(t.isCompleted),
+        deadline: (t.deadline as string | null) ?? null,
+        category: category ?? null,
+      };
+    }),
     pendingCount: pendingCountResult.count ?? 0,
     completedCount: completedCountResult.count ?? 0,
   };
 
-  // Process recent expenses (for display)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const transactions = (transactionsResult.data || []).map((t: any) => ({
-    id: t.id,
-    amount: Number(t.amount),
-    type: t.type as "income" | "expense",
-    date: t.date,
-    note: t.note,
-    category: t.expense_categories
-      ? { name: t.expense_categories.name, color: t.expense_categories.color }
-      : null,
-  }));
+  const transactions = (transactionsResult.data || []).map((t) => {
+    const joined = t.expense_categories as
+      | { name: string; color: string }
+      | { name: string; color: string }[]
+      | null;
+    const category = Array.isArray(joined) ? joined[0] : joined;
+    return {
+      id: t.id,
+      amount: Number(t.amount),
+      type: t.type as "income" | "expense",
+      date: t.date,
+      note: t.note,
+      category: category
+        ? { name: category.name, color: category.color }
+        : null,
+    };
+  });
 
   const totalBudget = (categoriesResult.data || []).reduce(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (sum: number, c: any) => sum + Number(c.monthly_budget || 0),
+    (sum, c) => sum + Number(c.monthly_budget || 0),
     0,
   );
 
-  // Calculate this month's totals from ALL current-month transactions
   const totalSpentThisMonth = (monthlyTransactionsResult.data || [])
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .filter((t: any) => t.type === "expense")
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .reduce((sum: number, t: any) => sum + Number(t.amount), 0);
+    .filter((t) => t.type === "expense")
+    .reduce((sum, t) => sum + Number(t.amount), 0);
   const totalIncomeThisMonth = (monthlyTransactionsResult.data || [])
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .filter((t: any) => t.type === "income")
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .reduce((sum: number, t: any) => sum + Number(t.amount), 0);
+    .filter((t) => t.type === "income")
+    .reduce((sum, t) => sum + Number(t.amount), 0);
 
   // Process investments with contributions
   const contributionsByInvestment = new Map<
@@ -203,8 +207,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     contributionsByInvestment.set(c.investment_id, existing);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const investments = (investmentsResult.data || []).map((inv: any) => {
+  const investments = (investmentsResult.data || []).map((inv) => {
     const contribs = contributionsByInvestment.get(inv.id) || {
       totalInvested: 0,
       currentValue: 0,
@@ -228,9 +231,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     0,
   );
 
-  // Process debts
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const debts = (debtsResult.data || []).map((d: any) => ({
+  const debts = (debtsResult.data || []).map((d) => ({
     id: d.id,
     name: d.name,
     category: d.category,
