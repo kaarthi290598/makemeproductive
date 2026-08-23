@@ -41,7 +41,7 @@ const DeleteCategory = ({
       {displayedCategories?.map((category: Category) => (
         <div
           key={category.id}
-          className="flex items-center justify-between rounded-xl bg-secondary px-3"
+          className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-slate-800 dark:bg-slate-900"
         >
           <div className="text-sm">{category.category}</div>
           <Button
@@ -50,7 +50,7 @@ const DeleteCategory = ({
             onClick={() => deleteCategoryMutate(category.id)}
             disabled={isPending}
           >
-            {isPending ? <SpinnerLoad /> : <Trash2 />}
+            {isPending ? <SpinnerLoad /> : <Trash2 className="size-3.5 text-rose-500" />}
           </Button>
         </div>
       ))}

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -10,6 +10,10 @@ import { ClientQueryProvider } from "@/components/client-query-provider";
 export const metadata: Metadata = {
   title: "Make Me Productive",
   description: "Make Me Productive",
+};
+
+export const viewport: Viewport = {
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

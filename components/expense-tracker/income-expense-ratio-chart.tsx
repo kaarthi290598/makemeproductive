@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   PieChart,
   Pie,
@@ -19,17 +20,19 @@ interface RatioData {
 interface IncomeExpenseRatioChartProps {
   data: RatioData[];
   height?: number | string;
+  isLoading?: boolean;
 }
 
 export function IncomeExpenseRatioChart({
   data,
   height = 300,
+  isLoading = false,
 }: IncomeExpenseRatioChartProps) {
   return (
-    <Card className="overflow-hidden rounded-2xl border-border/40 shadow-none">
-      <CardHeader className="border-b border-border/40 px-5 py-4">
-        <CardTitle className="text-sm font-semibold">Credits vs debits</CardTitle>
-        <p className="text-xs text-muted-foreground">Cash in versus cash out</p>
+    <Card className="overflow-hidden rounded-xl border-slate-200 shadow-sm dark:border-slate-800">
+      <CardHeader className="border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+        <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">Credits vs debits</CardTitle>
+        <p className="text-xs text-slate-500 dark:text-slate-400">Cash in versus cash out</p>
       </CardHeader>
       <CardContent className="pt-6">
         <div
@@ -37,7 +40,15 @@ export function IncomeExpenseRatioChart({
             height: typeof height === "number" ? `${height}px` : height,
           }}
         >
-          {data.length === 0 ? (
+          {isLoading ? (
+            <div className="flex h-full flex-col items-center justify-center gap-4" aria-hidden>
+              <Skeleton className="size-40 rounded-full" />
+              <div className="flex gap-4">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+            </div>
+          ) : data.length === 0 ? (
             <div className="flex h-full items-center justify-center italic text-muted-foreground text-sm">
               No data available for this period.
             </div>

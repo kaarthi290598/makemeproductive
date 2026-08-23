@@ -2,9 +2,8 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { TodoAddEditTaskForm } from "./TodoAddEditTaskForm";
+import { TaskDialog } from "./TodoAddEditTaskForm";
 import { Categories } from "@/lib/types/type";
-import { ResponsiveModal } from "./responsiveTodoAddEditModal";
 import { PlusCircle } from "lucide-react";
 
 export default function TodoAddTask({
@@ -15,23 +14,19 @@ export default function TodoAddTask({
   const [open, setOpen] = React.useState(false);
 
   return (
-    <ResponsiveModal
+    <TaskDialog
       open={open}
       setOpen={setOpen}
-      title="Add Task"
-      description="Create a new task and assign it to a category."
+      categories={categories}
       trigger={
-        <Button size="sm" className="h-9 gap-1.5 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground shadow-sm">
+        <Button
+          size="sm"
+          className="h-9 gap-1.5 rounded-xl bg-emerald-600 px-3 text-sm font-bold text-white shadow-sm shadow-emerald-600/20 hover:bg-emerald-500"
+        >
           <PlusCircle className="size-4" />
           <span>Add Task</span>
         </Button>
       }
-    >
-      <TodoAddEditTaskForm
-        setOpen={setOpen}
-        categories={categories}
-        isEdit={false}
-      />
-    </ResponsiveModal>
+    />
   );
 }

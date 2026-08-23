@@ -84,23 +84,41 @@ export function useAnalyticsData(
 
   const categoryData = useMemo(() => {
     const spentByCategory = stats?.spentByCategory || {};
-    return categories
-      .map((cat, idx) => {
-        const spent = spentByCategory[cat.id] || 0;
-        let budget = cat.monthly_budget;
-        if (dateFilterType === "year") {
-          budget = cat.monthly_budget * 12;
-        } else if (dateFilterType === "all") {
-          budget = 0;
-        }
+    const knownIds = new Set(categories.map((c) => c.id));
 
-        return {
-          name: cat.name,
-          spent: parseFloat(spent.toFixed(2)),
-          budget: parseFloat(budget.toFixed(2)),
-          color: cat.color || palette[idx % palette.length],
-        };
-      })
+    const rows = categories.map((cat, idx) => {
+      const spent = spentByCategory[cat.id] || 0;
+      let budget = cat.monthly_budget;
+      if (dateFilterType === "year") {
+        budget = cat.monthly_budget * 12;
+      } else if (dateFilterType === "all") {
+        budget = 0;
+      }
+
+      return {
+        id: cat.id,
+        name: cat.name,
+        spent: parseFloat(spent.toFixed(2)),
+        budget: parseFloat(budget.toFixed(2)),
+        color: cat.color || palette[idx % palette.length],
+      };
+    });
+
+    const extraIds = Object.keys(spentByCategory).filter(
+      (id) => !knownIds.has(id) && spentByCategory[id] > 0,
+    );
+
+    for (const id of extraIds) {
+      rows.push({
+        id,
+        name: id === "__uncategorized__" ? "Uncategorized" : "Unknown",
+        spent: parseFloat(spentByCategory[id].toFixed(2)),
+        budget: 0,
+        color: "#94a3b8",
+      });
+    }
+
+    return rows
       .filter((c) => c.spent > 0 || c.budget > 0)
       .sort((a, b) => b.spent - a.spent);
   }, [categories, stats, dateFilterType]);

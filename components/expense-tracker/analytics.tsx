@@ -10,6 +10,7 @@ import {
   PeriodFilter,
   type DateFilterType,
 } from "@/components/finance/period-filter";
+import { useReportTabReadyAfterFirstLoad } from "./tab-ready";
 
 export function Analytics() {
   const [dateFilterType, setDateFilterType] = useState<DateFilterType>("month");
@@ -17,13 +18,14 @@ export function Analytics() {
     formatDateToLocalISO(new Date()).slice(0, 7),
   ]);
 
-  const { categoryData, pieData } = useAnalyticsData(
+  const { categoryData, pieData, isLoading } = useAnalyticsData(
     dateFilterType,
     selectedDates,
   );
+  useReportTabReadyAfterFirstLoad(isLoading);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <PeriodFilter
         dateFilterType={dateFilterType}
         onDateFilterTypeChange={setDateFilterType}
@@ -31,10 +33,10 @@ export function Analytics() {
         onSelectedDatesChange={setSelectedDates}
       />
 
-      <div className="grid gap-5 md:grid-cols-2">
-        <CategorySpendingChart data={categoryData} />
-        <IncomeExpenseRatioChart data={pieData} />
-        <BudgetPerformanceChart data={categoryData} />
+      <div className="grid gap-6 md:grid-cols-2">
+        <CategorySpendingChart data={categoryData} isLoading={isLoading} />
+        <IncomeExpenseRatioChart data={pieData} isLoading={isLoading} />
+        <BudgetPerformanceChart data={categoryData} isLoading={isLoading} />
       </div>
     </div>
   );

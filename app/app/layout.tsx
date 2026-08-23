@@ -13,9 +13,9 @@ const layout = ({
       <div className="flex h-screen w-full">
         <SidebarApp />
 
-        <div className="flex w-full flex-col overflow-hidden bg-sidebar">
+        <div className="flex min-w-0 w-full flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
           <HomeNavBar />
-          <div className="flex-1 overflow-auto lg:overflow-hidden">
+          <div className="min-h-0 min-w-0 flex-1 overflow-auto lg:overflow-hidden">
             {children}
           </div>
         </div>

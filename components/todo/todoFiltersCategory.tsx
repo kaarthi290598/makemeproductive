@@ -50,8 +50,8 @@ const TodoFilterCategory = ({
       onValueChange={handleFilterChange}
       defaultValue=""
     >
-      <SelectTrigger className="h-9 w-[180px] gap-2 rounded-lg border-border/60 bg-background text-sm font-medium shadow-none transition-colors hover:bg-accent">
-        <Folder className="size-3.5 shrink-0 text-muted-foreground" />
+      <SelectTrigger className="h-9 w-[140px] gap-2 rounded-xl border-slate-200 bg-white text-sm font-semibold shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:w-[180px]">
+        <Folder className="size-3.5 shrink-0 text-slate-400" />
         <SelectValue placeholder="Category" />
       </SelectTrigger>
       <SelectContent>

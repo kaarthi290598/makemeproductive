@@ -16,9 +16,10 @@ import {
 type DatePickerProps = {
   value?: Date;
   onChange: (date: Date | undefined) => void;
+  className?: string;
 };
 
-export function CustomDatePicker({ value, onChange }: DatePickerProps) {
+export function CustomDatePicker({ value, onChange, className }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -27,18 +28,24 @@ export function CustomDatePicker({ value, onChange }: DatePickerProps) {
         <Button
           variant="outline"
           className={cn(
-            "h-10 w-full justify-start rounded-xl text-left font-normal",
+            "h-10 w-full min-w-0 justify-start overflow-hidden rounded-xl text-left font-normal",
             !value && "text-muted-foreground",
+            className,
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {value ? format(value, "PPP") : <span>Pick a date</span>}
+          <CalendarIcon className="mr-2 size-3.5 shrink-0" />
+          <span className="truncate">
+            {value ? format(value, "d MMM yyyy") : "Pick a date"}
+          </span>
         </Button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="z-[9999] rounded-md border bg-background p-0"
+        className="z-[9999] w-auto max-w-[calc(100vw-1.5rem)] rounded-md border bg-background p-0"
         align="start"
+        side="bottom"
+        sideOffset={4}
+        collisionPadding={16}
       >
         <Calendar
           mode="single"

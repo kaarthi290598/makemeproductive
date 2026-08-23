@@ -25,7 +25,6 @@ export async function fetchTodoList() {
     .eq("user_Id", userId)
     .order("order", { ascending: true });
 
-  console.log(data);
   if (error) {
     console.error("Error fetching todos:", error);
     throw new Error(`Error fetching todos: ${error.message}`);
@@ -77,8 +76,6 @@ export async function updateTodo({
 
   if (error) {
     console.error("Error updating todo:", error);
-  } else {
-    console.log("Todo updated:", data);
   }
   revalidatePath("/app/todo");
   return data;
@@ -198,8 +195,6 @@ export async function toggleTodo(todoId: number) {
 
   if (error) {
     console.error("Error updating todo:", error);
-  } else {
-    console.log("Todo updated:", data);
   }
 
   revalidatePath("/app/todo");

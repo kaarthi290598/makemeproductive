@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   BarChart,
   Bar,
@@ -14,6 +15,7 @@ import {
 } from "recharts";
 
 interface CategoryData {
+  id?: string;
   name: string;
   spent: number;
   budget: number;
@@ -23,35 +25,88 @@ interface CategoryData {
 interface BudgetPerformanceChartProps {
   data: CategoryData[];
   height?: number | string;
+  isLoading?: boolean;
+}
+
+function CategoryTick({
+  x,
+  y,
+  payload,
+}: {
+  x?: number;
+  y?: number;
+  payload?: { value: string };
+}) {
+  const label = payload?.value || "";
+  const truncated = label.length > 18 ? `${label.slice(0, 17)}…` : label;
+  return (
+    <g transform={`translate(${x ?? 0},${y ?? 0})`}>
+      <title>{label}</title>
+      <text
+        x={-8}
+        y={0}
+        dy={4}
+        textAnchor="end"
+        fontSize={11}
+        fontWeight={500}
+        fill="hsl(var(--foreground))"
+      >
+        {truncated}
+      </text>
+    </g>
+  );
 }
 
 export function BudgetPerformanceChart({
   data,
   height = 400,
+  isLoading = false,
 }: BudgetPerformanceChartProps) {
+  const chartHeight = Math.max(
+    typeof height === "number" ? height : 400,
+    data.length * 52 + 80,
+  );
+  const chartData = data.map((row, index) => ({
+    ...row,
+    label: row.name,
+    key: row.id || `${row.name}-${index}`,
+  }));
+
   return (
-    <Card className="overflow-hidden rounded-2xl border-border/40 shadow-none md:col-span-2">
-      <CardHeader className="border-b border-border/40 px-5 py-4">
-        <CardTitle className="text-sm font-semibold">Budget vs spent</CardTitle>
-        <p className="text-xs text-muted-foreground">Planned budget against actual spending</p>
+    <Card className="overflow-hidden rounded-xl border-slate-200 shadow-sm dark:border-slate-800 md:col-span-2">
+      <CardHeader className="border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+        <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">Budget vs spent</CardTitle>
+        <p className="text-xs text-slate-500 dark:text-slate-400">Planned budget against actual spending</p>
       </CardHeader>
       <CardContent className="pt-6">
         <div
           style={{
-            height: typeof height === "number" ? `${height}px` : height,
+            height: `${chartHeight}px`,
             width: "100%",
           }}
         >
-          {data.length === 0 ? (
+          {isLoading ? (
+            <div className="flex h-full flex-col justify-center gap-5 px-2" aria-hidden>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <Skeleton className="h-3 w-20 shrink-0" />
+                  <div className="flex-1 space-y-1.5">
+                    <Skeleton className="h-3 w-4/5 rounded-full" />
+                    <Skeleton className="h-3 w-3/5 rounded-full" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : data.length === 0 ? (
             <div className="flex h-full items-center justify-center italic text-muted-foreground text-sm">
               No data to compare.
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={data}
+                data={chartData}
                 layout="vertical"
-                margin={{ top: 10, right: 60, left: 0, bottom: 10 }}
+                margin={{ top: 10, right: 60, left: 8, bottom: 10 }}
                 barGap={4}
                 barCategoryGap="20%"
               >
@@ -68,13 +123,14 @@ export function BudgetPerformanceChart({
                   tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
                 />
                 <YAxis
-                  dataKey="name"
+                  dataKey="label"
                   type="category"
-                  width={120}
+                  width={128}
+                  interval={0}
                   tickMargin={8}
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 11, fontWeight: 500, fill: "hsl(var(--foreground))" }}
+                  tick={<CategoryTick />}
                 />
                 <Tooltip
                   cursor={{ fill: "hsl(var(--muted)/0.3)", radius: 4 }}

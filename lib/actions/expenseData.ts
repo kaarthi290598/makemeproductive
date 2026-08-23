@@ -252,10 +252,9 @@ export async function fetchExpenseStats(
       totalIncome += amount;
     } else if (row.type === "expense") {
       totalExpense += amount;
-      if (row.category_id) {
-        spentByCategory[row.category_id] =
-          (spentByCategory[row.category_id] || 0) + amount;
-      }
+      const categoryKey = row.category_id || "__uncategorized__";
+      spentByCategory[categoryKey] =
+        (spentByCategory[categoryKey] || 0) + amount;
     }
   }
 

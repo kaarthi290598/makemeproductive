@@ -20,7 +20,6 @@ import {
   Clock,
   Target,
   Sparkles,
-  CalendarDays,
 } from "lucide-react";
 import {
   Card,
@@ -38,6 +37,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
+import { ConsoleHeader, surfaceCardClass } from "@/components/finance/page-header";
 import {
   fetchDashboardData,
 } from "@/lib/actions/dashboardData";
@@ -112,13 +112,13 @@ const itemVariants = {
 function DashboardSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-4 w-40" />
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+        <Skeleton className="h-6 w-64" />
+        <Skeleton className="mt-2 h-3 w-40" />
       </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[...Array(4)].map((_, i) => (
-          <Skeleton key={i} className="h-32 rounded-xl" />
+          <Skeleton key={i} className="h-24 rounded-xl" />
         ))}
       </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -136,57 +136,81 @@ function StatCard({
   value,
   subtitle,
   icon: Icon,
-  iconBgClass,
-  iconColorClass,
+  tone,
   trend,
 }: {
   title: string;
   value: string;
   subtitle?: string;
   icon: React.ElementType;
-  iconBgClass: string;
-  iconColorClass: string;
+  tone: "blue" | "rose" | "emerald" | "violet";
   trend?: { value: string; positive: boolean } | null;
 }) {
+  const tones = {
+    blue: {
+      card: "border-blue-200/60 bg-gradient-to-br from-blue-50 to-blue-100/40 dark:border-blue-800/40 dark:from-blue-950/40 dark:to-blue-900/20",
+      icon: "bg-blue-600/10 text-blue-700 dark:text-blue-400",
+      label: "text-blue-600/80 dark:text-blue-400/80",
+      value: "text-blue-900 dark:text-blue-300",
+    },
+    rose: {
+      card: "border-rose-200/60 bg-gradient-to-br from-rose-50 to-rose-100/40 dark:border-rose-800/40 dark:from-rose-950/40 dark:to-rose-900/20",
+      icon: "bg-rose-600/10 text-rose-700 dark:text-rose-400",
+      label: "text-rose-600/80 dark:text-rose-400/80",
+      value: "text-rose-900 dark:text-rose-300",
+    },
+    emerald: {
+      card: "border-emerald-200/60 bg-gradient-to-br from-emerald-50 to-emerald-100/40 dark:border-emerald-800/40 dark:from-emerald-950/40 dark:to-emerald-900/20",
+      icon: "bg-emerald-600/10 text-emerald-700 dark:text-emerald-400",
+      label: "text-emerald-600/80 dark:text-emerald-400/80",
+      value: "text-emerald-900 dark:text-emerald-300",
+    },
+    violet: {
+      card: "border-violet-200/60 bg-gradient-to-br from-violet-50 to-violet-100/40 dark:border-violet-800/40 dark:from-violet-950/40 dark:to-violet-900/20",
+      icon: "bg-violet-600/10 text-violet-700 dark:text-violet-400",
+      label: "text-violet-600/80 dark:text-violet-400/80",
+      value: "text-violet-900 dark:text-violet-300",
+    },
+  }[tone];
+
   return (
     <motion.div variants={itemVariants}>
-      <Card className="group relative overflow-hidden border-border/50 bg-card transition-all duration-300 hover:border-border hover:shadow-md">
-        <div className="absolute inset-0 bg-gradient-to-br from-transparent to-muted/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-        <CardContent className="relative p-5">
-          <div className="flex items-start justify-between">
-            <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
-                {title}
-              </p>
-              <p className="text-2xl font-bold tracking-tight text-foreground">
-                {value}
-              </p>
-              {subtitle && (
-                <p className="text-xs text-muted-foreground">{subtitle}</p>
-              )}
-              {trend && (
-                <div
-                  className={`flex items-center gap-1 text-xs font-medium ${
-                    trend.positive ? "text-emerald-500" : "text-rose-500"
-                  }`}
-                >
-                  {trend.positive ? (
-                    <TrendingUp className="size-3" />
-                  ) : (
-                    <TrendingDown className="size-3" />
-                  )}
-                  {trend.value}
-                </div>
-              )}
-            </div>
-            <div
-              className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${iconBgClass}`}
-            >
-              <Icon className={`size-5 ${iconColorClass}`} />
-            </div>
+      <div className={`rounded-xl border p-3.5 ${tones.card}`}>
+        <div className="mb-1 flex items-center gap-2">
+          <div
+            className={`flex size-7 items-center justify-center rounded-lg ${tones.icon}`}
+          >
+            <Icon className="size-4" />
           </div>
-        </CardContent>
-      </Card>
+          <span
+            className={`text-[10px] font-bold uppercase tracking-wider ${tones.label}`}
+          >
+            {title}
+          </span>
+        </div>
+        <p className={`font-mono text-xl font-extrabold ${tones.value}`}>
+          {value}
+        </p>
+        {subtitle && (
+          <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+            {subtitle}
+          </p>
+        )}
+        {trend && (
+          <div
+            className={`mt-1 flex items-center gap-1 text-[11px] font-semibold ${
+              trend.positive ? "text-emerald-600" : "text-rose-600"
+            }`}
+          >
+            {trend.positive ? (
+              <TrendingUp className="size-3" />
+            ) : (
+              <TrendingDown className="size-3" />
+            )}
+            {trend.value}
+          </div>
+        )}
+      </div>
     </motion.div>
   );
 }
@@ -290,31 +314,27 @@ export default function Dashboard() {
     >
       {/* ── Greeting ────────────────────────────────────────────── */}
       <motion.div variants={itemVariants}>
-        <h1 className="text-xl font-bold tracking-tight text-foreground lg:text-2xl">
-          {getGreeting()}{" "}
-          <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            👋
-          </span>
-        </h1>
-        <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground lg:text-sm">
-          <CalendarDays className="size-3.5" />
-          {format(new Date(), "EEEE, MMMM d, yyyy")}
-        </p>
+        <ConsoleHeader
+          icon={
+            <Sparkles className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+          }
+          title={`${getGreeting()}`}
+          subtitle={format(new Date(), "EEEE, MMMM d, yyyy")}
+        />
       </motion.div>
 
       {/* ── Stat Cards ──────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Tasks"
-            value={`${data.todos.pendingCount} pending`}
+          value={`${data.todos.pendingCount} pending`}
           subtitle={
             totalTodos > 0
               ? `${completedCount}/${totalTodos} done · ${completionPct}%`
               : "No tasks yet"
           }
           icon={ListTodo}
-          iconBgClass="bg-blue-500/10"
-          iconColorClass="text-blue-500"
+          tone="blue"
         />
         <StatCard
           title="This Month"
@@ -325,8 +345,7 @@ export default function Dashboard() {
               : "No budget set"
           }
           icon={Wallet}
-          iconBgClass="bg-rose-500/10"
-          iconColorClass="text-rose-500"
+          tone="rose"
           trend={
             totalIncomeThisMonth > 0
               ? {
@@ -341,8 +360,7 @@ export default function Dashboard() {
           value={formatCurrency(totalCurrentValue)}
           subtitle={`${formatCurrency(totalInvested)} invested`}
           icon={TrendingUp}
-          iconBgClass="bg-emerald-500/10"
-          iconColorClass="text-emerald-500"
+          tone="emerald"
           trend={
             totalInvested > 0
               ? {
@@ -358,11 +376,10 @@ export default function Dashboard() {
           subtitle={
             totalDebtRemaining > 0
               ? `${formatCurrency(totalDebtRemaining)} debt remaining`
-              : "Debt free! 🎉"
+              : "Debt free"
           }
           icon={Sparkles}
-          iconBgClass="bg-purple-500/10"
-          iconColorClass="text-purple-500"
+          tone="violet"
           trend={
             netWorth > 0
               ? { value: "Positive", positive: true }
@@ -377,19 +394,19 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Pending Tasks */}
         <motion.div variants={itemVariants}>
-          <Card className="border-border/50 bg-card">
+          <Card className={surfaceCardClass}>
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div className="flex items-center gap-2">
                 <div className="flex size-8 items-center justify-center rounded-lg bg-blue-500/10">
                   <ListTodo className="size-4 text-blue-500" />
                 </div>
-                <CardTitle className="text-sm font-semibold">
+                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
                   Pending Tasks
                 </CardTitle>
               </div>
               <Link
                 href="/app/todo"
-                className="flex items-center gap-1 text-xs font-medium text-primary transition-colors hover:text-primary/80"
+                className="flex items-center gap-1 text-xs font-bold text-emerald-600 transition-colors hover:text-emerald-500"
               >
                 View all
                 <ArrowRight className="size-3" />
@@ -456,19 +473,19 @@ export default function Dashboard() {
 
         {/* Recent Expenses */}
         <motion.div variants={itemVariants}>
-          <Card className="border-border/50 bg-card">
+          <Card className={surfaceCardClass}>
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div className="flex items-center gap-2">
                 <div className="flex size-8 items-center justify-center rounded-lg bg-rose-500/10">
                   <Wallet className="size-4 text-rose-500" />
                 </div>
-                <CardTitle className="text-sm font-semibold">
+                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
                   Recent Transactions
                 </CardTitle>
               </div>
               <Link
                 href="/app/expense-tracker/transactions"
-                className="flex items-center gap-1 text-xs font-medium text-primary transition-colors hover:text-primary/80"
+                className="flex items-center gap-1 text-xs font-bold text-emerald-600 transition-colors hover:text-emerald-500"
               >
                 View all
                 <ArrowRight className="size-3" />
@@ -508,10 +525,10 @@ export default function Dashboard() {
                         </p>
                       </div>
                       <span
-                        className={`shrink-0 text-sm font-semibold tabular-nums ${
+                        className={`shrink-0 font-mono text-sm font-bold tabular-nums ${
                           tx.type === "income"
-                            ? "text-emerald-500"
-                            : "text-foreground"
+                            ? "text-emerald-600"
+                            : "text-slate-900 dark:text-white"
                         }`}
                       >
                         {tx.type === "income" ? "+" : "-"}
@@ -530,19 +547,19 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Investment Breakdown */}
         <motion.div variants={itemVariants}>
-          <Card className="border-border/50 bg-card">
+          <Card className={surfaceCardClass}>
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div className="flex items-center gap-2">
                 <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-500/10">
                   <TrendingUp className="size-4 text-emerald-500" />
                 </div>
-                <CardTitle className="text-sm font-semibold">
+                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
                   Investment Breakdown
                 </CardTitle>
               </div>
               <Link
                 href="/app/portfolio/investments"
-                className="flex items-center gap-1 text-xs font-medium text-primary transition-colors hover:text-primary/80"
+                className="flex items-center gap-1 text-xs font-bold text-emerald-600 transition-colors hover:text-emerald-500"
               >
                 Details
                 <ArrowRight className="size-3" />
@@ -646,19 +663,19 @@ export default function Dashboard() {
 
         {/* Debt Overview */}
         <motion.div variants={itemVariants}>
-          <Card className="border-border/50 bg-card">
+          <Card className={surfaceCardClass}>
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div className="flex items-center gap-2">
                 <div className="flex size-8 items-center justify-center rounded-lg bg-purple-500/10">
                   <Landmark className="size-4 text-purple-500" />
                 </div>
-                <CardTitle className="text-sm font-semibold">
+                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
                   Debt Overview
                 </CardTitle>
               </div>
               <Link
                 href="/app/portfolio/debts"
-                className="flex items-center gap-1 text-xs font-medium text-primary transition-colors hover:text-primary/80"
+                className="flex items-center gap-1 text-xs font-bold text-emerald-600 transition-colors hover:text-emerald-500"
               >
                 Details
                 <ArrowRight className="size-3" />
@@ -740,9 +757,9 @@ export default function Dashboard() {
 
       {/* ── Quick Links ─────────────────────────────────────────── */}
       <motion.div variants={itemVariants}>
-        <Card className="border-border/50 bg-card">
+        <Card className={surfaceCardClass}>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold">Quick Links</CardTitle>
+            <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">Quick Links</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
@@ -750,7 +767,7 @@ export default function Dashboard() {
                 <Link
                   key={link.title}
                   href={link.href}
-                  className="group flex flex-col items-center gap-2 rounded-xl border border-border/40 bg-muted/20 p-4 transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:shadow-sm"
+                  className="group flex flex-col items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-4 transition-all duration-200 hover:border-emerald-200 hover:bg-emerald-50/60 hover:shadow-sm dark:border-slate-800 dark:bg-slate-950/40 dark:hover:border-emerald-800 dark:hover:bg-emerald-950/20"
                 >
                   <div
                     className={`flex size-10 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110 ${link.color}`}

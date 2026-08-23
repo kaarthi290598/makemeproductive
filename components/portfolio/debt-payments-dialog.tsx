@@ -4,12 +4,12 @@ import React, { useState } from "react";
 import { usePortfolioStore, Debt, DebtPayment } from "@/hooks/use-portfolio-store";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Pencil, Trash2, Calendar, IndianRupee } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { AddEditDebtPaymentDialog } from "./add-edit-dialogs";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
+import { consoleDialogClass } from "@/components/finance/page-header";
 
 interface DebtPaymentsDialogProps {
   open: boolean;
@@ -47,46 +47,56 @@ export function DebtPaymentsDialog({ open, setOpen, debt }: DebtPaymentsDialogPr
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="flex max-h-[85vh] flex-col gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-[480px]">
-          <DialogHeader className="space-y-1 border-b border-border/40 px-5 py-4">
-            <DialogTitle className="text-lg">{debt.name}</DialogTitle>
-            <DialogDescription>Payment history</DialogDescription>
+        <DialogContent className={consoleDialogClass}>
+          <DialogHeader className="space-y-1 border-b border-slate-100 px-5 py-4 pr-12 dark:border-slate-800">
+            <div className="flex items-center gap-2.5">
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white">
+                <IndianRupee className="size-4" />
+              </span>
+              <div className="min-w-0 text-left">
+                <DialogTitle className="text-base font-semibold tracking-tight text-slate-900 dark:text-white sm:text-lg">
+                  {debt.name}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-slate-500 dark:text-slate-400">
+                  Payment history
+                </DialogDescription>
+              </div>
+            </div>
           </DialogHeader>
 
-          <div className="mt-0 flex flex-1 flex-col overflow-hidden px-5 py-4">
-            <ScrollArea className="h-[400px] pr-3">
-              {(!debt.payments || debt.payments.length === 0) ? (
-                <div className="rounded-2xl border border-dashed border-border/60 py-12 text-center text-muted-foreground">
-                  <IndianRupee className="mx-auto mb-2 size-7 opacity-20" />
-                  <p className="text-sm font-medium">No payments yet</p>
+          <div className="space-y-2 px-4 py-3 sm:px-5 sm:py-3.5">
+            {(!debt.payments || debt.payments.length === 0) ? (
+                <div className="rounded-xl border border-dashed border-slate-200 py-12 text-center text-slate-500 dark:border-slate-800">
+                  <IndianRupee className="mx-auto mb-2 size-7 text-slate-300" />
+                  <p className="text-sm font-semibold">No payments yet</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {debt.payments.map((p) => (
-                    <div key={p.id} className="flex items-center justify-between gap-3 rounded-xl border border-border/40 px-3 py-3">
+                    <div key={p.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3 py-3 dark:border-slate-800">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <Calendar className="size-3.5 text-muted-foreground" />
-                          <span className="text-xs font-medium text-foreground">
+                          <Calendar className="size-3.5 text-slate-400" />
+                          <span className="text-xs font-semibold text-slate-900 dark:text-white">
                             {format(parseISO(p.date), "MMM d, yyyy")}
                           </span>
                         </div>
                         <div className="flex flex-wrap items-center gap-3 text-sm">
                           {p.principalAmount > 0 && (
                             <div>
-                              <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground block">Principal</span>
-                              <span className="font-semibold text-foreground">₹{p.principalAmount.toLocaleString()}</span>
+                              <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Principal</span>
+                              <span className="font-mono font-bold text-slate-900 dark:text-white">₹{p.principalAmount.toLocaleString()}</span>
                             </div>
                           )}
                           {p.interestAmount > 0 && (
                             <div>
-                              <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground block">Interest</span>
-                              <span className="font-semibold text-emerald-600">₹{p.interestAmount.toLocaleString()}</span>
+                              <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Interest</span>
+                              <span className="font-mono font-bold text-emerald-600">₹{p.interestAmount.toLocaleString()}</span>
                             </div>
                           )}
                         </div>
                         {p.note && (
-                          <p className="text-xs text-muted-foreground mt-1.5 line-clamp-1 italic">
+                          <p className="mt-1.5 line-clamp-1 text-xs italic text-slate-500">
                             &ldquo;{p.note}&rdquo;
                           </p>
                         )}
@@ -96,7 +106,7 @@ export function DebtPaymentsDialog({ open, setOpen, debt }: DebtPaymentsDialogPr
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="size-8 rounded-full text-muted-foreground"
+                          className="size-8 rounded-lg text-slate-400 hover:text-slate-700"
                           onClick={() => {
                             setEditPayment(p);
                             setEditOpen(true);
@@ -115,7 +125,7 @@ export function DebtPaymentsDialog({ open, setOpen, debt }: DebtPaymentsDialogPr
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="size-8 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                              className="size-8 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600"
                               disabled={deletingId === p.id}
                             >
                               <Trash2 className="size-4" />
@@ -127,19 +137,11 @@ export function DebtPaymentsDialog({ open, setOpen, debt }: DebtPaymentsDialogPr
                   ))}
                 </div>
               )}
-            </ScrollArea>
           </div>
 
-          <div className="mt-auto flex justify-between border-t border-border/40 px-5 py-4">
+          <div className="mt-auto flex justify-end border-t border-slate-100 px-5 py-4 dark:border-slate-800">
             <Button
-              variant="outline"
-              className="h-10 rounded-full"
-              onClick={() => setOpen(false)}
-            >
-              Close
-            </Button>
-            <Button
-              className="h-10 rounded-full px-5"
+              className="h-11 rounded-xl bg-rose-600 px-5 text-sm font-bold text-white shadow-lg shadow-rose-600/20 hover:bg-rose-500"
               onClick={() => {
                 setEditPayment(null);
                 setEditOpen(true);

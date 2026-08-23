@@ -58,19 +58,19 @@ export function PeriodFilter({
   };
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-border/40 bg-card/80 p-3 shadow-sm backdrop-blur-sm">
+    <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-4">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="inline-flex rounded-full bg-muted/80 p-1">
+        <div className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/60 bg-slate-100 p-1 text-xs dark:border-slate-700/60 dark:bg-slate-800">
           {(["month", "year", "all"] as const).map((opt) => (
             <button
               key={opt}
               type="button"
               onClick={() => onDateFilterTypeChange(opt)}
               className={cn(
-                "rounded-full px-3.5 py-1.5 text-xs font-semibold capitalize transition-all",
+                "rounded-lg px-3.5 py-1.5 font-bold capitalize transition-all",
                 dateFilterType === opt
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground",
+                  ? "bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white"
+                  : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200",
               )}
             >
               {opt === "all" ? "All time" : opt}
@@ -80,7 +80,7 @@ export function PeriodFilter({
 
         {(dateFilterType === "month" || dateFilterType === "year") && (
           <Select value={year} onValueChange={setYear}>
-            <SelectTrigger className="h-8 w-[92px] rounded-full border-border/50 bg-background text-xs shadow-none">
+            <SelectTrigger className="h-8 w-[92px] rounded-lg border-slate-200 bg-white text-xs font-semibold shadow-sm dark:border-slate-700 dark:bg-slate-900">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -109,10 +109,10 @@ export function PeriodFilter({
                 type="button"
                 onClick={() => toggleMonth(month.key)}
                 className={cn(
-                  "rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all",
+                  "rounded-lg px-2.5 py-1 text-[11px] font-bold transition-all",
                   selected
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground",
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white",
                 )}
               >
                 {month.short}

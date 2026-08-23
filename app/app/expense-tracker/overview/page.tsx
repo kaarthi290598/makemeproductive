@@ -18,6 +18,7 @@ import {
   PeriodFilter,
   type DateFilterType,
 } from "@/components/finance/period-filter";
+import { useReportTabReadyAfterFirstLoad } from "@/components/expense-tracker/tab-ready";
 
 export default function OverviewPage() {
   const [dateFilterType, setDateFilterType] = useState<DateFilterType>("month");
@@ -27,14 +28,15 @@ export default function OverviewPage() {
   const [personFilter, setPersonFilter] = useState<string>("all");
   const persons = useExpenseStore((s) => s.persons);
 
-  const { categoryData } = useAnalyticsData(
+  const { categoryData, isLoading } = useAnalyticsData(
     dateFilterType,
     selectedDates,
     personFilter,
   );
+  useReportTabReadyAfterFirstLoad(isLoading);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <PeriodFilter
         dateFilterType={dateFilterType}
         onDateFilterTypeChange={setDateFilterType}
@@ -42,7 +44,7 @@ export default function OverviewPage() {
         onSelectedDatesChange={setSelectedDates}
         extra={
           <Select value={personFilter} onValueChange={setPersonFilter}>
-            <SelectTrigger className="h-8 w-[140px] rounded-full border-border/50 bg-background text-xs shadow-none">
+            <SelectTrigger className="h-8 w-full rounded-lg border-slate-200 bg-white text-xs font-semibold shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:w-[140px]">
               <SelectValue placeholder="All people" />
             </SelectTrigger>
             <SelectContent>
@@ -63,9 +65,9 @@ export default function OverviewPage() {
         personFilter={personFilter}
       />
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-7">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-7">
         <div className="col-span-1 lg:col-span-4">
-          <CategorySpendingChart data={categoryData} />
+          <CategorySpendingChart data={categoryData} isLoading={isLoading} />
         </div>
         <div className="col-span-1 lg:col-span-3">
           <RecentTransactions

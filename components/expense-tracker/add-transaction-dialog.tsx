@@ -15,13 +15,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { PlusCircle, Loader2 } from "lucide-react";
+  PlusCircle,
+  Loader2,
+  ArrowUpRight,
+  ArrowDownRight,
+  IndianRupee,
+  Send,
+  User,
+} from "lucide-react";
 import { cn, formatDateToLocalISO, parseLocalISODate } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CustomDatePicker } from "../customDatePicker";
@@ -29,6 +30,12 @@ import { CustomDatePicker } from "../customDatePicker";
 import { toast } from "sonner";
 import { Transaction } from "@/types/expense";
 import { useInvalidateExpense } from "@/hooks/use-expense-queries";
+import {
+  consoleDialogBodyClass,
+  consoleDialogClass,
+  consoleDialogFormClass,
+} from "@/components/finance/page-header";
+import { ChipScroll } from "@/components/ui/chip-scroll";
 
 interface AddTransactionDialogProps {
   defaultType?: "income" | "expense";
@@ -36,6 +43,12 @@ interface AddTransactionDialogProps {
   transactionToEdit?: Transaction;
   onOpenChange?: (open: boolean) => void;
 }
+
+const fieldLabelClass =
+  "block text-xs font-semibold text-slate-700 dark:text-slate-300";
+
+const choiceIdleClass =
+  "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400";
 
 export function AddTransactionDialog({
   defaultType = "expense",
@@ -55,16 +68,16 @@ export function AddTransactionDialog({
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [note, setNote] = useState("");
   const [needsSettlement, setNeedsSettlement] = useState(false);
-  const [paidBy, setPaidBy] = useState<string>(""); // Default empty, effect will set it
+  const [paidBy, setPaidBy] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [addAnother, setAddAnother] = useState(false);
 
   const isEditMode = !!transactionToEdit;
+  const isCredit = type === "income";
 
   useEffect(() => {
     if (open) {
       if (transactionToEdit) {
-        // Edit Mode: Pre-fill
         setType(transactionToEdit.type);
         setAmount(transactionToEdit.amount.toString());
         setCategoryId(transactionToEdit.category_id || "");
@@ -76,7 +89,6 @@ export function AddTransactionDialog({
             (persons.length > 0 ? persons[0].name : ""),
         );
       } else {
-        // Add Mode: Reset to defaults
         setType(defaultType);
         setAmount("");
         setCategoryId("");
@@ -88,7 +100,6 @@ export function AddTransactionDialog({
     }
   }, [open, defaultType, transactionToEdit, persons]);
 
-  // Handle default payer change when category changes
   useEffect(() => {
     if (type === "expense" && categoryId) {
       const category = categories.find((c) => c.id === categoryId);
@@ -98,7 +109,8 @@ export function AddTransactionDialog({
     }
   }, [categoryId, type, categories]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!amount || !date) {
       toast.error("Please fill in Amount and Date");
       return;
@@ -140,8 +152,8 @@ export function AddTransactionDialog({
         if (onOpenChange) onOpenChange(false);
         resetForm();
       }
-    } catch (err) {
-      // Error handled by store, just stop loading
+    } catch {
+      // Error handled by store
     } finally {
       setIsSubmitting(false);
     }
@@ -176,147 +188,263 @@ export function AddTransactionDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-[420px]">
-        <DialogHeader className="space-y-1 border-b border-border/40 px-5 py-4">
-          <DialogTitle className="text-lg">
-            {isEditMode ? "Edit" : "Add"}{" "}
-            {type === "income" ? "credit" : "debit"}
-          </DialogTitle>
-          <DialogDescription>
-            {isEditMode ? "Update this entry." : "Takes a few seconds."}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 px-5 py-4">
-          <div className="inline-flex w-full rounded-full bg-muted/80 p-1">
-            <button
-              type="button"
-              onClick={() => setType("income")}
-              className={cn(
-                "flex-1 rounded-full py-2 text-xs font-semibold transition-all",
-                type === "income"
-                  ? "bg-emerald-600 text-white shadow-sm"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              Credit
-            </button>
-            <button
-              type="button"
-              onClick={() => setType("expense")}
-              className={cn(
-                "flex-1 rounded-full py-2 text-xs font-semibold transition-all",
-                type === "expense"
-                  ? "bg-foreground text-background shadow-sm"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              Debit
-            </button>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="amount">Amount</Label>
-            <div className="relative">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                ₹
+      <DialogContent className={consoleDialogClass}>
+        <form onSubmit={handleSubmit} className={consoleDialogFormClass}>
+          <DialogHeader className="shrink-0 space-y-0.5 border-b border-slate-100 px-4 py-2.5 pr-12 dark:border-slate-800 sm:px-5">
+            <div className="flex items-center gap-2.5">
+              <span
+                className={cn(
+                  "flex size-8 shrink-0 items-center justify-center rounded-full text-white",
+                  isCredit ? "bg-emerald-600" : "bg-rose-600",
+                )}
+              >
+                {isCredit ? (
+                  <ArrowUpRight className="size-4" />
+                ) : (
+                  <ArrowDownRight className="size-4" />
+                )}
               </span>
-              <Input
-                id="amount"
-                type="number"
-                autoFocus
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="h-11 rounded-xl pl-7 text-lg font-semibold"
-                placeholder="0"
-              />
+              <div className="min-w-0 text-left">
+                <DialogTitle className="text-base font-semibold tracking-tight text-slate-900 dark:text-white sm:text-lg">
+                  {isEditMode ? "Edit" : "Add"} {isCredit ? "credit" : "debit"}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-slate-500 dark:text-slate-400">
+                  {isEditMode
+                    ? "Update this entry and save changes."
+                    : "Log cash in or cash out in a few seconds."}
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className={consoleDialogBodyClass}>
+            <div className="w-full self-start space-y-3">
+              {!isEditMode && (
+                <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setType("income")}
+                  className={cn(
+                    "flex items-center justify-center gap-1.5 rounded-xl border px-3 py-2.5 text-xs font-bold transition-all",
+                    isCredit
+                      ? "border-emerald-300 bg-emerald-50 text-emerald-900 shadow-sm dark:border-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-200"
+                      : choiceIdleClass,
+                  )}
+                >
+                  <ArrowUpRight className="size-3.5" />
+                  Credit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setType("expense")}
+                  className={cn(
+                    "flex items-center justify-center gap-1.5 rounded-xl border px-3 py-2.5 text-xs font-bold transition-all",
+                    !isCredit
+                      ? "border-rose-300 bg-rose-50 text-rose-900 shadow-sm dark:border-rose-700 dark:bg-rose-950/60 dark:text-rose-200"
+                      : choiceIdleClass,
+                  )}
+                >
+                  <ArrowDownRight className="size-3.5" />
+                  Debit
+                </button>
+              </div>
+            )}
+
+            <div
+              className={cn(
+                "rounded-xl border p-3.5",
+                isCredit
+                  ? "border-emerald-200/80 bg-emerald-50/70 dark:border-emerald-800/60 dark:bg-emerald-950/40"
+                  : "border-rose-200/80 bg-rose-50/70 dark:border-rose-800/60 dark:bg-rose-950/40",
+              )}
+            >
+              <Label htmlFor="amount" className={fieldLabelClass}>
+                Amount *
+              </Label>
+                <div className="relative mt-1">
+                <IndianRupee
+                  className={cn(
+                      "pointer-events-none absolute left-0 top-1/2 size-4 -translate-y-1/2",
+                    isCredit
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-rose-600 dark:text-rose-400",
+                  )}
+                />
+                <Input
+                  id="amount"
+                  type="number"
+                  inputMode="decimal"
+                  autoFocus
+                  min="0"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value.replace(/-/g, ""))}
+                  className={cn(
+                    "h-10 border-0 bg-transparent pl-6 text-xl font-black tracking-tight shadow-none focus-visible:ring-0",
+                    "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
+                    isCredit
+                      ? "text-emerald-700 dark:text-emerald-300"
+                      : "text-rose-700 dark:text-rose-300",
+                  )}
+                  placeholder="0"
+                />
+                </div>
+              </div>
+            </div>
+
+            <div className="min-w-0 space-y-2.5 rounded-xl border border-slate-200 p-3 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <span className="flex size-6 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                  1
+                </span>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                  Details
+                </p>
+              </div>
+
+              {type === "expense" && (
+                <div className="space-y-1.5">
+                  <span className={fieldLabelClass}>Category *</span>
+                  {categories.length === 0 ? (
+                    <p className="text-xs text-slate-500">
+                      Add categories in Settings first.
+                    </p>
+                  ) : (
+                    <ChipScroll>
+                      {categories.map((cat) => {
+                        const active = categoryId === cat.id;
+                        return (
+                          <button
+                            key={cat.id}
+                            type="button"
+                            onClick={() => setCategoryId(cat.id)}
+                            className={cn(
+                              "inline-flex shrink-0 items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-xs font-bold transition-all",
+                              active
+                                ? "border-rose-300 bg-rose-50 text-rose-900 shadow-sm dark:border-rose-700 dark:bg-rose-950/60 dark:text-rose-200"
+                                : choiceIdleClass,
+                            )}
+                          >
+                            <span
+                              className="size-2 shrink-0 rounded-full"
+                              style={{ backgroundColor: cat.color }}
+                            />
+                            {cat.name}
+                          </button>
+                        );
+                      })}
+                    </ChipScroll>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <span className={fieldLabelClass}>Paid by *</span>
+                {persons.length === 0 ? (
+                  <p className="text-xs text-slate-500">
+                    Add people in Settings first.
+                  </p>
+                ) : (
+                  <div
+                    className={cn(
+                      "grid gap-1.5",
+                      persons.length <= 2 ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3",
+                    )}
+                  >
+                    {persons.map((person) => {
+                      const active = paidBy === person.name;
+                      return (
+                        <button
+                          key={person.id}
+                          type="button"
+                          onClick={() => setPaidBy(person.name)}
+                          className={cn(
+                            "inline-flex items-center justify-center gap-1.5 rounded-xl border px-2.5 py-2 text-xs font-bold transition-all",
+                            active
+                              ? isCredit
+                                ? "border-emerald-300 bg-emerald-50 text-emerald-900 shadow-sm dark:border-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-200"
+                                : "border-rose-300 bg-rose-50 text-rose-900 shadow-sm dark:border-rose-700 dark:bg-rose-950/60 dark:text-rose-200"
+                              : choiceIdleClass,
+                          )}
+                        >
+                          <User className="size-3" />
+                          {person.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="min-w-0 space-y-1">
+                  <span className={fieldLabelClass}>Date *</span>
+                  <CustomDatePicker
+                    value={date}
+                    onChange={setDate}
+                    className="h-9 min-w-0 rounded-lg border-slate-200 bg-white font-mono text-xs font-semibold shadow-sm dark:border-slate-700 dark:bg-slate-900 [&_svg]:text-emerald-600 dark:[&_svg]:text-emerald-400"
+                  />
+                </div>
+                <div className="min-w-0 space-y-1">
+                  <Label htmlFor="note" className={fieldLabelClass}>
+                    Note
+                  </Label>
+                  <Input
+                    id="note"
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    className="h-9 rounded-lg border-slate-200 bg-white text-sm shadow-sm focus-visible:border-emerald-500 focus-visible:ring-emerald-500/10 dark:border-slate-700 dark:bg-slate-900"
+                    placeholder="Optional"
+                  />
+                </div>
+              </div>
+
+              {type === "expense" && (
+                <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/80 px-2.5 py-2 dark:border-slate-800 dark:bg-slate-900/50">
+                  <Checkbox
+                    id="settlement"
+                    checked={needsSettlement}
+                    onCheckedChange={(c) => setNeedsSettlement(!!c)}
+                  />
+                  <span className="text-[11px] font-bold text-slate-800 dark:text-slate-100">
+                    Needs settlement
+                  </span>
+                </label>
+              )}
             </div>
           </div>
 
-          {type === "expense" && (
-            <div className="space-y-1.5">
-              <Label htmlFor="category">Category</Label>
-              <Select value={categoryId} onValueChange={setCategoryId}>
-                <SelectTrigger className="h-10 rounded-xl">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="paidBy">Paid by</Label>
-              <Select value={paidBy} onValueChange={setPaidBy}>
-                <SelectTrigger className="h-10 rounded-xl">
-                  <SelectValue placeholder="Who paid" />
-                </SelectTrigger>
-                <SelectContent>
-                  {persons.map((p) => (
-                    <SelectItem key={p.id} value={p.name}>
-                      {p.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Date</Label>
-              <CustomDatePicker value={date} onChange={setDate} />
-            </div>
-          </div>
-
-          {type === "expense" && (
-            <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border/50 px-3 py-2.5">
-              <Checkbox
-                id="settlement"
-                checked={needsSettlement}
-                onCheckedChange={(c) => setNeedsSettlement(!!c)}
-              />
-              <span className="text-sm">Needs settlement</span>
-            </label>
-          )}
-
-          <div className="space-y-1.5">
-            <Label htmlFor="note">Note</Label>
-            <Input
-              id="note"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              className="h-10 rounded-xl"
-              placeholder="Optional"
-            />
-          </div>
-        </div>
-        <DialogFooter className="border-t border-border/40 px-5 py-4 sm:justify-between">
-          {!isEditMode ? (
-            <label className="flex items-center gap-2 text-sm">
-              <Checkbox
-                id="addAnother"
-                checked={addAnother}
-                onCheckedChange={(c) => setAddAnother(!!c)}
-              />
-              Add another
-            </label>
-          ) : (
-            <span />
-          )}
-          <Button
-            type="submit"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="h-10 rounded-full px-5"
-          >
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isEditMode ? "Update" : "Save"}
-          </Button>
-        </DialogFooter>
+          <DialogFooter className="shrink-0 flex-col-reverse gap-2 border-t border-slate-100 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 sm:px-5">
+            {!isEditMode ? (
+              <label className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                <Checkbox
+                  id="addAnother"
+                  checked={addAnother}
+                  onCheckedChange={(c) => setAddAnother(!!c)}
+                />
+                Add another
+              </label>
+            ) : (
+              <span />
+            )}
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className={cn(
+                "h-10 w-full rounded-xl px-5 text-sm font-bold text-white shadow-lg sm:w-auto sm:min-w-[148px]",
+                isCredit
+                  ? "bg-emerald-600 shadow-emerald-600/20 hover:bg-emerald-500"
+                  : "bg-rose-600 shadow-rose-600/20 hover:bg-rose-500",
+              )}
+            >
+              {isSubmitting ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Send className="size-4" />
+              )}
+              {isEditMode ? "Update entry" : isCredit ? "Save credit" : "Save debit"}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

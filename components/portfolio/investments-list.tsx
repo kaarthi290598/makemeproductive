@@ -34,6 +34,11 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import {
+  surfaceCardClass,
+  toolbarInputClass,
+  toolbarSelectClass,
+} from "@/components/finance/page-header";
 
 export function InvestmentsList() {
   const investments = usePortfolioStore((s) => s.investments);
@@ -99,18 +104,18 @@ export function InvestmentsList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative min-w-[180px] flex-1">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+      <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="relative min-w-0 flex-1">
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
           <Input
             placeholder="Search assets"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-9 rounded-full border-border/50 bg-card pl-9 text-sm shadow-none"
+            className={toolbarInputClass}
           />
         </div>
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="h-9 w-[150px] rounded-full border-border/50 bg-card text-xs shadow-none">
+          <SelectTrigger className={cn(toolbarSelectClass, "w-full sm:w-[150px]")}>
             <SelectValue placeholder="Category" />
           </SelectTrigger>
           <SelectContent>
@@ -137,19 +142,19 @@ export function InvestmentsList() {
           return (
             <Card
               key={inv.id}
-              className="overflow-hidden rounded-2xl border-border/40 shadow-none"
+              className={surfaceCardClass}
             >
-              <CardContent className="flex flex-col gap-4 p-5">
+              <CardContent className="flex flex-col gap-4 p-4 sm:p-5">
                 <div className="flex items-start gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="truncate text-sm font-semibold">
+                      <h3 className="truncate text-sm font-bold text-slate-900 dark:text-white">
                         {inv.name}
                       </h3>
                       <Badge variant={inv.category} />
                     </div>
                     {inv.note && (
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                      <p className="mt-0.5 truncate text-xs text-slate-500">
                         {inv.note}
                       </p>
                     )}
@@ -157,8 +162,7 @@ export function InvestmentsList() {
                   <div className="flex shrink-0 items-center gap-0.5">
                     <Button
                       size="sm"
-                      variant="outline"
-                      className="h-8 gap-1 rounded-full px-3 text-xs"
+                      className="h-8 gap-1 rounded-lg bg-emerald-600 px-3 text-xs font-bold text-white hover:bg-emerald-500"
                       onClick={() => {
                         setActiveInvForContrib(inv);
                         setEditContrib(null);
@@ -171,7 +175,7 @@ export function InvestmentsList() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="size-8 rounded-full text-muted-foreground"
+                      className="size-8 rounded-lg text-slate-400 hover:text-slate-700"
                       onClick={() => {
                         setEditInv(inv);
                         setEditOpen(true);
@@ -190,7 +194,7 @@ export function InvestmentsList() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="size-8 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                          className="size-8 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40"
                           disabled={deletingId === inv.id}
                         >
                           <Trash2 className="size-3.5" />
@@ -202,10 +206,10 @@ export function InvestmentsList() {
 
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <div>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                       Invested
                     </p>
-                    <p className="mt-0.5 text-sm font-semibold tabular-nums">
+                    <p className="mt-0.5 font-mono text-sm font-bold tabular-nums text-slate-900 dark:text-white">
                       ₹
                       {investedAmount.toLocaleString("en-IN", {
                         maximumFractionDigits: 0,
@@ -213,10 +217,10 @@ export function InvestmentsList() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                       Current
                     </p>
-                    <p className="mt-0.5 text-sm font-semibold tabular-nums">
+                    <p className="mt-0.5 font-mono text-sm font-bold tabular-nums text-slate-900 dark:text-white">
                       ₹
                       {currentValue.toLocaleString("en-IN", {
                         maximumFractionDigits: 0,
@@ -224,12 +228,12 @@ export function InvestmentsList() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                       Gain / loss
                     </p>
                     <p
                       className={cn(
-                        "mt-0.5 flex items-center gap-1 text-sm font-semibold tabular-nums",
+                        "mt-0.5 flex items-center gap-1 font-mono text-sm font-bold tabular-nums",
                         isProfitable ? "text-emerald-600" : "text-rose-600",
                       )}
                     >
@@ -245,10 +249,10 @@ export function InvestmentsList() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-[11px] text-muted-foreground">ROI</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">ROI</p>
                     <p
                       className={cn(
-                        "mt-0.5 text-sm font-semibold tabular-nums",
+                        "mt-0.5 font-mono text-sm font-bold tabular-nums",
                         isProfitable ? "text-emerald-600" : "text-rose-600",
                       )}
                     >
@@ -261,7 +265,7 @@ export function InvestmentsList() {
                 <button
                   type="button"
                   onClick={() => toggleExpand(inv.id)}
-                  className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+                  className="flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
                 >
                   History ({inv.contributionCount})
                   {isExpanded ? (
@@ -272,13 +276,13 @@ export function InvestmentsList() {
                 </button>
 
                 {isExpanded && (
-                  <div className="-mx-5 -mb-5 divide-y divide-border/40 border-t border-border/40 bg-muted/20">
+                  <div className="-mx-5 -mb-5 divide-y divide-slate-100 border-t border-slate-100 bg-slate-50 dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-950/40">
                     {!inv.historyLoaded ? (
-                      <p className="px-5 py-6 text-center text-xs text-muted-foreground">
+                      <p className="px-5 py-6 text-center text-xs text-slate-500">
                         Loading history...
                       </p>
                     ) : inv.contributions.length === 0 ? (
-                      <p className="px-5 py-6 text-center text-xs text-muted-foreground">
+                      <p className="px-5 py-6 text-center text-xs text-slate-500">
                         No contributions yet.
                       </p>
                     ) : (
@@ -288,19 +292,19 @@ export function InvestmentsList() {
                           className="flex items-center gap-3 px-5 py-3"
                         >
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium tabular-nums">
+                            <p className="font-mono text-sm font-semibold tabular-nums text-slate-900 dark:text-white">
                               ₹
                               {c.amount.toLocaleString("en-IN", {
                                 maximumFractionDigits: 0,
                               })}{" "}
-                              <span className="font-normal text-muted-foreground">
+                              <span className="font-normal text-slate-500">
                                 → ₹
                                 {c.currentValue.toLocaleString("en-IN", {
                                   maximumFractionDigits: 0,
                                 })}
                               </span>
                             </p>
-                            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                            <p className="mt-0.5 truncate text-xs text-slate-500">
                               {c.date}
                               {c.note ? ` · ${c.note}` : ""}
                             </p>
@@ -309,7 +313,7 @@ export function InvestmentsList() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="size-8 rounded-full text-muted-foreground"
+                              className="size-8 rounded-lg text-slate-400"
                               onClick={() => {
                                 setActiveInvForContrib(inv);
                                 setEditContrib(c);
@@ -330,7 +334,7 @@ export function InvestmentsList() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="size-8 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                                  className="size-8 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600"
                                 >
                                   <Trash2 className="size-3.5" />
                                 </Button>
@@ -348,9 +352,9 @@ export function InvestmentsList() {
         })}
 
         {filteredInvestments.length === 0 && (
-          <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border/60 py-16 text-center text-muted-foreground">
-            <Coins className="size-7 text-muted-foreground/40" />
-            <p className="text-sm font-medium">No assets found</p>
+          <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-200 py-16 text-center text-slate-500 dark:border-slate-800">
+            <Coins className="size-7 text-slate-300" />
+            <p className="text-sm font-semibold">No assets found</p>
             <p className="text-xs">Add an asset to start tracking.</p>
           </div>
         )}
@@ -391,7 +395,7 @@ function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+        "inline-flex items-center rounded-lg border px-2 py-0.5 text-[10px] font-bold",
         styles[variant] || "bg-muted text-muted-foreground",
         className,
       )}

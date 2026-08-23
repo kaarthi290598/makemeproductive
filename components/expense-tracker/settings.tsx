@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, UserPlus, Pencil } from "lucide-react";
+import { Plus, Trash2, UserPlus, Pencil, Users } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -21,10 +21,7 @@ import {
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { cn, formatDateToLocalISO } from "@/lib/utils";
-import {
-  tabListClassName,
-  tabTriggerClassName,
-} from "@/components/finance/page-header";
+import { useReportTabReadyAfterFirstLoad } from "./tab-ready";
 
 export function Settings() {
   const categories = useExpenseStore((s) => s.categories);
@@ -36,7 +33,8 @@ export function Settings() {
   const deletePerson = useExpenseStore((s) => s.deletePerson);
 
   const currentMonth = formatDateToLocalISO(new Date()).slice(0, 7);
-  const { data: stats } = useExpenseStats("month", [currentMonth], "all");
+  const { data: stats, isLoading: statsLoading } = useExpenseStats("month", [currentMonth], "all");
+  useReportTabReadyAfterFirstLoad(statsLoading);
 
   const spentByCategory = stats?.spentByCategory || {};
 
@@ -103,49 +101,66 @@ export function Settings() {
 
   return (
     <Tabs defaultValue="categories" className="space-y-5">
-      <TabsList className={tabListClassName()}>
-        <TabsTrigger value="categories" className={tabTriggerClassName()}>
+      <TabsList className="h-auto w-full justify-start gap-1.5 rounded-xl border border-slate-200/60 bg-slate-100 p-1 dark:border-slate-700/60 dark:bg-slate-800 sm:w-auto">
+        <TabsTrigger
+          value="categories"
+          className="h-auto flex-1 gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold text-slate-600 shadow-none sm:flex-none dark:text-slate-400 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-900 dark:data-[state=active]:text-white"
+        >
           Categories
         </TabsTrigger>
-        <TabsTrigger value="persons" className={tabTriggerClassName()}>
+        <TabsTrigger
+          value="persons"
+          className="h-auto flex-1 gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold text-slate-600 shadow-none sm:flex-none dark:text-slate-400 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-900 dark:data-[state=active]:text-white"
+        >
           People
         </TabsTrigger>
       </TabsList>
 
       <TabsContent value="categories" className="space-y-4">
         <div className="grid gap-5 md:grid-cols-2">
-          <Card className="h-fit rounded-2xl border-border/40 shadow-none">
+          <Card className="h-fit rounded-xl border-slate-200 shadow-sm dark:border-slate-800">
             <CardHeader className="px-5 pb-3 pt-5">
-              <CardTitle className="text-base">
-                {editingCategoryId ? "Edit category" : "New category"}
-              </CardTitle>
+              <div className="flex items-center gap-2">
+                <span className="flex size-6 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                  1
+                </span>
+                <CardTitle className="text-base font-semibold">
+                  {editingCategoryId ? "Edit category" : "New category"}
+                </CardTitle>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4 px-5 pb-5">
               <div className="space-y-1.5">
-                <Label htmlFor="c-name">Name</Label>
+                <Label htmlFor="c-name" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Name
+                </Label>
                 <Input
                   id="c-name"
                   placeholder="e.g. Groceries"
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
-                  className="h-10 rounded-xl"
+                  className="h-10 rounded-lg border-slate-200 shadow-sm dark:border-slate-700"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="c-budget">Monthly budget (₹)</Label>
+                <Label htmlFor="c-budget" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Monthly budget (₹)
+                </Label>
                 <Input
                   id="c-budget"
                   type="number"
                   placeholder="5000"
                   value={newCategoryBudget}
                   onChange={(e) => setNewCategoryBudget(e.target.value)}
-                  className="h-10 rounded-xl"
+                  className="h-10 rounded-lg border-slate-200 font-mono shadow-sm dark:border-slate-700"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="c-payer">Default payer</Label>
+                <Label htmlFor="c-payer" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Default payer
+                </Label>
                 <Select value={defaultPayer} onValueChange={setDefaultPayer}>
-                  <SelectTrigger id="c-payer" className="h-10 rounded-xl">
+                  <SelectTrigger id="c-payer" className="h-10 rounded-lg border-slate-200 shadow-sm dark:border-slate-700">
                     <SelectValue placeholder="Optional" />
                   </SelectTrigger>
                   <SelectContent>
@@ -160,7 +175,7 @@ export function Settings() {
               <div className="flex gap-2">
                 <Button
                   onClick={handleAddOrUpdateCategory}
-                  className="h-10 flex-1 rounded-full"
+                  className="h-10 flex-1 rounded-xl bg-emerald-600 font-bold text-white shadow-sm shadow-emerald-600/20 hover:bg-emerald-500"
                 >
                   {editingCategoryId ? (
                     "Save"
@@ -174,7 +189,7 @@ export function Settings() {
                   <Button
                     variant="outline"
                     onClick={handleCancelEditCategory}
-                    className="h-10 rounded-full"
+                    className="h-10 rounded-xl border-slate-200 dark:border-slate-700"
                   >
                     Cancel
                   </Button>
@@ -185,7 +200,7 @@ export function Settings() {
 
           <div className="custom-scrollbar max-h-[560px] space-y-3 overflow-y-auto pr-1">
             {categories.length === 0 ? (
-              <p className="rounded-2xl border border-dashed border-border/60 px-4 py-12 text-center text-sm text-muted-foreground">
+              <p className="rounded-xl border border-dashed border-slate-200 px-4 py-12 text-center text-sm text-slate-500 dark:border-slate-800">
                 Add a category to start budgeting.
               </p>
             ) : (
@@ -201,9 +216,9 @@ export function Settings() {
                   <Card
                     key={category.id}
                     className={cn(
-                      "rounded-2xl border-border/40 shadow-none",
+                      "rounded-xl border-slate-200 shadow-sm dark:border-slate-800",
                       editingCategoryId === category.id &&
-                        "border-primary/40 bg-primary/5",
+                        "border-emerald-300 bg-emerald-50/50 dark:border-emerald-800 dark:bg-emerald-950/30",
                     )}
                   >
                     <CardContent className="space-y-3 p-4">
@@ -212,13 +227,13 @@ export function Settings() {
                           className="size-2.5 shrink-0 rounded-full"
                           style={{ backgroundColor: category.color }}
                         />
-                        <p className="min-w-0 flex-1 truncate text-sm font-semibold">
+                        <p className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
                           {category.name}
                         </p>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="size-8 rounded-full text-muted-foreground"
+                          className="size-8 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white"
                           onClick={() => handleEditCategory(category)}
                         >
                           <Pencil className="size-3.5" />
@@ -236,21 +251,21 @@ export function Settings() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="size-8 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                              className="size-8 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40"
                             >
                               <Trash2 className="size-3.5" />
                             </Button>
                           }
                         />
                       </div>
-                      <div className="flex items-end justify-between text-xs">
-                        <span className="font-semibold tabular-nums">
+                      <div className="flex items-end justify-between font-mono text-xs">
+                        <span className="font-bold text-slate-800 dark:text-slate-200">
                           ₹
                           {spent.toLocaleString("en-IN", {
                             maximumFractionDigits: 0,
                           })}
                         </span>
-                        <span className="text-muted-foreground">
+                        <span className="text-slate-400">
                           ₹
                           {category.monthly_budget.toLocaleString("en-IN", {
                             maximumFractionDigits: 0,
@@ -271,8 +286,8 @@ export function Settings() {
                       />
                       <p
                         className={cn(
-                          "text-[11px] font-semibold",
-                          isOver ? "text-rose-600" : "text-muted-foreground",
+                          "text-[11px] font-bold",
+                          isOver ? "text-rose-600" : "text-slate-500 dark:text-slate-400",
                         )}
                       >
                         {percentage.toFixed(0)}% used
@@ -289,43 +304,59 @@ export function Settings() {
 
       <TabsContent value="persons" className="space-y-4">
         <div className="grid gap-5 md:grid-cols-2">
-          <Card className="h-fit rounded-2xl border-border/40 shadow-none">
+          <Card className="h-fit rounded-xl border-slate-200 shadow-sm dark:border-slate-800">
             <CardHeader className="px-5 pb-3 pt-5">
-              <CardTitle className="text-base">Add person</CardTitle>
+              <div className="flex items-center gap-2">
+                <span className="flex size-6 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                  1
+                </span>
+                <CardTitle className="text-base font-semibold">Add person</CardTitle>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4 px-5 pb-5">
               <div className="space-y-1.5">
-                <Label htmlFor="p-name">Name</Label>
+                <Label htmlFor="p-name" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Name
+                </Label>
                 <Input
                   id="p-name"
                   placeholder="e.g. John"
                   value={newPersonName}
                   onChange={(e) => setNewPersonName(e.target.value)}
-                  className="h-10 rounded-xl"
+                  className="h-10 rounded-lg border-slate-200 shadow-sm dark:border-slate-700"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") handleAddPerson();
                   }}
                 />
               </div>
-              <Button onClick={handleAddPerson} className="h-10 w-full rounded-full">
+              <Button
+                onClick={handleAddPerson}
+                className="h-10 w-full rounded-xl bg-emerald-600 font-bold text-white shadow-sm shadow-emerald-600/20 hover:bg-emerald-500"
+              >
                 <UserPlus className="mr-1.5 size-4" /> Add
               </Button>
             </CardContent>
           </Card>
 
-          <div className="overflow-hidden rounded-2xl border border-border/40 bg-card">
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
             {persons.length === 0 ? (
-              <p className="px-4 py-12 text-center text-sm text-muted-foreground">
-                No people yet.
-              </p>
+              <div className="px-4 py-12 text-center">
+                <Users className="mx-auto mb-2 size-8 text-slate-300 dark:text-slate-600" />
+                <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+                  No people yet.
+                </p>
+              </div>
             ) : (
-              <div className="divide-y divide-border/40">
+              <div className="divide-y divide-slate-100 dark:divide-slate-800">
                 {persons.map((person) => (
                   <div
                     key={person.id}
                     className="flex items-center gap-3 px-4 py-3.5"
                   >
-                    <p className="min-w-0 flex-1 truncate text-sm font-medium">
+                    <div className="flex size-8 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
+                      {person.name.charAt(0).toUpperCase()}
+                    </div>
+                    <p className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
                       {person.name}
                     </p>
                     <ConfirmDialog
@@ -341,7 +372,7 @@ export function Settings() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="size-8 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                          className="size-8 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40"
                         >
                           <Trash2 className="size-3.5" />
                         </Button>

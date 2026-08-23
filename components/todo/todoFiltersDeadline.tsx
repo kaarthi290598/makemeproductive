@@ -52,7 +52,6 @@ const TodoFilterDeadline = ({
   }, [searchParams, setDate]);
 
   function handleFilterChange(value: DateRange | undefined) {
-    console.log(value);
     setDate(value);
 
     setFilter(value);
@@ -65,11 +64,11 @@ const TodoFilterDeadline = ({
           id="date"
           variant="outline"
           className={cn(
-            "h-9 justify-start gap-2 rounded-lg border-border/60 text-left text-sm font-medium shadow-none transition-colors hover:bg-accent",
-            !date && "text-muted-foreground",
+            "h-9 max-w-[150px] justify-start gap-2 rounded-xl border-slate-200 text-left text-sm font-semibold shadow-sm dark:border-slate-700 sm:max-w-none",
+            !date && "text-slate-400",
           )}
         >
-          <CalendarIcon className="size-3.5 shrink-0 text-muted-foreground" />
+          <CalendarIcon className="size-3.5 shrink-0 text-slate-400" />
           {date?.from ? (
             date.to ? (
               <span className="truncate">
@@ -83,14 +82,14 @@ const TodoFilterDeadline = ({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto rounded-xl p-0" align="start">
+      <PopoverContent className="w-[min(calc(100vw-1.5rem),20.5rem)] rounded-xl p-0 sm:w-auto" align="start">
         <Calendar
           initialFocus
           mode="range"
           defaultMonth={date?.from}
           selected={date}
           onSelect={handleFilterChange}
-          numberOfMonths={2}
+          numberOfMonths={1}
           className="rounded-xl"
         />
       </PopoverContent>

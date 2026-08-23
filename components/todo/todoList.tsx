@@ -95,22 +95,22 @@ const TodoList = ({
   };
 
   return (
-    <div className="flex max-h-[400px] min-h-[200px] flex-1 flex-col overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm lg:max-h-screen">
+    <div className="flex max-h-[400px] min-h-[200px] flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:max-h-screen">
       {/* List Header */}
-      <div className="flex items-center justify-between border-b border-border/50 px-4 py-3">
+      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
         <div className="flex items-center gap-2">
-          <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10">
-            <ClipboardList className="size-3.5 text-primary" />
+          <div className="flex size-7 items-center justify-center rounded-lg bg-emerald-600/10">
+            <ClipboardList className="size-3.5 text-emerald-600" />
           </div>
-          <h2 className="text-sm font-semibold text-foreground">Tasks</h2>
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white">Tasks</h2>
           {totalCount > 0 && (
-            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+            <span className="rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
               {completedCount}/{totalCount}
             </span>
           )}
         </div>
         {isFiltered && (
-          <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-medium text-primary">
+          <span className="rounded-lg bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
             Filtered
           </span>
         )}
@@ -147,7 +147,7 @@ const TodoList = ({
                             {...provided.dragHandleProps}
                             className={
                               snapshot.isDragging
-                                ? "rounded-xl shadow-lg ring-2 ring-primary/20"
+                                ? "rounded-xl shadow-lg ring-2 ring-emerald-500/20"
                                 : ""
                             }
                           >
@@ -173,7 +173,7 @@ export default TodoList;
 const TodoEmpty = () => {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8">
-      <div className="flex size-16 items-center justify-center rounded-2xl bg-muted/50">
+      <div className="flex size-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
         <Image
           src="/todolist.svg"
           className="size-10 opacity-60"
@@ -183,10 +183,10 @@ const TodoEmpty = () => {
         />
       </div>
       <div className="text-center">
-        <p className="text-sm font-medium text-muted-foreground">
+        <p className="text-sm font-semibold text-slate-500">
           No tasks yet
         </p>
-        <p className="mt-0.5 text-xs text-muted-foreground/60">
+        <p className="mt-0.5 text-xs text-slate-400">
           Create your first task to get started
         </p>
       </div>

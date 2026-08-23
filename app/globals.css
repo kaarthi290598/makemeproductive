@@ -19,8 +19,8 @@ body {
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
@@ -31,7 +31,7 @@ body {
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --ring: 160 84% 39%;
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
@@ -54,8 +54,8 @@ body {
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 160 70% 45%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
@@ -341,4 +341,44 @@ h1[data-localization-key="userProfile.navbar.title"] {
 .ProseMirror ul li,
 .ProseMirror ol li {
   color: hsl(var(--foreground));
+}
+
+.chip-scroll {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #059669 #e2e8f0;
+}
+
+.chip-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.chip-scroll::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.chip-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #059669;
+}
+
+.chip-scroll::-webkit-scrollbar-thumb:hover {
+  background: #047857;
+}
+
+.dark .chip-scroll {
+  scrollbar-color: #34d399 #1e293b;
+}
+
+.dark .chip-scroll::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+.dark .chip-scroll::-webkit-scrollbar-thumb {
+  background: #34d399;
+}
+
+.dark .chip-scroll::-webkit-scrollbar-thumb:hover {
+  background: #10b981;
 }
