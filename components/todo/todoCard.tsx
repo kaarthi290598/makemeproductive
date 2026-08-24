@@ -25,8 +25,8 @@ export const TodoCard = ({
   const [editOpen, setEditOpen] = React.useState(false);
 
   const toggleCompletion = () => {
-    startTransition(() => {
-      toggleTodo(todo.id);
+    startTransition(async () => {
+      await toggleTodo(todo.id);
     });
   };
 

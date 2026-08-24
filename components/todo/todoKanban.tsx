@@ -509,7 +509,11 @@ function KanbanCard({
       <div className="flex items-start gap-2">
         <button
           type="button"
-          onClick={() => startTransition(() => toggleTodo(todo.id))}
+          onClick={() =>
+            startTransition(async () => {
+              await toggleTodo(todo.id);
+            })
+          }
           className="mt-0.5 shrink-0"
           aria-label={todo.isCompleted ? "Mark incomplete" : "Mark complete"}
         >
