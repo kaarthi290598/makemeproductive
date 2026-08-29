@@ -24,32 +24,29 @@ import { toast } from "sonner";
 import { cn, formatDateToLocalISO, parseLocalISODate } from "@/lib/utils";
 import { CustomDatePicker } from "@/components/customDatePicker";
 import {
-  consoleDialogBodyClass,
-  consoleDialogClass,
-  consoleDialogFormClass,
-} from "@/components/finance/page-header";
-import { ChipScroll } from "@/components/ui/chip-scroll";
-import {
   Coins,
   CreditCard,
   IndianRupee,
   Plus,
   Send,
+  Calendar,
+  FileText,
+  Percent,
+  Check,
+  Building2,
 } from "lucide-react";
 
 const fieldLabelClass =
-  "block text-xs font-semibold text-slate-700 dark:text-slate-300";
+  "block text-xs font-bold text-slate-700 dark:text-slate-300";
 
-const choiceIdleClass =
-  "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400";
+const dialogShellClass =
+  "max-h-[min(94dvh,44rem)] w-[min(calc(100vw-1.5rem),32rem)] max-w-lg overflow-y-auto rounded-2xl border-slate-200/90 p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-950 sm:rounded-3xl";
 
-const dialogShellClass = consoleDialogClass;
+const inputClass =
+  "h-9 rounded-xl border-slate-200 bg-slate-50/70 text-xs shadow-2xs placeholder:text-slate-400 focus-visible:bg-white dark:border-slate-800 dark:bg-slate-900 dark:focus-visible:bg-slate-950";
 
 const datePickerClass =
-  "h-9 min-w-0 rounded-lg border-slate-200 bg-white font-mono text-xs font-semibold shadow-sm dark:border-slate-700 dark:bg-slate-900 [&_svg]:text-emerald-600 dark:[&_svg]:text-emerald-400";
-
-const noteInputClass =
-  "h-9 rounded-lg border-slate-200 bg-white text-sm shadow-sm focus-visible:border-emerald-500 focus-visible:ring-emerald-500/10 dark:border-slate-700 dark:bg-slate-900";
+  "h-9 w-full rounded-xl border-slate-200 bg-slate-50/70 font-mono text-xs font-semibold shadow-2xs hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800";
 
 const INVESTMENT_CATEGORIES: Investment["category"][] = [
   "Stocks",
@@ -80,27 +77,39 @@ function DialogIconHeader({
   title: string;
   description: string;
 }) {
+  const isEmerald = tone === "emerald";
   return (
-    <DialogHeader className="shrink-0 space-y-0.5 border-b border-slate-100 px-4 py-2.5 pr-12 dark:border-slate-800 sm:px-5">
-      <div className="flex items-center gap-2.5">
-        <span
-          className={cn(
-            "flex size-8 shrink-0 items-center justify-center rounded-full text-white",
-            tone === "emerald" ? "bg-emerald-600" : "bg-rose-600",
-          )}
-        >
-          <Icon className="size-4" />
-        </span>
-        <div className="min-w-0 text-left">
-          <DialogTitle className="text-base font-semibold tracking-tight text-slate-900 dark:text-white sm:text-lg">
-            {title}
-          </DialogTitle>
-          <DialogDescription className="text-xs text-slate-500 dark:text-slate-400">
-            {description}
-          </DialogDescription>
+    <div
+      className={cn(
+        "relative border-b px-5 py-3.5 transition-colors duration-200 sm:px-6",
+        isEmerald
+          ? "border-emerald-100 bg-gradient-to-b from-emerald-50/80 to-transparent dark:border-emerald-950/60 dark:from-emerald-950/30"
+          : "border-rose-100 bg-gradient-to-b from-rose-50/80 to-transparent dark:border-rose-950/60 dark:from-rose-950/30",
+      )}
+    >
+      <DialogHeader className="space-y-0.5 text-left">
+        <div className="flex items-center gap-3">
+          <span
+            className={cn(
+              "flex size-9 shrink-0 items-center justify-center rounded-xl text-white shadow-md transition-all duration-300",
+              isEmerald
+                ? "bg-emerald-600 shadow-emerald-600/25 ring-4 ring-emerald-100 dark:ring-emerald-950/50"
+                : "bg-rose-600 shadow-rose-600/25 ring-4 ring-rose-100 dark:ring-rose-950/50",
+            )}
+          >
+            <Icon className="size-4.5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <DialogTitle className="text-base font-bold tracking-tight text-slate-900 dark:text-white sm:text-lg">
+              {title}
+            </DialogTitle>
+            <DialogDescription className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              {description}
+            </DialogDescription>
+          </div>
         </div>
-      </div>
-    </DialogHeader>
+      </DialogHeader>
+    </div>
   );
 }
 
@@ -110,7 +119,7 @@ function AmountCard({
   value,
   onChange,
   tone,
-  placeholder = "0",
+  placeholder = "0.00",
   autoFocus,
 }: {
   id: string;
@@ -125,19 +134,35 @@ function AmountCard({
   return (
     <div
       className={cn(
-        "h-fit w-full self-start rounded-xl border p-3",
+        "group relative rounded-xl border p-3 transition-all duration-200",
         isEmerald
-          ? "border-emerald-200/80 bg-emerald-50/70 dark:border-emerald-800/60 dark:bg-emerald-950/40"
-          : "border-rose-200/80 bg-rose-50/70 dark:border-rose-800/60 dark:bg-rose-950/40",
+          ? "border-emerald-200/80 bg-gradient-to-br from-emerald-50/50 via-white to-emerald-50/30 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/10 dark:border-emerald-900/50 dark:from-emerald-950/20 dark:via-slate-900 dark:to-emerald-950/10"
+          : "border-rose-200/80 bg-gradient-to-br from-rose-50/50 via-white to-rose-50/30 focus-within:border-rose-500 focus-within:ring-2 focus-within:ring-rose-500/10 dark:border-rose-900/50 dark:from-rose-950/20 dark:via-slate-900 dark:to-rose-950/10",
       )}
     >
-      <Label htmlFor={id} className={fieldLabelClass}>
-        {label}
-      </Label>
-      <div className="relative mt-1">
+      <div className="flex items-center justify-between">
+        <Label
+          htmlFor={id}
+          className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+        >
+          {label}
+        </Label>
+        <span
+          className={cn(
+            "text-[10px] font-bold uppercase tracking-wider",
+            isEmerald
+              ? "text-emerald-600 dark:text-emerald-400"
+              : "text-rose-600 dark:text-rose-400",
+          )}
+        >
+          INR (₹)
+        </span>
+      </div>
+
+      <div className="relative mt-1 flex items-center">
         <IndianRupee
           className={cn(
-            "pointer-events-none absolute left-0 top-1/2 size-4 -translate-y-1/2",
+            "pointer-events-none absolute left-0 size-5.5 shrink-0 transition-colors sm:size-6",
             isEmerald
               ? "text-emerald-600 dark:text-emerald-400"
               : "text-rose-600 dark:text-rose-400",
@@ -147,51 +172,21 @@ function AmountCard({
           id={id}
           type="number"
           inputMode="decimal"
+          step="any"
           autoFocus={autoFocus}
           min="0"
           value={value}
           onChange={(e) => onChange(e.target.value.replace(/-/g, ""))}
+          placeholder={placeholder}
           className={cn(
-            "h-10 border-0 bg-transparent pl-6 text-xl font-black tracking-tight shadow-none focus-visible:ring-0",
+            "h-10 border-0 bg-transparent pl-7 font-mono text-xl font-black tracking-tight shadow-none focus-visible:ring-0 sm:pl-8 sm:text-2xl",
             "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
             isEmerald
-              ? "text-emerald-700 dark:text-emerald-300"
-              : "text-rose-700 dark:text-rose-300",
+              ? "text-emerald-950 placeholder:text-emerald-300 dark:text-emerald-200 dark:placeholder:text-emerald-800"
+              : "text-rose-950 placeholder:text-rose-300 dark:text-rose-200 dark:placeholder:text-rose-800",
           )}
-          placeholder={placeholder}
         />
       </div>
-    </div>
-  );
-}
-
-function DetailsCard({
-  children,
-  step = "1",
-  title = "Details",
-  className,
-}: {
-  children: React.ReactNode;
-  step?: string;
-  title?: string;
-  className?: string;
-}) {
-  return (
-    <div
-      className={cn(
-        "min-w-0 space-y-2.5 rounded-xl border border-slate-200 p-3 dark:border-slate-800",
-        className,
-      )}
-    >
-      <div className="flex items-center gap-2">
-        <span className="flex size-6 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
-          {step}
-        </span>
-        <p className="text-sm font-semibold text-slate-900 dark:text-white">
-          {title}
-        </p>
-      </div>
-      {children}
     </div>
   );
 }
@@ -207,8 +202,14 @@ function ChipGrid({
   onChange: (next: string) => void;
   tone: "emerald" | "rose";
 }) {
+  const isEmerald = tone === "emerald";
   return (
-    <ChipScroll>
+    <div
+      className={cn(
+        "flex flex-wrap gap-1.5",
+        options.length > 12 && "max-h-28 overflow-y-auto pr-1",
+      )}
+    >
       {options.map((option) => {
         const active = value === option;
         return (
@@ -217,19 +218,27 @@ function ChipGrid({
             type="button"
             onClick={() => onChange(option)}
             className={cn(
-              "inline-flex shrink-0 items-center rounded-xl border px-2.5 py-1.5 text-xs font-bold transition-all",
+              "inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1 text-xs font-bold transition-all",
               active
-                ? tone === "emerald"
-                  ? "border-emerald-300 bg-emerald-50 text-emerald-900 shadow-sm dark:border-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-200"
-                  : "border-rose-300 bg-rose-50 text-rose-900 shadow-sm dark:border-rose-700 dark:bg-rose-950/60 dark:text-rose-200"
-                : choiceIdleClass,
+                ? isEmerald
+                  ? "border-emerald-400 bg-emerald-50 text-emerald-900 shadow-sm ring-1 ring-emerald-400 dark:border-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-200"
+                  : "border-rose-400 bg-rose-50 text-rose-900 shadow-sm ring-1 ring-rose-400 dark:border-rose-600 dark:bg-rose-950/60 dark:text-rose-200"
+                : "border-slate-200 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800",
             )}
           >
-            {option}
+            <span>{option}</span>
+            {active && (
+              <Check
+                className={cn(
+                  "size-3",
+                  isEmerald ? "text-emerald-600" : "text-rose-600",
+                )}
+              />
+            )}
           </button>
         );
       })}
-    </ChipScroll>
+    </div>
   );
 }
 
@@ -240,18 +249,19 @@ function SubmitButton({
   tone: "emerald" | "rose";
   children: React.ReactNode;
 }) {
+  const isEmerald = tone === "emerald";
   return (
     <Button
       type="submit"
       className={cn(
-        "h-10 w-full rounded-xl px-5 text-sm font-bold text-white shadow-lg sm:w-auto sm:min-w-[148px]",
-        tone === "emerald"
-          ? "bg-emerald-600 shadow-emerald-600/20 hover:bg-emerald-500"
-          : "bg-rose-600 shadow-rose-600/20 hover:bg-rose-500",
+        "h-9.5 w-full gap-2 rounded-xl px-5 text-xs font-bold text-white shadow-lg sm:w-auto sm:min-w-[140px]",
+        isEmerald
+          ? "bg-emerald-600 shadow-emerald-600/25 hover:bg-emerald-500"
+          : "bg-rose-600 shadow-rose-600/25 hover:bg-rose-500",
       )}
     >
-      <Send className="size-4" />
-      {children}
+      <Send className="size-3.5" />
+      <span>{children}</span>
     </Button>
   );
 }
@@ -294,7 +304,7 @@ export function AddEditInvestmentDialog({
     e.preventDefault();
 
     if (!name.trim()) {
-      toast.error("Please enter a name");
+      toast.error("Please enter an asset name");
       return;
     }
 
@@ -312,12 +322,12 @@ export function AddEditInvestmentDialog({
       const currentVal = parseFloat(currentValue);
 
       if (isNaN(investedVal) || investedVal <= 0) {
-        toast.error("Please enter a valid initial invested amount");
+        toast.error("Please enter a valid invested amount");
         return;
       }
 
       if (isNaN(currentVal) || currentVal < 0) {
-        toast.error("Please enter a valid initial current value");
+        toast.error("Please enter a valid current value");
         return;
       }
 
@@ -336,67 +346,65 @@ export function AddEditInvestmentDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className={dialogShellClass}>
-        <form onSubmit={handleSubmit} className={consoleDialogFormClass}>
+        <form onSubmit={handleSubmit} className="flex flex-col">
           <DialogIconHeader
             icon={Coins}
             tone="emerald"
-            title={investmentToEdit ? "Edit asset" : "Add asset"}
+            title={investmentToEdit ? "Edit Asset" : "Add Asset"}
             description={
               investmentToEdit
-                ? "Update name, category, and notes."
-                : "Name it and log the first purchase."
+                ? "Update asset name, category, and notes."
+                : "Name the asset and record the initial purchase."
             }
           />
 
-          <div className={consoleDialogBodyClass}>
-            {!investmentToEdit && (
-              <AmountCard
-                id="inv-invested"
-                label="Invested *"
-                value={investedAmount}
-                autoFocus
-                tone="emerald"
-                onChange={(next) => {
-                  setInvestedAmount(next);
-                  if (!currentValue || currentValue === investedAmount) {
-                    setCurrentValue(next);
-                  }
-                }}
+          <div className="space-y-3 px-5 py-3.5 sm:px-6">
+            <div className="space-y-1">
+              <Label htmlFor="inv-name" className={fieldLabelClass}>
+                Asset Name <span className="text-rose-500">*</span>
+              </Label>
+              <Input
+                id="inv-name"
+                placeholder="e.g. Nifty 50 ETF, Apple Inc, Gold ETF"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className={inputClass}
+                autoFocus={!!investmentToEdit}
               />
-            )}
+            </div>
 
-            <DetailsCard className={investmentToEdit ? "sm:col-span-2" : undefined}>
-              <div className="space-y-1.5">
-                <Label htmlFor="inv-name" className={fieldLabelClass}>
-                  Name *
-                </Label>
-                <Input
-                  id="inv-name"
-                  placeholder="e.g. Nifty 50 ETF"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className={noteInputClass}
-                  autoFocus={!!investmentToEdit}
-                />
-              </div>
+            <div className="space-y-1.5">
+              <span className={fieldLabelClass}>Category *</span>
+              <ChipGrid
+                options={INVESTMENT_CATEGORIES}
+                value={category}
+                onChange={(next) =>
+                  setCategory(next as Investment["category"])
+                }
+                tone="emerald"
+              />
+            </div>
 
-              <div className="space-y-1.5">
-                <span className={fieldLabelClass}>Category *</span>
-                <ChipGrid
-                  options={INVESTMENT_CATEGORIES}
-                  value={category}
-                  onChange={(next) =>
-                    setCategory(next as Investment["category"])
-                  }
+            {!investmentToEdit && (
+              <>
+                <AmountCard
+                  id="inv-invested"
+                  label="Initial Invested Amount *"
+                  value={investedAmount}
+                  autoFocus
                   tone="emerald"
+                  onChange={(next) => {
+                    setInvestedAmount(next);
+                    if (!currentValue || currentValue === investedAmount) {
+                      setCurrentValue(next);
+                    }
+                  }}
                 />
-              </div>
 
-              {!investmentToEdit && (
-                <>
-                  <div className="space-y-1.5">
+                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                  <div className="space-y-1">
                     <Label htmlFor="inv-current" className={fieldLabelClass}>
-                      Current value
+                      Current Value (₹)
                     </Label>
                     <Input
                       id="inv-current"
@@ -404,11 +412,14 @@ export function AddEditInvestmentDialog({
                       placeholder="Same as invested if new"
                       value={currentValue}
                       onChange={(e) => setCurrentValue(e.target.value)}
-                      className={noteInputClass}
+                      className={inputClass}
                     />
                   </div>
-                  <div className="min-w-0 space-y-1.5">
-                    <span className={fieldLabelClass}>Date *</span>
+                  <div className="space-y-1">
+                    <Label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300">
+                      <Calendar className="size-3.5 text-slate-400" />
+                      Date <span className="text-rose-500">*</span>
+                    </Label>
                     <CustomDatePicker
                       value={date ? parseLocalISODate(date) : undefined}
                       onChange={(d) =>
@@ -417,27 +428,31 @@ export function AddEditInvestmentDialog({
                       className={datePickerClass}
                     />
                   </div>
-                </>
-              )}
+                </div>
+              </>
+            )}
 
-              <div className="space-y-1.5">
-                <Label htmlFor="inv-note" className={fieldLabelClass}>
-                  Note
-                </Label>
-                <Input
-                  id="inv-note"
-                  placeholder="Optional"
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  className={noteInputClass}
-                />
-              </div>
-            </DetailsCard>
+            <div className="space-y-1">
+              <Label
+                htmlFor="inv-note"
+                className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300"
+              >
+                <FileText className="size-3.5 text-slate-400" />
+                Note
+              </Label>
+              <Input
+                id="inv-note"
+                placeholder="Optional description or broker details"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                className={inputClass}
+              />
+            </div>
           </div>
 
-          <DialogFooter className="shrink-0 border-t border-slate-100 px-4 py-2.5 dark:border-slate-800 sm:justify-end sm:px-5">
+          <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50 sm:justify-end sm:px-6">
             <SubmitButton tone="emerald">
-              {investmentToEdit ? "Update asset" : "Save asset"}
+              {investmentToEdit ? "Update Asset" : "Save Asset"}
             </SubmitButton>
           </DialogFooter>
         </form>
@@ -517,22 +532,22 @@ export function AddEditContributionDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className={dialogShellClass}>
-        <form onSubmit={handleSubmit} className={consoleDialogFormClass}>
+        <form onSubmit={handleSubmit} className="flex flex-col">
           <DialogIconHeader
             icon={Plus}
             tone="emerald"
-            title={contributionToEdit ? "Edit contribution" : "Log purchase"}
+            title={contributionToEdit ? "Edit Contribution" : "Log Purchase"}
             description={
               contributionToEdit
-                ? "Update this batch."
+                ? "Update this contribution entry."
                 : `Add a purchase or SIP to ${investment?.name ?? "this asset"}.`
             }
           />
 
-          <div className={consoleDialogBodyClass}>
+          <div className="space-y-3 px-5 py-3.5 sm:px-6">
             <AmountCard
               id="c-amount"
-              label="Invested *"
+              label="Invested Amount *"
               value={amount}
               autoFocus
               tone="emerald"
@@ -544,10 +559,10 @@ export function AddEditContributionDialog({
               }}
             />
 
-            <DetailsCard>
-              <div className="space-y-1.5">
+            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+              <div className="space-y-1">
                 <Label htmlFor="c-current" className={fieldLabelClass}>
-                  Current value *
+                  Current Value (₹) *
                 </Label>
                 <Input
                   id="c-current"
@@ -555,35 +570,44 @@ export function AddEditContributionDialog({
                   placeholder="Same as invested if new"
                   value={currentValue}
                   onChange={(e) => setCurrentValue(e.target.value)}
-                  className={noteInputClass}
+                  className={inputClass}
                 />
               </div>
-              <div className="min-w-0 space-y-1.5">
-                <span className={fieldLabelClass}>Date *</span>
+
+              <div className="space-y-1">
+                <Label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <Calendar className="size-3.5 text-slate-400" />
+                  Date <span className="text-rose-500">*</span>
+                </Label>
                 <CustomDatePicker
                   value={date ? parseLocalISODate(date) : undefined}
                   onChange={(d) => setDate(d ? formatDateToLocalISO(d) : "")}
                   className={datePickerClass}
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="c-note" className={fieldLabelClass}>
-                  Note
-                </Label>
-                <Input
-                  id="c-note"
-                  placeholder="Optional"
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  className={noteInputClass}
-                />
-              </div>
-            </DetailsCard>
+            </div>
+
+            <div className="space-y-1">
+              <Label
+                htmlFor="c-note"
+                className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300"
+              >
+                <FileText className="size-3.5 text-slate-400" />
+                Note
+              </Label>
+              <Input
+                id="c-note"
+                placeholder="e.g. Monthly SIP, Dip buy"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                className={inputClass}
+              />
+            </div>
           </div>
 
-          <DialogFooter className="shrink-0 border-t border-slate-100 px-4 py-2.5 dark:border-slate-800 sm:justify-end sm:px-5">
+          <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50 sm:justify-end sm:px-6">
             <SubmitButton tone="emerald">
-              {contributionToEdit ? "Update log" : "Log purchase"}
+              {contributionToEdit ? "Update Log" : "Log Purchase"}
             </SubmitButton>
           </DialogFooter>
         </form>
@@ -645,7 +669,7 @@ export function AddEditDebtDialog({
     e.preventDefault();
 
     if (!name.trim()) {
-      toast.error("Please enter a loan name");
+      toast.error("Please enter a loan/debt name");
       return;
     }
 
@@ -663,7 +687,7 @@ export function AddEditDebtDialog({
       hasInterestAndEmi && dueDate.trim() ? dueDate.trim() : null;
 
     if (isNaN(totalVal) || totalVal <= 0) {
-      toast.error("Please enter a valid loan amount");
+      toast.error("Please enter a valid loan principal amount");
       return;
     }
 
@@ -715,22 +739,46 @@ export function AddEditDebtDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className={dialogShellClass}>
-        <form onSubmit={handleSubmit} className={consoleDialogFormClass}>
+        <form onSubmit={handleSubmit} className="flex flex-col">
           <DialogIconHeader
             icon={CreditCard}
             tone="rose"
-            title={debtToEdit ? "Edit debt" : "Add debt"}
+            title={debtToEdit ? "Edit Debt" : "Add Debt"}
             description={
               debtToEdit
-                ? "Update loan details."
-                : "Track a loan or credit line."
+                ? "Update liability and schedule details."
+                : "Track a loan, credit card, or liability."
             }
           />
 
-          <div className={consoleDialogBodyClass}>
+          <div className="space-y-3 px-5 py-3.5 sm:px-6">
+            <div className="space-y-1">
+              <Label htmlFor="debt-name" className={fieldLabelClass}>
+                Loan / Liability Name <span className="text-rose-500">*</span>
+              </Label>
+              <Input
+                id="debt-name"
+                placeholder="e.g. HDFC Home Loan, ICICI Credit Card"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className={inputClass}
+                autoFocus={!!debtToEdit}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <span className={fieldLabelClass}>Category *</span>
+              <ChipGrid
+                options={DEBT_CATEGORIES}
+                value={category}
+                onChange={(next) => setCategory(next as Debt["category"])}
+                tone="rose"
+              />
+            </div>
+
             <AmountCard
               id="debt-total"
-              label="Principal *"
+              label="Total Loan Principal *"
               value={totalAmount}
               autoFocus={!debtToEdit}
               tone="rose"
@@ -742,124 +790,114 @@ export function AddEditDebtDialog({
               }}
             />
 
-            <DetailsCard>
-              <div className="space-y-1.5">
-                <Label htmlFor="debt-name" className={fieldLabelClass}>
-                  Name *
-                </Label>
-                <Input
-                  id="debt-name"
-                  placeholder="e.g. SBI Home Loan"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className={noteInputClass}
-                  autoFocus={!!debtToEdit}
-                />
-              </div>
+            <div className="space-y-1">
+              <Label htmlFor="debt-remaining" className={fieldLabelClass}>
+                Remaining Principal (₹)
+              </Label>
+              <Input
+                id="debt-remaining"
+                type="number"
+                placeholder="Same as principal if new"
+                value={remainingAmount}
+                onChange={(e) => setRemainingAmount(e.target.value)}
+                className={inputClass}
+              />
+            </div>
 
-              <div className="space-y-1.5">
-                <span className={fieldLabelClass}>Category *</span>
-                <ChipGrid
-                  options={DEBT_CATEGORIES}
-                  value={category}
-                  onChange={(next) => setCategory(next as Debt["category"])}
-                  tone="rose"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="debt-remaining" className={fieldLabelClass}>
-                  Remaining
-                </Label>
-                <Input
-                  id="debt-remaining"
-                  type="number"
-                  placeholder="Same as principal if new"
-                  value={remainingAmount}
-                  onChange={(e) => setRemainingAmount(e.target.value)}
-                  className={noteInputClass}
-                />
-              </div>
-
-              <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-900/50">
-                <Checkbox
-                  id="has-interest-emi"
-                  checked={hasInterestAndEmi}
-                  onCheckedChange={(checked) => setHasInterestAndEmi(!!checked)}
-                  className="mt-0.5"
-                />
-                <span>
-                  <span className="block text-xs font-bold text-slate-800 dark:text-slate-100">
-                    Track interest, EMI & due date
-                  </span>
-                  <span className="mt-0.5 block text-[10px] text-slate-500 dark:text-slate-400">
-                    Optional extras for loans with a monthly schedule.
-                  </span>
+            {/* Interest & Schedule Option */}
+            <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-slate-200 bg-slate-50/80 p-3 transition-colors hover:bg-slate-100/70 dark:border-slate-800 dark:bg-slate-900/50 dark:hover:bg-slate-900/80">
+              <Checkbox
+                id="has-interest-emi"
+                checked={hasInterestAndEmi}
+                onCheckedChange={(checked) => setHasInterestAndEmi(!!checked)}
+                className="mt-0.5"
+              />
+              <span className="min-w-0 flex-1">
+                <span className="block text-xs font-bold text-slate-800 dark:text-slate-100">
+                  Track interest, EMI & due date
                 </span>
-              </label>
+                <span className="mt-0.5 block text-[11px] text-slate-500 dark:text-slate-400">
+                  Optional extras for loans with monthly payment schedules.
+                </span>
+              </span>
+            </label>
 
-              {hasInterestAndEmi && (
-                <>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="debt-rate" className={fieldLabelClass}>
-                        Rate (% p.a.)
-                      </Label>
-                      <Input
-                        id="debt-rate"
-                        type="number"
-                        step="0.01"
-                        placeholder="8.50"
-                        value={interestRate}
-                        onChange={(e) => setInterestRate(e.target.value)}
-                        className={noteInputClass}
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="debt-emi" className={fieldLabelClass}>
-                        EMI (₹)
-                      </Label>
-                      <Input
-                        id="debt-emi"
-                        type="number"
-                        placeholder="Optional"
-                        value={monthlyPayment}
-                        onChange={(e) => setMonthlyPayment(e.target.value)}
-                        className={noteInputClass}
-                      />
-                    </div>
-                  </div>
-                  <div className="min-w-0 space-y-1.5">
-                    <span className={fieldLabelClass}>Due date</span>
-                    <CustomDatePicker
-                      value={dueDate ? parseLocalISODate(dueDate) : undefined}
-                      onChange={(d) =>
-                        setDueDate(d ? formatDateToLocalISO(d) : "")
-                      }
-                      className={datePickerClass}
+            {hasInterestAndEmi && (
+              <div className="space-y-2.5 rounded-xl border border-rose-200/60 bg-rose-50/30 p-3 dark:border-rose-900/40 dark:bg-rose-950/20">
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="space-y-1">
+                    <Label
+                      htmlFor="debt-rate"
+                      className="flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-300"
+                    >
+                      <Percent className="size-3 text-slate-400" />
+                      Rate (% p.a.)
+                    </Label>
+                    <Input
+                      id="debt-rate"
+                      type="number"
+                      step="0.01"
+                      placeholder="8.50"
+                      value={interestRate}
+                      onChange={(e) => setInterestRate(e.target.value)}
+                      className={inputClass}
                     />
                   </div>
-                </>
-              )}
-
-              <div className="space-y-1.5">
-                <Label htmlFor="debt-note" className={fieldLabelClass}>
-                  Note
-                </Label>
-                <Input
-                  id="debt-note"
-                  placeholder="Optional"
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  className={noteInputClass}
-                />
+                  <div className="space-y-1">
+                    <Label
+                      htmlFor="debt-emi"
+                      className="flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-300"
+                    >
+                      <IndianRupee className="size-3 text-slate-400" />
+                      Monthly EMI
+                    </Label>
+                    <Input
+                      id="debt-emi"
+                      type="number"
+                      placeholder="Optional"
+                      value={monthlyPayment}
+                      onChange={(e) => setMonthlyPayment(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                    <Calendar className="size-3 text-slate-400" />
+                    Due date
+                  </Label>
+                  <CustomDatePicker
+                    value={dueDate ? parseLocalISODate(dueDate) : undefined}
+                    onChange={(d) =>
+                      setDueDate(d ? formatDateToLocalISO(d) : "")
+                    }
+                    className={datePickerClass}
+                  />
+                </div>
               </div>
-            </DetailsCard>
+            )}
+
+            <div className="space-y-1">
+              <Label
+                htmlFor="debt-note"
+                className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300"
+              >
+                <FileText className="size-3.5 text-slate-400" />
+                Note
+              </Label>
+              <Input
+                id="debt-note"
+                placeholder="Optional loan account details or lender"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                className={inputClass}
+              />
+            </div>
           </div>
 
-          <DialogFooter className="shrink-0 border-t border-slate-100 px-4 py-2.5 dark:border-slate-800 sm:justify-end sm:px-5">
+          <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50 sm:justify-end sm:px-6">
             <SubmitButton tone="rose">
-              {debtToEdit ? "Update debt" : "Save debt"}
+              {debtToEdit ? "Update Debt" : "Save Debt"}
             </SubmitButton>
           </DialogFooter>
         </form>
@@ -1014,141 +1052,141 @@ export function AddEditDebtPaymentDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className={dialogShellClass}>
-        <form onSubmit={handlePay} className={consoleDialogFormClass}>
+        <form onSubmit={handlePay} className="flex flex-col">
           <DialogIconHeader
             icon={Send}
             tone="rose"
-            title={paymentToEdit ? "Edit payment" : `Pay ${debt?.name ?? ""}`}
+            title={paymentToEdit ? "Edit Payment" : `Pay ${debt?.name ?? ""}`}
             description={
               paymentToEdit
-                ? "Update this payment."
-                : "Reduce principal or record interest."
+                ? "Update payment entry details."
+                : "Reduce principal balance or record interest payment."
             }
           />
 
-          <div className={consoleDialogBodyClass}>
-            {!splitPayment && (
-              <AmountCard
-                id="pay-amount"
-                label="Amount *"
-                value={amount}
-                autoFocus
-                tone="rose"
-                placeholder={`Remaining ${debt?.remainingAmount ?? 0}`}
-                onChange={setAmount}
+          <div className="space-y-3 px-5 py-3.5 sm:px-6">
+            <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-slate-200 bg-slate-50/80 p-3 transition-colors hover:bg-slate-100/70 dark:border-slate-800 dark:bg-slate-900/50 dark:hover:bg-slate-900/80">
+              <Checkbox
+                id="split-payment"
+                checked={splitPayment}
+                onCheckedChange={(checked) => setSplitPayment(!!checked)}
+                className="mt-0.5"
               />
+              <span className="min-w-0 flex-1">
+                <span className="block text-xs font-bold text-slate-800 dark:text-slate-100">
+                  Split principal & interest manually
+                </span>
+                <span className="mt-0.5 block text-[11px] text-slate-500 dark:text-slate-400">
+                  Enter principal and interest as two distinct amounts.
+                </span>
+              </span>
+            </label>
+
+            {!splitPayment ? (
+              <>
+                <AmountCard
+                  id="pay-amount"
+                  label="Total Payment Amount *"
+                  value={amount}
+                  autoFocus
+                  tone="rose"
+                  placeholder={`Remaining ₹${debt?.remainingAmount ?? 0}`}
+                  onChange={setAmount}
+                />
+
+                {debt?.interestRate ? (
+                  <div className="grid grid-cols-2 gap-3 rounded-xl border border-slate-200/80 bg-slate-50 p-3 text-xs dark:border-slate-800 dark:bg-slate-950/40">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        Principal Paid
+                      </p>
+                      <p className="mt-0.5 font-mono text-sm font-bold tabular-nums text-slate-900 dark:text-white">
+                        ₹
+                        {autoPrincipal.toLocaleString("en-IN", {
+                          maximumFractionDigits: 2,
+                        })}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        Interest
+                      </p>
+                      <p className="mt-0.5 font-mono text-sm font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+                        ₹
+                        {autoInterest.toLocaleString("en-IN", {
+                          maximumFractionDigits: 2,
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
+              </>
+            ) : (
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <Label htmlFor="pay-principal" className={fieldLabelClass}>
+                    Principal Amount (₹) *
+                  </Label>
+                  <Input
+                    id="pay-principal"
+                    type="number"
+                    placeholder={`Max ${debt?.remainingAmount ?? 0}`}
+                    value={principalAmount}
+                    onChange={(e) => setPrincipalAmount(e.target.value)}
+                    className={inputClass}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="pay-interest" className={fieldLabelClass}>
+                    Interest Amount (₹)
+                  </Label>
+                  <Input
+                    id="pay-interest"
+                    type="number"
+                    placeholder="0"
+                    value={interestAmount}
+                    onChange={(e) => setInterestAmount(e.target.value)}
+                    className={inputClass}
+                  />
+                </div>
+              </div>
             )}
 
-            <DetailsCard className={splitPayment ? "sm:col-span-2" : undefined}>
-              <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-900/50">
-                <Checkbox
-                  id="split-payment"
-                  checked={splitPayment}
-                  onCheckedChange={(checked) => setSplitPayment(!!checked)}
-                  className="mt-0.5"
-                />
-                <span>
-                  <span className="block text-xs font-bold text-slate-800 dark:text-slate-100">
-                    Split interest separately
-                  </span>
-                  <span className="mt-0.5 block text-[10px] text-slate-500 dark:text-slate-400">
-                    Enter principal and interest as two amounts.
-                  </span>
-                </span>
-              </label>
-
-              {!splitPayment ? (
-                <>
-                  {!debt?.interestRate && (
-                    <p className="font-mono text-xs text-slate-500">
-                      Remaining: ₹
-                      {debt?.remainingAmount.toLocaleString("en-IN")}
-                    </p>
-                  )}
-                  {debt?.interestRate ? (
-                    <div className="grid grid-cols-2 gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm dark:border-slate-800 dark:bg-slate-950/40">
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                          Principal
-                        </p>
-                        <p className="font-mono font-bold tabular-nums text-slate-900 dark:text-white">
-                          ₹
-                          {autoPrincipal.toLocaleString("en-IN", {
-                            maximumFractionDigits: 2,
-                          })}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                          Interest
-                        </p>
-                        <p className="font-mono font-bold tabular-nums text-emerald-600">
-                          ₹
-                          {autoInterest.toLocaleString("en-IN", {
-                            maximumFractionDigits: 2,
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  ) : null}
-                </>
-              ) : (
-                <div className="space-y-3.5">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="pay-principal" className={fieldLabelClass}>
-                      Principal (₹)
-                    </Label>
-                    <Input
-                      id="pay-principal"
-                      type="number"
-                      placeholder={`Max ${debt?.remainingAmount ?? 0}`}
-                      value={principalAmount}
-                      onChange={(e) => setPrincipalAmount(e.target.value)}
-                      className={noteInputClass}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="pay-interest" className={fieldLabelClass}>
-                      Interest (₹)
-                    </Label>
-                    <Input
-                      id="pay-interest"
-                      type="number"
-                      placeholder="0"
-                      value={interestAmount}
-                      onChange={(e) => setInterestAmount(e.target.value)}
-                      className={noteInputClass}
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div className="min-w-0 space-y-1.5">
-                <span className={fieldLabelClass}>Date *</span>
+            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+              <div className="space-y-1">
+                <Label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <Calendar className="size-3.5 text-slate-400" />
+                  Date <span className="text-rose-500">*</span>
+                </Label>
                 <CustomDatePicker
                   value={date ? parseLocalISODate(date) : undefined}
                   onChange={(d) => setDate(d ? formatDateToLocalISO(d) : "")}
                   className={datePickerClass}
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="pay-note" className={fieldLabelClass}>
+
+              <div className="space-y-1">
+                <Label
+                  htmlFor="pay-note"
+                  className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300"
+                >
+                  <FileText className="size-3.5 text-slate-400" />
                   Note
                 </Label>
                 <Input
                   id="pay-note"
-                  placeholder="Optional"
+                  placeholder="Optional reference / transaction ID"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  className={noteInputClass}
+                  className={inputClass}
                 />
               </div>
-            </DetailsCard>
+            </div>
           </div>
 
-          <DialogFooter className="shrink-0 border-t border-slate-100 px-4 py-2.5 dark:border-slate-800 sm:justify-end sm:px-5">
+          <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50 sm:justify-end sm:px-6">
             <SubmitButton tone="rose">
-              {paymentToEdit ? "Update payment" : "Log payment"}
+              {paymentToEdit ? "Update Payment" : "Log Payment"}
             </SubmitButton>
           </DialogFooter>
         </form>
@@ -1156,3 +1194,4 @@ export function AddEditDebtPaymentDialog({
     </Dialog>
   );
 }
+

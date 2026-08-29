@@ -424,6 +424,25 @@ export async function deleteExpenseTransaction(id: string) {
   return { success: true };
 }
 
+export async function deleteMultipleExpenseTransactions(ids: string[]) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("User is not authenticated.");
+  if (!ids || ids.length === 0) return { success: true };
+
+  const { error } = await supabase
+    .from("expense_transactions")
+    .delete()
+    .in("id", ids)
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("Error deleting multiple transactions:", error);
+    throw new Error(`Error deleting multiple transactions: ${error.message}`);
+  }
+
+  return { success: true };
+}
+
 /**
  * PERSONS ACTIONS
  */

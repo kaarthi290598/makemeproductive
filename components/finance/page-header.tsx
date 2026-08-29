@@ -81,3 +81,4 @@ export const consoleDialogFormClass =
 
 export const consoleDialogBodyClass =
   "grid grid-cols-1 items-start gap-3 px-4 py-3 sm:grid-cols-2 sm:gap-4 sm:px-5 sm:py-3.5";
+

@@ -8,6 +8,7 @@ import {
   createExpenseTransaction,
   updateExpenseTransaction,
   deleteExpenseTransaction,
+  deleteMultipleExpenseTransactions,
   toggleTransactionSettlement,
   fetchExpensePersons,
   createExpensePerson,
@@ -38,6 +39,7 @@ interface ExpenseStore {
   ) => Promise<void>;
   toggleSettlement: (id: string, needsSettlement: boolean) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
+  deleteMultipleTransactions: (ids: string[]) => Promise<void>;
   addCategory: (
     category: Omit<Category, "id" | "user_id" | "spent">,
   ) => Promise<void>;
@@ -142,6 +144,17 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
     set({ error: null });
     try {
       await deleteExpenseTransaction(id);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to delete";
+      set({ error: message });
+      throw err;
+    }
+  },
+
+  deleteMultipleTransactions: async (ids) => {
+    set({ error: null });
+    try {
+      await deleteMultipleExpenseTransactions(ids);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to delete";
       set({ error: message });

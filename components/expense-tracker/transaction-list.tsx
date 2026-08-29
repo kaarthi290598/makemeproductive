@@ -18,6 +18,8 @@ import {
   ChevronRight,
   Pencil,
   Receipt,
+  CheckSquare,
+  X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { AddTransactionDialog } from "./add-transaction-dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -46,6 +49,7 @@ function TransactionListSkeleton({ rows = 8 }: { rows?: number }) {
     <div className="divide-y divide-slate-100 dark:divide-slate-800" aria-hidden>
       {Array.from({ length: rows }).map((_, i) => (
         <div key={i} className="flex items-center gap-3 px-4 py-3.5">
+          <Skeleton className="size-4 shrink-0 rounded" />
           <div className="min-w-0 flex-1 space-y-2">
             <div className="flex items-center gap-2">
               <Skeleton className="h-4 w-28" />
@@ -72,6 +76,9 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
   const categories = useExpenseStore((s) => s.categories);
   const persons = useExpenseStore((s) => s.persons);
   const deleteTransaction = useExpenseStore((s) => s.deleteTransaction);
+  const deleteMultipleTransactions = useExpenseStore(
+    (s) => s.deleteMultipleTransactions,
+  );
   const toggleSettlement = useExpenseStore((s) => s.toggleSettlement);
   const invalidateExpense = useInvalidateExpense();
 
@@ -90,6 +97,8 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
     "all",
   );
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [exporting, setExporting] = useState(false);
   const pageSize = 40;
@@ -111,6 +120,7 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
 
   useEffect(() => {
     setCurrentPage(1);
+    setSelectedIds([]);
   }, [
     dateFilterType,
     selectedDates,
@@ -138,6 +148,25 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
     }
   }, [currentPage, totalPages, totalCount]);
 
+  // Multi-select helpers
+  const pageIds = items.map((t) => t.id);
+  const isAllSelected =
+    pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
+
+  const handleToggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedIds((prev) => prev.filter((id) => !pageIds.includes(id)));
+    } else {
+      setSelectedIds((prev) => Array.from(new Set([...prev, ...pageIds])));
+    }
+  };
+
+  const handleToggleItem = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
+  };
+
   const getCategoryName = (id?: string) => {
     if (!id) return "-";
     return categories.find((c) => c.id === id)?.name || "Unknown";
@@ -147,12 +176,31 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
     setDeletingId(id);
     try {
       await deleteTransaction(id);
+      setSelectedIds((prev) => prev.filter((i) => i !== id));
       invalidateExpense();
       toast.success("Transaction deleted");
     } catch {
       // Error handled by store
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    setIsBulkDeleting(true);
+    const count = selectedIds.length;
+    try {
+      await deleteMultipleTransactions(selectedIds);
+      setSelectedIds([]);
+      invalidateExpense();
+      toast.success(
+        `${count} transaction${count > 1 ? "s" : ""} deleted successfully`,
+      );
+    } catch {
+      // Error handled by store
+    } finally {
+      setIsBulkDeleting(false);
     }
   };
 
@@ -280,6 +328,52 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
         </div>
       )}
 
+      {/* Fixed bottom floating action bar */}
+      {selectedIds.length > 0 && (
+        <div className="fixed bottom-[max(1.25rem,calc(env(safe-area-inset-bottom)+1rem))] inset-x-0 z-50 flex justify-center px-4 pointer-events-none animate-in fade-in slide-in-from-bottom-5 duration-200">
+          <div className="pointer-events-auto flex items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white/95 px-4 py-2.5 shadow-[0_8px_30px_rgb(0,0,0,0.16)] backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 max-w-md w-full">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-rose-600 text-xs font-bold text-white shadow-sm">
+                {selectedIds.length}
+              </span>
+              <span className="truncate text-xs font-bold text-slate-800 dark:text-slate-200">
+                {selectedIds.length} selected
+              </span>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedIds([])}
+                className="h-8 gap-1 rounded-xl px-2.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+              >
+                <X className="size-3.5" />
+                Clear
+              </Button>
+              <ConfirmDialog
+                title="Delete Selected Transactions"
+                description={`Are you sure you want to delete ${selectedIds.length} selected transaction${selectedIds.length > 1 ? "s" : ""}? This action cannot be undone.`}
+                onConfirm={handleBulkDelete}
+                loading={isBulkDeleting}
+                variant="destructive"
+                confirmText={`Delete (${selectedIds.length})`}
+                trigger={
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    disabled={isBulkDeleting}
+                    className="h-8 gap-1.5 rounded-xl px-3 text-xs font-bold shadow-md shadow-rose-600/20"
+                  >
+                    <Trash2 className="size-3.5" />
+                    Delete ({selectedIds.length})
+                  </Button>
+                }
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       <div
         className={cn(
           "overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950",
@@ -287,6 +381,28 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
         )}
         aria-busy={isLoading || isFetching}
       >
+        {/* Table header with Select All */}
+        {!isLoading && items.length > 0 && (
+          <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/70 px-3 py-2 text-xs font-semibold text-slate-500 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-400 sm:px-4">
+            <div className="flex items-center gap-2.5">
+              <Checkbox
+                checked={isAllSelected}
+                onCheckedChange={handleToggleSelectAll}
+                aria-label="Select all transactions on page"
+                className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+              />
+              <span className="text-[11px] font-bold uppercase tracking-wider">
+                {isAllSelected
+                  ? "All selected on page"
+                  : `Select all (${items.length})`}
+              </span>
+            </div>
+            <span className="font-mono text-[11px]">
+              {totalCount} total record{totalCount > 1 ? "s" : ""}
+            </span>
+          </div>
+        )}
+
         {isLoading ? (
           <TransactionListSkeleton />
         ) : showEmpty ? (
@@ -301,89 +417,104 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
           </div>
         ) : (
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
-            {items.map((t) => (
-              <div
-                key={t.id}
-                className="flex min-w-0 items-start gap-2 px-3 py-3.5 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/50 sm:items-center sm:gap-3 sm:px-4"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                      {getCategoryName(t.category_id)}
-                    </span>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "rounded-full border px-2 py-0 text-[10px] font-bold",
-                        t.type === "income"
-                          ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
-                          : "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-800 dark:bg-rose-950/60 dark:text-rose-300",
-                      )}
-                    >
-                      {t.type === "income" ? "Credit" : "Debit"}
-                    </Badge>
-                    {t.needs_settlement && (
-                      <button
-                        type="button"
-                        onClick={() => handleSettle(t.id)}
-                        className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-200"
-                      >
-                        <AlertCircle className="size-3" />
-                        Settle
-                      </button>
-                    )}
-                  </div>
-                  <p className="mt-0.5 truncate font-mono text-[11px] text-slate-500 dark:text-slate-400">
-                    {format(parseLocalISODate(t.date), "dd-MM-yyyy")}
-                    {t.paid_by ? ` · ${t.paid_by}` : ""}
-                    {t.note ? ` · ${t.note}` : ""}
-                  </p>
-                </div>
-                <p
+            {items.map((t) => {
+              const isSelected = selectedIds.includes(t.id);
+              return (
+                <div
+                  key={t.id}
                   className={cn(
-                    "shrink-0 font-mono text-xs font-extrabold sm:text-sm",
-                    t.type === "income"
-                      ? "text-emerald-600 dark:text-emerald-400"
-                      : "text-rose-600 dark:text-rose-400",
+                    "flex min-w-0 items-start gap-2.5 px-3 py-3.5 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/50 sm:items-center sm:gap-3.5 sm:px-4",
+                    isSelected &&
+                      "bg-emerald-50/40 hover:bg-emerald-50/60 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/30",
                   )}
                 >
-                  {t.type === "income" ? "+" : "−"}₹
-                  {t.amount.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
-                </p>
-                <div className="flex shrink-0 gap-0.5">
-                  <AddTransactionDialog
-                    transactionToEdit={t}
-                    trigger={
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                      >
-                        <Pencil className="size-3.5" />
-                      </Button>
-                    }
+                  <Checkbox
+                    checked={isSelected}
+                    onCheckedChange={() => handleToggleItem(t.id)}
+                    aria-label={`Select transaction ${t.note || t.id}`}
+                    className="mt-0.5 shrink-0 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600 sm:mt-0"
                   />
-                  <ConfirmDialog
-                    title="Delete Transaction"
-                    description="Are you sure you want to delete this transaction? This action cannot be undone."
-                    onConfirm={() => handleDelete(t.id)}
-                    loading={deletingId === t.id}
-                    variant="destructive"
-                    confirmText="Delete"
-                    trigger={
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40"
-                        disabled={deletingId === t.id}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                        {getCategoryName(t.category_id)}
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "rounded-full border px-2 py-0 text-[10px] font-bold",
+                          t.type === "income"
+                            ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                            : "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-800 dark:bg-rose-950/60 dark:text-rose-300",
+                        )}
                       >
-                        <Trash2 className="size-3.5" />
-                      </Button>
-                    }
-                  />
+                        {t.type === "income" ? "Credit" : "Debit"}
+                      </Badge>
+                      {t.needs_settlement && (
+                        <button
+                          type="button"
+                          onClick={() => handleSettle(t.id)}
+                          className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-200"
+                        >
+                          <AlertCircle className="size-3" />
+                          Settle
+                        </button>
+                      )}
+                    </div>
+                    <p className="mt-0.5 truncate font-mono text-[11px] text-slate-500 dark:text-slate-400">
+                      {format(parseLocalISODate(t.date), "dd-MM-yyyy")}
+                      {t.paid_by ? ` · ${t.paid_by}` : ""}
+                      {t.note ? ` · ${t.note}` : ""}
+                    </p>
+                  </div>
+                  <p
+                    className={cn(
+                      "shrink-0 font-mono text-xs font-extrabold sm:text-sm",
+                      t.type === "income"
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : "text-rose-600 dark:text-rose-400",
+                    )}
+                  >
+                    {t.type === "income" ? "+" : "−"}₹
+                    {t.amount.toLocaleString("en-IN", {
+                      maximumFractionDigits: 0,
+                    })}
+                  </p>
+                  <div className="flex shrink-0 gap-0.5">
+                    <AddTransactionDialog
+                      transactionToEdit={t}
+                      trigger={
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-8 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                        >
+                          <Pencil className="size-3.5" />
+                        </Button>
+                      }
+                    />
+                    <ConfirmDialog
+                      title="Delete Transaction"
+                      description="Are you sure you want to delete this transaction? This action cannot be undone."
+                      onConfirm={() => handleDelete(t.id)}
+                      loading={deletingId === t.id}
+                      variant="destructive"
+                      confirmText="Delete"
+                      trigger={
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-8 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40"
+                          disabled={deletingId === t.id}
+                        >
+                          <Trash2 className="size-3.5" />
+                        </Button>
+                      }
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -422,3 +553,4 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
     </div>
   );
 }
+

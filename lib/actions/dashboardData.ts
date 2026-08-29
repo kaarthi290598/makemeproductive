@@ -2,19 +2,10 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabaseClient";
+import { calculateMonthlyEquivalent, calculateYearlyEquivalent } from "@/types/subscription";
+import { calculateRemainingDue, calculateUtilization } from "@/types/credit-due";
 
 export interface DashboardData {
-  todos: {
-    items: {
-      id: number;
-      name: string;
-      isCompleted: boolean;
-      deadline?: string | null;
-      category?: { id: number; category: string } | null;
-    }[];
-    pendingCount: number;
-    completedCount: number;
-  };
   expenses: {
     transactions: {
       id: string;
@@ -50,6 +41,47 @@ export interface DashboardData {
     totalDebt: number;
     totalDebtRemaining: number;
   };
+  subscriptions: {
+    totalCount: number;
+    activeCount: number;
+    totalMonthlySpend: number;
+    totalYearlySpend: number;
+    upcomingRenewals: {
+      id: string;
+      name: string;
+      amount: number;
+      billingFrequency: string;
+      nextPaymentDate: string;
+      category: string;
+    }[];
+  };
+  creditDues: {
+    totalAccounts: number;
+    totalCreditLimit: number;
+    totalOutstanding: number;
+    totalRemainingDue: number;
+    overallUtilization: number;
+    items: {
+      id: string;
+      name: string;
+      creditLimit: number;
+      totalOutstanding: number;
+      remainingDue: number;
+      dueDate: string;
+      amountPaid: number;
+    }[];
+    upcomingDues: {
+      id: string;
+      name: string;
+      remainingDue: number;
+      dueDate: string;
+    }[];
+  };
+  passwords: {
+    totalCount: number;
+    bankAccountsCount: number;
+    webAccountsCount: number;
+  };
 }
 
 export async function fetchDashboardData(): Promise<DashboardData> {
@@ -67,36 +99,16 @@ export async function fetchDashboardData(): Promise<DashboardData> {
 
   // Run all queries in parallel
   const [
-    todosResult,
-    pendingCountResult,
-    completedCountResult,
     transactionsResult,
     monthlyTransactionsResult,
     categoriesResult,
     investmentsResult,
     contributionsResult,
     debtsResult,
+    subscriptionsResult,
+    creditDuesResult,
+    passwordsResult,
   ] = await Promise.all([
-    supabase
-      .from("todos")
-      .select("id, name, isCompleted, deadline, category(id, category)")
-      .eq("user_Id", userId)
-      .eq("isCompleted", false)
-      .order("order", { ascending: true })
-      .limit(8),
-
-    supabase
-      .from("todos")
-      .select("id", { count: "exact", head: true })
-      .eq("user_Id", userId)
-      .eq("isCompleted", false),
-
-    supabase
-      .from("todos")
-      .select("id", { count: "exact", head: true })
-      .eq("user_Id", userId)
-      .eq("isCompleted", true),
-
     // Expense transactions (recent 10 for display)
     supabase
       .from("expense_transactions")
@@ -137,27 +149,29 @@ export async function fetchDashboardData(): Promise<DashboardData> {
       .from("portfolio_debts")
       .select("id, name, category, total_amount, remaining_amount, interest_rate, due_date")
       .eq("user_id", userId),
+
+    // Subscriptions
+    supabase
+      .from("subscriptions")
+      .select("id, name, amount, billing_frequency, next_payment_date, status, category")
+      .eq("user_id", userId)
+      .order("next_payment_date", { ascending: true }),
+
+    // Credit Dues
+    supabase
+      .from("credit_dues")
+      .select("id, name, credit_limit, statement_amount, total_outstanding, amount_paid, due_date")
+      .eq("user_id", userId)
+      .order("due_date", { ascending: true }),
+
+    // Passwords
+    supabase
+      .from("passwords")
+      .select("id, name, category")
+      .eq("user_id", userId),
   ]);
 
-  const todos = {
-    items: (todosResult.data || []).map((t) => {
-      const joined = t.category as
-        | { id: number; category: string }
-        | { id: number; category: string }[]
-        | null;
-      const category = Array.isArray(joined) ? joined[0] ?? null : joined;
-      return {
-        id: Number(t.id),
-        name: String(t.name),
-        isCompleted: Boolean(t.isCompleted),
-        deadline: (t.deadline as string | null) ?? null,
-        category: category ?? null,
-      };
-    }),
-    pendingCount: pendingCountResult.count ?? 0,
-    completedCount: completedCountResult.count ?? 0,
-  };
-
+  // Process Expense Transactions
   const transactions = (transactionsResult.data || []).map((t) => {
     const joined = t.expense_categories as
       | { name: string; color: string }
@@ -188,7 +202,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     .filter((t) => t.type === "income")
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
-  // Process investments with contributions
+  // Process Portfolio Investments
   const contributionsByInvestment = new Map<
     string,
     { totalInvested: number; currentValue: number; latestDate: string }
@@ -247,8 +261,78 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     0,
   );
 
+  // Process Subscriptions
+  const rawSubs = subscriptionsResult.data || [];
+  const activeSubs = rawSubs.filter((s) => s.status === "active");
+  const totalMonthlySpend = activeSubs.reduce(
+    (acc, s) => acc + calculateMonthlyEquivalent(Number(s.amount), s.billing_frequency),
+    0,
+  );
+  const totalYearlySpend = activeSubs.reduce(
+    (acc, s) => acc + calculateYearlyEquivalent(Number(s.amount), s.billing_frequency),
+    0,
+  );
+
+  const upcomingRenewals = activeSubs.slice(0, 5).map((s) => ({
+    id: s.id,
+    name: s.name,
+    amount: Number(s.amount),
+    billingFrequency: s.billing_frequency,
+    nextPaymentDate: s.next_payment_date,
+    category: s.category,
+  }));
+
+  // Process Credit Dues
+  const rawCreditDues = creditDuesResult.data || [];
+  const creditDuesItems = rawCreditDues.map((c) => {
+    const item = {
+      id: c.id,
+      user_id: userId,
+      name: c.name,
+      credit_limit: Number(c.credit_limit || 0),
+      statement_amount: Number(c.statement_amount || 0),
+      total_outstanding: Number(c.total_outstanding || 0),
+      amount_paid: Number(c.amount_paid || 0),
+      minimum_due: null,
+      due_date: c.due_date,
+      created_at: "",
+      updated_at: "",
+    };
+    const remainingDue = calculateRemainingDue(item);
+    return {
+      id: c.id,
+      name: c.name,
+      creditLimit: Number(c.credit_limit || 0),
+      totalOutstanding: Number(c.total_outstanding || 0),
+      remainingDue,
+      dueDate: c.due_date,
+      amountPaid: Number(c.amount_paid || 0),
+    };
+  });
+
+  const totalCreditLimit = creditDuesItems.reduce((acc, c) => acc + c.creditLimit, 0);
+  const totalOutstanding = creditDuesItems.reduce((acc, c) => acc + c.totalOutstanding, 0);
+  const totalRemainingDue = creditDuesItems.reduce((acc, c) => acc + c.remainingDue, 0);
+  const overallUtilization = totalCreditLimit > 0 ? (totalOutstanding / totalCreditLimit) * 100 : 0;
+
+  const upcomingDues = creditDuesItems
+    .filter((c) => c.remainingDue > 0 && !!c.dueDate)
+    .slice(0, 5)
+    .map((c) => ({
+      id: c.id,
+      name: c.name,
+      remainingDue: c.remainingDue,
+      dueDate: c.dueDate as string,
+    }));
+
+  // Process Passwords
+  const rawPasswords = passwordsResult.data || [];
+  const bankAccountsCount = rawPasswords.filter((p) => p.category === "Bank").length;
+  const webAccountsCount = rawPasswords.filter(
+    (p) => p.category === "Social" || p.category === "Work" || p.category === "Entertainment",
+  ).length;
+
   return {
-    todos,
     expenses: {
       transactions,
       totalBudget,
@@ -262,6 +346,27 @@ export async function fetchDashboardData(): Promise<DashboardData> {
       totalCurrentValue,
       totalDebt,
       totalDebtRemaining,
+    },
+    subscriptions: {
+      totalCount: rawSubs.length,
+      activeCount: activeSubs.length,
+      totalMonthlySpend,
+      totalYearlySpend,
+      upcomingRenewals,
+    },
+    creditDues: {
+      totalAccounts: creditDuesItems.length,
+      totalCreditLimit,
+      totalOutstanding,
+      totalRemainingDue,
+      overallUtilization,
+      items: creditDuesItems,
+      upcomingDues,
+    },
+    passwords: {
+      totalCount: rawPasswords.length,
+      bankAccountsCount,
+      webAccountsCount,
     },
   };
 }

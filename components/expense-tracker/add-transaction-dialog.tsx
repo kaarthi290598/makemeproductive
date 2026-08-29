@@ -22,20 +22,17 @@ import {
   IndianRupee,
   Send,
   User,
+  Calendar,
+  FileText,
+  AlertCircle,
+  Check,
 } from "lucide-react";
 import { cn, formatDateToLocalISO, parseLocalISODate } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CustomDatePicker } from "../customDatePicker";
-
 import { toast } from "sonner";
 import { Transaction } from "@/types/expense";
 import { useInvalidateExpense } from "@/hooks/use-expense-queries";
-import {
-  consoleDialogBodyClass,
-  consoleDialogClass,
-  consoleDialogFormClass,
-} from "@/components/finance/page-header";
-import { ChipScroll } from "@/components/ui/chip-scroll";
 
 interface AddTransactionDialogProps {
   defaultType?: "income" | "expense";
@@ -43,12 +40,6 @@ interface AddTransactionDialogProps {
   transactionToEdit?: Transaction;
   onOpenChange?: (open: boolean) => void;
 }
-
-const fieldLabelClass =
-  "block text-xs font-semibold text-slate-700 dark:text-slate-300";
-
-const choiceIdleClass =
-  "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400";
 
 export function AddTransactionDialog({
   defaultType = "expense",
@@ -61,6 +52,7 @@ export function AddTransactionDialog({
   const addTransaction = useExpenseStore((s) => s.addTransaction);
   const updateTransaction = useExpenseStore((s) => s.updateTransaction);
   const invalidateExpense = useInvalidateExpense();
+
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<"income" | "expense">(defaultType);
   const [amount, setAmount] = useState("");
@@ -111,12 +103,12 @@ export function AddTransactionDialog({
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!amount || !date) {
-      toast.error("Please fill in Amount and Date");
+    if (!amount || parseFloat(amount) <= 0 || !date) {
+      toast.error("Please enter a valid amount and date");
       return;
     }
     if (type === "expense" && !categoryId) {
-      toast.error("Please select a Category for expenses");
+      toast.error("Please select a category for expense");
       return;
     }
     if (!paidBy) {
@@ -131,7 +123,7 @@ export function AddTransactionDialog({
         type,
         category_id: type === "expense" ? categoryId : undefined,
         date: formatDateToLocalISO(date),
-        note,
+        note: note.trim() || undefined,
         needs_settlement: type === "expense" ? needsSettlement : undefined,
         paid_by: paidBy,
       };
@@ -141,7 +133,11 @@ export function AddTransactionDialog({
         toast.success("Transaction updated successfully!");
       } else {
         await addTransaction(transactionData);
-        toast.success("Transaction added successfully!");
+        toast.success(
+          isCredit
+            ? "Credit added successfully!"
+            : "Debit added successfully!",
+        );
       }
       invalidateExpense();
 
@@ -188,83 +184,117 @@ export function AddTransactionDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className={consoleDialogClass}>
-        <form onSubmit={handleSubmit} className={consoleDialogFormClass}>
-          <DialogHeader className="shrink-0 space-y-0.5 border-b border-slate-100 px-4 py-2.5 pr-12 dark:border-slate-800 sm:px-5">
-            <div className="flex items-center gap-2.5">
-              <span
-                className={cn(
-                  "flex size-8 shrink-0 items-center justify-center rounded-full text-white",
-                  isCredit ? "bg-emerald-600" : "bg-rose-600",
-                )}
-              >
-                {isCredit ? (
-                  <ArrowUpRight className="size-4" />
-                ) : (
-                  <ArrowDownRight className="size-4" />
-                )}
-              </span>
-              <div className="min-w-0 text-left">
-                <DialogTitle className="text-base font-semibold tracking-tight text-slate-900 dark:text-white sm:text-lg">
-                  {isEditMode ? "Edit" : "Add"} {isCredit ? "credit" : "debit"}
-                </DialogTitle>
-                <DialogDescription className="text-xs text-slate-500 dark:text-slate-400">
-                  {isEditMode
-                    ? "Update this entry and save changes."
-                    : "Log cash in or cash out in a few seconds."}
-                </DialogDescription>
+      <DialogContent className="max-h-[min(94dvh,42rem)] w-[min(calc(100vw-1.5rem),32rem)] max-w-lg overflow-y-auto rounded-2xl border-slate-200/90 p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-950 sm:rounded-3xl">
+        <form onSubmit={handleSubmit} className="flex flex-col">
+          {/* Dynamic Top Header with Subtle Ambient Glow */}
+          <div
+            className={cn(
+              "relative border-b px-5 py-3.5 transition-colors duration-200 sm:px-6",
+              isCredit
+                ? "border-emerald-100 bg-gradient-to-b from-emerald-50/80 to-transparent dark:border-emerald-950/60 dark:from-emerald-950/30"
+                : "border-rose-100 bg-gradient-to-b from-rose-50/80 to-transparent dark:border-rose-950/60 dark:from-rose-950/30",
+            )}
+          >
+            <DialogHeader className="space-y-0.5 text-left">
+              <div className="flex items-center gap-3">
+                <span
+                  className={cn(
+                    "flex size-9 shrink-0 items-center justify-center rounded-xl text-white shadow-md transition-all duration-300",
+                    isCredit
+                      ? "bg-emerald-600 shadow-emerald-600/25 ring-4 ring-emerald-100 dark:ring-emerald-950/50"
+                      : "bg-rose-600 shadow-rose-600/25 ring-4 ring-rose-100 dark:ring-rose-950/50",
+                  )}
+                >
+                  {isCredit ? (
+                    <ArrowUpRight className="size-4.5" />
+                  ) : (
+                    <ArrowDownRight className="size-4.5" />
+                  )}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <DialogTitle className="text-base font-bold tracking-tight text-slate-900 dark:text-white sm:text-lg">
+                    {isEditMode
+                      ? "Edit Entry"
+                      : isCredit
+                        ? "Add Credit"
+                        : "Add Debit"}
+                  </DialogTitle>
+                  <DialogDescription className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                    {isCredit
+                      ? "Log cash in, income, or money received"
+                      : "Log cash out, purchases, or expenses"}
+                  </DialogDescription>
+                </div>
               </div>
-            </div>
-          </DialogHeader>
+            </DialogHeader>
 
-          <div className={consoleDialogBodyClass}>
-            <div className="w-full self-start space-y-3">
-              {!isEditMode && (
-                <div className="grid grid-cols-2 gap-2">
+            {/* Segmented Type Toggle (when not editing) */}
+            {!isEditMode && (
+              <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl border border-slate-200/80 bg-slate-100/90 p-1 dark:border-slate-800 dark:bg-slate-900">
                 <button
                   type="button"
                   onClick={() => setType("income")}
                   className={cn(
-                    "flex items-center justify-center gap-1.5 rounded-xl border px-3 py-2.5 text-xs font-bold transition-all",
+                    "flex items-center justify-center gap-2 rounded-lg py-1.5 text-xs font-bold transition-all duration-200",
                     isCredit
-                      ? "border-emerald-300 bg-emerald-50 text-emerald-900 shadow-sm dark:border-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-200"
-                      : choiceIdleClass,
+                      ? "bg-white text-emerald-700 shadow-sm dark:bg-slate-800 dark:text-emerald-400"
+                      : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white",
                   )}
                 >
                   <ArrowUpRight className="size-3.5" />
-                  Credit
+                  Credit (Cash In)
                 </button>
                 <button
                   type="button"
                   onClick={() => setType("expense")}
                   className={cn(
-                    "flex items-center justify-center gap-1.5 rounded-xl border px-3 py-2.5 text-xs font-bold transition-all",
+                    "flex items-center justify-center gap-2 rounded-lg py-1.5 text-xs font-bold transition-all duration-200",
                     !isCredit
-                      ? "border-rose-300 bg-rose-50 text-rose-900 shadow-sm dark:border-rose-700 dark:bg-rose-950/60 dark:text-rose-200"
-                      : choiceIdleClass,
+                      ? "bg-white text-rose-700 shadow-sm dark:bg-slate-800 dark:text-rose-400"
+                      : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white",
                   )}
                 >
                   <ArrowDownRight className="size-3.5" />
-                  Debit
+                  Debit (Cash Out)
                 </button>
               </div>
             )}
+          </div>
 
+          {/* Dialog Main Form Body */}
+          <div className="space-y-3 px-5 py-3.5 sm:px-6">
+            {/* Amount Field */}
             <div
               className={cn(
-                "rounded-xl border p-3.5",
+                "group relative rounded-xl border p-3 transition-all duration-200",
                 isCredit
-                  ? "border-emerald-200/80 bg-emerald-50/70 dark:border-emerald-800/60 dark:bg-emerald-950/40"
-                  : "border-rose-200/80 bg-rose-50/70 dark:border-rose-800/60 dark:bg-rose-950/40",
+                  ? "border-emerald-200/80 bg-gradient-to-br from-emerald-50/50 via-white to-emerald-50/30 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/10 dark:border-emerald-900/50 dark:from-emerald-950/20 dark:via-slate-900 dark:to-emerald-950/10"
+                  : "border-rose-200/80 bg-gradient-to-br from-rose-50/50 via-white to-rose-50/30 focus-within:border-rose-500 focus-within:ring-2 focus-within:ring-rose-500/10 dark:border-rose-900/50 dark:from-rose-950/20 dark:via-slate-900 dark:to-rose-950/10",
               )}
             >
-              <Label htmlFor="amount" className={fieldLabelClass}>
-                Amount *
-              </Label>
-                <div className="relative mt-1">
+              <div className="flex items-center justify-between">
+                <Label
+                  htmlFor="amount"
+                  className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                >
+                  Amount *
+                </Label>
+                <span
+                  className={cn(
+                    "text-[10px] font-bold uppercase tracking-wider",
+                    isCredit
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-rose-600 dark:text-rose-400",
+                  )}
+                >
+                  INR (₹)
+                </span>
+              </div>
+
+              <div className="relative mt-1 flex items-center">
                 <IndianRupee
                   className={cn(
-                      "pointer-events-none absolute left-0 top-1/2 size-4 -translate-y-1/2",
+                    "pointer-events-none absolute left-0 size-5.5 shrink-0 transition-colors sm:size-6",
                     isCredit
                       ? "text-emerald-600 dark:text-emerald-400"
                       : "text-rose-600 dark:text-rose-400",
@@ -274,174 +304,225 @@ export function AddTransactionDialog({
                   id="amount"
                   type="number"
                   inputMode="decimal"
+                  step="any"
                   autoFocus
                   min="0"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value.replace(/-/g, ""))}
+                  placeholder="0.00"
                   className={cn(
-                    "h-10 border-0 bg-transparent pl-6 text-xl font-black tracking-tight shadow-none focus-visible:ring-0",
+                    "h-10 border-0 bg-transparent pl-7 font-mono text-xl font-black tracking-tight shadow-none focus-visible:ring-0 sm:pl-8 sm:text-2xl",
                     "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
                     isCredit
-                      ? "text-emerald-700 dark:text-emerald-300"
-                      : "text-rose-700 dark:text-rose-300",
+                      ? "text-emerald-950 placeholder:text-emerald-300 dark:text-emerald-200 dark:placeholder:text-emerald-800"
+                      : "text-rose-950 placeholder:text-rose-300 dark:text-rose-200 dark:placeholder:text-rose-800",
                   )}
-                  placeholder="0"
                 />
-                </div>
               </div>
             </div>
 
-            <div className="min-w-0 space-y-2.5 rounded-xl border border-slate-200 p-3 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <span className="flex size-6 items-center justify-center rounded-full bg-emerald-100 text-[11px] font-bold text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
-                  1
-                </span>
-                <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                  Details
-                </p>
-              </div>
-
-              {type === "expense" && (
-                <div className="space-y-1.5">
-                  <span className={fieldLabelClass}>Category *</span>
-                  {categories.length === 0 ? (
-                    <p className="text-xs text-slate-500">
-                      Add categories in Settings first.
-                    </p>
-                  ) : (
-                    <ChipScroll>
-                      {categories.map((cat) => {
-                        const active = categoryId === cat.id;
-                        return (
-                          <button
-                            key={cat.id}
-                            type="button"
-                            onClick={() => setCategoryId(cat.id)}
-                            className={cn(
-                              "inline-flex shrink-0 items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-xs font-bold transition-all",
-                              active
-                                ? "border-rose-300 bg-rose-50 text-rose-900 shadow-sm dark:border-rose-700 dark:bg-rose-950/60 dark:text-rose-200"
-                                : choiceIdleClass,
-                            )}
-                          >
-                            <span
-                              className="size-2 shrink-0 rounded-full"
-                              style={{ backgroundColor: cat.color }}
-                            />
-                            {cat.name}
-                          </button>
-                        );
-                      })}
-                    </ChipScroll>
-                  )}
-                </div>
-              )}
-
+            {/* Category Selector (for Expenses) */}
+            {type === "expense" && (
               <div className="space-y-1.5">
-                <span className={fieldLabelClass}>Paid by *</span>
-                {persons.length === 0 ? (
-                  <p className="text-xs text-slate-500">
-                    Add people in Settings first.
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    Category <span className="text-rose-500">*</span>
+                  </Label>
+                  <span className="text-[10px] text-slate-400">
+                    {categories.length} available
+                  </span>
+                </div>
+
+                {categories.length === 0 ? (
+                  <p className="rounded-xl border border-dashed border-slate-200 p-2.5 text-center text-xs text-slate-500 dark:border-slate-800">
+                    No categories found. Add categories in Settings.
                   </p>
                 ) : (
                   <div
                     className={cn(
-                      "grid gap-1.5",
-                      persons.length <= 2 ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3",
+                      "flex flex-wrap gap-1.5",
+                      categories.length > 12 &&
+                        "max-h-28 overflow-y-auto pr-1",
                     )}
                   >
-                    {persons.map((person) => {
-                      const active = paidBy === person.name;
+                    {categories.map((cat) => {
+                      const active = categoryId === cat.id;
                       return (
                         <button
-                          key={person.id}
+                          key={cat.id}
                           type="button"
-                          onClick={() => setPaidBy(person.name)}
+                          onClick={() => setCategoryId(cat.id)}
                           className={cn(
-                            "inline-flex items-center justify-center gap-1.5 rounded-xl border px-2.5 py-2 text-xs font-bold transition-all",
+                            "inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1 text-xs font-bold transition-all",
                             active
-                              ? isCredit
-                                ? "border-emerald-300 bg-emerald-50 text-emerald-900 shadow-sm dark:border-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-200"
-                                : "border-rose-300 bg-rose-50 text-rose-900 shadow-sm dark:border-rose-700 dark:bg-rose-950/60 dark:text-rose-200"
-                              : choiceIdleClass,
+                              ? "border-rose-400 bg-rose-50 text-rose-900 shadow-sm ring-1 ring-rose-400 dark:border-rose-600 dark:bg-rose-950/60 dark:text-rose-200"
+                              : "border-slate-200 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800",
                           )}
                         >
-                          <User className="size-3" />
-                          {person.name}
+                          <span
+                            className="size-2 shrink-0 rounded-full shadow-xs"
+                            style={{ backgroundColor: cat.color || "#f43f5e" }}
+                          />
+                          <span>{cat.name}</span>
+                          {active && <Check className="size-3 text-rose-600" />}
                         </button>
                       );
                     })}
                   </div>
                 )}
               </div>
+            )}
 
-              <div className="grid grid-cols-2 gap-2.5">
-                <div className="min-w-0 space-y-1">
-                  <span className={fieldLabelClass}>Date *</span>
-                  <CustomDatePicker
-                    value={date}
-                    onChange={setDate}
-                    className="h-9 min-w-0 rounded-lg border-slate-200 bg-white font-mono text-xs font-semibold shadow-sm dark:border-slate-700 dark:bg-slate-900 [&_svg]:text-emerald-600 dark:[&_svg]:text-emerald-400"
-                  />
-                </div>
-                <div className="min-w-0 space-y-1">
-                  <Label htmlFor="note" className={fieldLabelClass}>
-                    Note
-                  </Label>
-                  <Input
-                    id="note"
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    className="h-9 rounded-lg border-slate-200 bg-white text-sm shadow-sm focus-visible:border-emerald-500 focus-visible:ring-emerald-500/10 dark:border-slate-700 dark:bg-slate-900"
-                    placeholder="Optional"
-                  />
-                </div>
+            {/* Paid By Selector */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Paid by <span className="text-rose-500">*</span>
+                </Label>
+                <span className="text-[10px] text-slate-400">
+                  {persons.length} people
+                </span>
               </div>
 
-              {type === "expense" && (
-                <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/80 px-2.5 py-2 dark:border-slate-800 dark:bg-slate-900/50">
-                  <Checkbox
-                    id="settlement"
-                    checked={needsSettlement}
-                    onCheckedChange={(c) => setNeedsSettlement(!!c)}
-                  />
-                  <span className="text-[11px] font-bold text-slate-800 dark:text-slate-100">
-                    Needs settlement
-                  </span>
-                </label>
+              {persons.length === 0 ? (
+                <p className="rounded-xl border border-dashed border-slate-200 p-2.5 text-center text-xs text-slate-500 dark:border-slate-800">
+                  No people found. Add people in Settings.
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-1.5">
+                  {persons.map((person) => {
+                    const active = paidBy === person.name;
+                    return (
+                      <button
+                        key={person.id}
+                        type="button"
+                        onClick={() => setPaidBy(person.name)}
+                        className={cn(
+                          "inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1 text-xs font-bold transition-all",
+                          active
+                            ? isCredit
+                              ? "border-emerald-400 bg-emerald-50 text-emerald-900 shadow-sm ring-1 ring-emerald-400 dark:border-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-200"
+                              : "border-rose-400 bg-rose-50 text-rose-900 shadow-sm ring-1 ring-rose-400 dark:border-rose-600 dark:bg-rose-950/60 dark:text-rose-200"
+                            : "border-slate-200 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800",
+                        )}
+                      >
+                        <User className="size-3 text-slate-400" />
+                        <span>{person.name}</span>
+                        {active && (
+                          <Check
+                            className={cn(
+                              "size-3",
+                              isCredit ? "text-emerald-600" : "text-rose-600",
+                            )}
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               )}
             </div>
+
+            {/* Date and Note Row */}
+            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+              <div className="space-y-1">
+                <Label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <Calendar className="size-3.5 text-slate-400" />
+                  Date <span className="text-rose-500">*</span>
+                </Label>
+                <CustomDatePicker
+                  value={date}
+                  onChange={setDate}
+                  className="h-9 w-full rounded-xl border-slate-200 bg-slate-50/70 font-mono text-xs font-semibold shadow-2xs hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label
+                  htmlFor="note"
+                  className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300"
+                >
+                  <FileText className="size-3.5 text-slate-400" />
+                  Note
+                </Label>
+                <Input
+                  id="note"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="e.g. Lunch with team"
+                  className="h-9 rounded-xl border-slate-200 bg-slate-50/70 text-xs shadow-2xs placeholder:text-slate-400 focus-visible:bg-white dark:border-slate-800 dark:bg-slate-900 dark:focus-visible:bg-slate-950"
+                />
+              </div>
+            </div>
+
+            {/* Needs Settlement Card (Expenses only) */}
+            {type === "expense" && (
+              <label className="flex cursor-pointer items-center justify-between rounded-xl border border-amber-200/70 bg-amber-50/60 p-2.5 transition-colors hover:bg-amber-50/90 dark:border-amber-900/50 dark:bg-amber-950/30 dark:hover:bg-amber-950/40">
+                <div className="flex items-center gap-2">
+                  <div className="flex size-6 items-center justify-center rounded-lg bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300">
+                    <AlertCircle className="size-3.5" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-amber-950 dark:text-amber-200">
+                      Needs settlement
+                    </p>
+                    <p className="text-[10px] text-amber-700 dark:text-amber-400">
+                      Flag this entry for splitting or reimbursement
+                    </p>
+                  </div>
+                </div>
+                <Checkbox
+                  id="settlement"
+                  checked={needsSettlement}
+                  onCheckedChange={(c) => setNeedsSettlement(!!c)}
+                  className="data-[state=checked]:bg-amber-600 data-[state=checked]:border-amber-600"
+                />
+              </label>
+            )}
           </div>
 
-          <DialogFooter className="shrink-0 flex-col-reverse gap-2 border-t border-slate-100 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 sm:px-5">
+          {/* Dialog Footer */}
+          <DialogFooter className="flex-col-reverse gap-2 border-t border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             {!isEditMode ? (
               <label className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
                 <Checkbox
                   id="addAnother"
                   checked={addAnother}
                   onCheckedChange={(c) => setAddAnother(!!c)}
+                  className={cn(
+                    isCredit
+                      ? "data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                      : "data-[state=checked]:bg-rose-600 data-[state=checked]:border-rose-600",
+                  )}
                 />
-                Add another
+                <span>Add another entry</span>
               </label>
             ) : (
-              <span />
+              <div />
             )}
+
             <Button
               type="submit"
               disabled={isSubmitting}
               className={cn(
-                "h-10 w-full rounded-xl px-5 text-sm font-bold text-white shadow-lg sm:w-auto sm:min-w-[148px]",
+                "h-9.5 w-full gap-2 rounded-xl px-5 text-xs font-bold text-white shadow-lg sm:w-auto sm:min-w-[140px]",
                 isCredit
-                  ? "bg-emerald-600 shadow-emerald-600/20 hover:bg-emerald-500"
-                  : "bg-rose-600 shadow-rose-600/20 hover:bg-rose-500",
+                  ? "bg-emerald-600 shadow-emerald-600/25 hover:bg-emerald-500"
+                  : "bg-rose-600 shadow-rose-600/25 hover:bg-rose-500",
               )}
             >
               {isSubmitting ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
-                <Send className="size-4" />
+                <Send className="size-3.5" />
               )}
-              {isEditMode ? "Update entry" : isCredit ? "Save credit" : "Save debit"}
+              <span>
+                {isEditMode
+                  ? "Save changes"
+                  : isCredit
+                    ? "Add Credit"
+                    : "Add Debit"}
+              </span>
             </Button>
           </DialogFooter>
         </form>
@@ -449,3 +530,6 @@ export function AddTransactionDialog({
     </Dialog>
   );
 }
+
+
+

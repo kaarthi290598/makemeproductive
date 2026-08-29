@@ -8,6 +8,9 @@ import {
   ChevronRight,
   Landmark,
   LayoutDashboard,
+  KeyRound,
+  CalendarSync,
+  CreditCard,
 } from "lucide-react";
 
 import {
@@ -34,12 +37,6 @@ const items = [
     description: "Overview",
   },
   {
-    title: "To-do",
-    url: "/app/todo",
-    icon: Inbox,
-    description: "Manage tasks",
-  },
-  {
     title: "Expense Tracker",
     url: "/app/expense-tracker/overview",
     icon: Wallet,
@@ -51,6 +48,24 @@ const items = [
     icon: Landmark,
     description: "Assets & liabilities",
   },
+  {
+    title: "Credit & Dues",
+    url: "/app/credit-dues",
+    icon: CreditCard,
+    description: "Card limits & dues",
+  },
+  {
+    title: "Subscriptions",
+    url: "/app/subscriptions",
+    icon: CalendarSync,
+    description: "Recurring bills",
+  },
+  {
+    title: "Password Manager",
+    url: "/app/passwords",
+    icon: KeyRound,
+    description: "Vault & credentials",
+  },
 ];
 
 const SidebarApp = () => {
@@ -60,7 +75,11 @@ const SidebarApp = () => {
 
   const isActive = (url: string) => {
     if (url === "/app") return pathname === "/app";
-    if (url === "/app/todo") return pathname.startsWith("/app/todo");
+    if (url === "/app/credit-dues")
+      return pathname.startsWith("/app/credit-dues");
+    if (url === "/app/subscriptions")
+      return pathname.startsWith("/app/subscriptions");
+    if (url === "/app/passwords") return pathname.startsWith("/app/passwords");
     if (url.includes("expense-tracker"))
       return pathname.startsWith("/app/expense-tracker");
     if (url.includes("portfolio"))

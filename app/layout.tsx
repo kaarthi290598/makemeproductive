@@ -8,8 +8,16 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ClientQueryProvider } from "@/components/client-query-provider";
 
 export const metadata: Metadata = {
-  title: "Make Me Productive",
-  description: "Make Me Productive",
+  title: "ToolCity - Make Me Productive",
+  description: "Personal finance, expenses, investments, subscriptions, credit cards & vault.",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: [
+      { url: "/apple-icon", sizes: "180x180", type: "image/png" },
+    ],
+  },
 };
 
 export const viewport: Viewport = {
