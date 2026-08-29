@@ -70,7 +70,7 @@ export function RecordPaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-h-[min(94dvh,36rem)] w-[min(calc(100vw-1.5rem),28rem)] max-w-md overflow-y-auto rounded-2xl border-slate-200/90 p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-950 sm:rounded-3xl">
+      <DialogContent className="w-full max-w-full sm:w-[min(calc(100vw-1.5rem),28rem)] sm:max-w-md max-h-[92dvh] overflow-y-auto rounded-t-3xl rounded-b-none sm:rounded-3xl border-slate-200/90 p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-950">
         <form onSubmit={handlePay} className="flex flex-col">
           {/* Header */}
           <div className="border-b border-emerald-100 bg-gradient-to-b from-emerald-50/80 to-transparent px-5 py-3.5 dark:border-emerald-950/60 dark:from-emerald-950/30 sm:px-6">

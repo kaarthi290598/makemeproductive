@@ -148,207 +148,221 @@ export function PasswordsManager() {
 
   return (
     <div className="relative flex flex-col gap-4 p-4 sm:p-6 lg:p-8">
-      {/* Summary KPI Cards */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Total Saved Credentials */}
-        <div className="rounded-xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50 to-emerald-100/40 p-3.5 dark:border-emerald-800/40 dark:from-emerald-950/40 dark:to-emerald-900/20">
-          <div className="mb-1 flex items-center gap-2">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-emerald-600/10 text-emerald-700 dark:text-emerald-400">
-              <KeyRound className="size-4" />
-            </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600/80 dark:text-emerald-400/80">
-              Total Vault Items
-            </span>
+      {/* ─── Top Header Bar: Category Tabs & Add Button (Matching Expense & Portfolio) ─── */}
+      <div className="flex min-w-0 flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+        {/* Left: Category Filter Tabs */}
+        <div className="min-w-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="inline-flex h-auto w-max items-center gap-1 rounded-xl border border-slate-200/80 bg-slate-100 p-1 dark:border-slate-800 dark:bg-slate-900">
+            {["All", ...PASSWORD_CATEGORIES].map((cat) => {
+              const active = selectedCategory === cat;
+              const count = categoryCounts[cat] || 0;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat)}
+                  className={cn(
+                    "flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all",
+                    active
+                      ? "bg-emerald-600 text-white shadow-2xs"
+                      : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white",
+                  )}
+                >
+                  <span>{cat}</span>
+                  <span
+                    className={cn(
+                      "rounded-md px-1.5 py-0.2 font-mono text-[10px]",
+                      active
+                        ? "bg-white/20 text-white"
+                        : "bg-slate-200/70 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
+                    )}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
-          <p className="font-mono text-xl font-extrabold text-emerald-900 dark:text-emerald-300">
-            {passwords.length}
-          </p>
-          <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-            Stored encrypted entries
+        </div>
+
+        {/* Right: Prominent + Add Password Button right at the top */}
+        <div className="flex shrink-0 items-center gap-2">
+          <Button
+            size="sm"
+            onClick={handleOpenAdd}
+            className="h-9 w-full gap-1.5 rounded-xl bg-emerald-600 px-3.5 text-sm font-bold text-white shadow-sm shadow-emerald-600/25 transition-all hover:bg-emerald-500 active:scale-[0.98] sm:w-auto"
+          >
+            <Plus className="size-4" />
+            <span>Add Password</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Summary KPI Cards (2x2 on Mobile, 4 on Desktop) */}
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+        {/* Total Saved Credentials */}
+        <div className="flex flex-col justify-between rounded-2xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50 to-emerald-100/40 p-3 sm:p-3.5 dark:border-emerald-800/40 dark:from-emerald-950/40 dark:to-emerald-900/20">
+          <div>
+            <div className="mb-1 flex items-center gap-1.5 sm:gap-2">
+              <div className="flex size-6 sm:size-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600/10 text-emerald-700 dark:text-emerald-400">
+                <KeyRound className="size-3.5 sm:size-4" />
+              </div>
+              <span className="truncate text-[10px] font-bold uppercase tracking-wider text-emerald-600/80 dark:text-emerald-400/80">
+                Vault Total
+              </span>
+            </div>
+            <p className="font-mono text-base font-black tracking-tight text-emerald-900 dark:text-emerald-300 sm:text-xl">
+              {passwords.length}
+            </p>
+          </div>
+          <p className="mt-0.5 line-clamp-1 text-[10px] text-slate-500 dark:text-slate-400 sm:text-[11px]">
+            Encrypted items
           </p>
         </div>
 
         {/* Bank & Financial Accounts */}
-        <div className="rounded-xl border border-blue-200/60 bg-gradient-to-br from-blue-50 to-blue-100/40 p-3.5 dark:border-blue-800/40 dark:from-blue-950/40 dark:to-blue-900/20">
-          <div className="mb-1 flex items-center gap-2">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-blue-600/10 text-blue-700 dark:text-blue-400">
-              <Landmark className="size-4" />
+        <div className="flex flex-col justify-between rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-50 to-blue-100/40 p-3 sm:p-3.5 dark:border-blue-800/40 dark:from-blue-950/40 dark:to-blue-900/20">
+          <div>
+            <div className="mb-1 flex items-center gap-1.5 sm:gap-2">
+              <div className="flex size-6 sm:size-7 shrink-0 items-center justify-center rounded-lg bg-blue-600/10 text-blue-700 dark:text-blue-400">
+                <Landmark className="size-3.5 sm:size-4" />
+              </div>
+              <span className="truncate text-[10px] font-bold uppercase tracking-wider text-blue-600/80 dark:text-blue-400/80">
+                Bank Accounts
+              </span>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600/80 dark:text-blue-400/80">
-              Bank Accounts
-            </span>
+            <p className="font-mono text-base font-black tracking-tight text-blue-900 dark:text-blue-300 sm:text-xl">
+              {bankAccountsCount}
+            </p>
           </div>
-          <p className="font-mono text-xl font-extrabold text-blue-900 dark:text-blue-300">
-            {bankAccountsCount}
-          </p>
-          <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-            IFSC, ATM & Net Banking
+          <p className="mt-0.5 line-clamp-1 text-[10px] text-slate-500 dark:text-slate-400 sm:text-[11px]">
+            IFSC, MPIN & Net Banking
           </p>
         </div>
 
         {/* Web & Apps */}
-        <div className="rounded-xl border border-indigo-200/60 bg-gradient-to-br from-indigo-50 to-indigo-100/40 p-3.5 dark:border-indigo-800/40 dark:from-indigo-950/40 dark:to-indigo-900/20">
-          <div className="mb-1 flex items-center gap-2">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-indigo-600/10 text-indigo-700 dark:text-indigo-400">
-              <Globe className="size-4" />
+        <div className="flex flex-col justify-between rounded-2xl border border-indigo-200/60 bg-gradient-to-br from-indigo-50 to-indigo-100/40 p-3 sm:p-3.5 dark:border-indigo-800/40 dark:from-indigo-950/40 dark:to-indigo-900/20">
+          <div>
+            <div className="mb-1 flex items-center gap-1.5 sm:gap-2">
+              <div className="flex size-6 sm:size-7 shrink-0 items-center justify-center rounded-lg bg-indigo-600/10 text-indigo-700 dark:text-indigo-400">
+                <Globe className="size-3.5 sm:size-4" />
+              </div>
+              <span className="truncate text-[10px] font-bold uppercase tracking-wider text-indigo-600/80 dark:text-indigo-400/80">
+                Web & Apps
+              </span>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600/80 dark:text-indigo-400/80">
-              Web & App Logins
-            </span>
+            <p className="font-mono text-base font-black tracking-tight text-indigo-900 dark:text-indigo-300 sm:text-xl">
+              {webLoginsCount}
+            </p>
           </div>
-          <p className="font-mono text-xl font-extrabold text-indigo-900 dark:text-indigo-300">
-            {webLoginsCount}
-          </p>
-          <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-            Work, Social & Media accounts
+          <p className="mt-0.5 line-clamp-1 text-[10px] text-slate-500 dark:text-slate-400 sm:text-[11px]">
+            Logins & credentials
           </p>
         </div>
 
         {/* Personal & Other */}
-        <div className="rounded-xl border border-purple-200/60 bg-gradient-to-br from-purple-50 to-purple-100/40 p-3.5 dark:border-purple-800/40 dark:from-purple-950/40 dark:to-purple-900/20">
-          <div className="mb-1 flex items-center gap-2">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-purple-600/10 text-purple-700 dark:text-purple-400">
-              <FolderLock className="size-4" />
+        <div className="flex flex-col justify-between rounded-2xl border border-purple-200/60 bg-gradient-to-br from-purple-50 to-purple-100/40 p-3 sm:p-3.5 dark:border-purple-800/40 dark:from-purple-950/40 dark:to-purple-900/20">
+          <div>
+            <div className="mb-1 flex items-center gap-1.5 sm:gap-2">
+              <div className="flex size-6 sm:size-7 shrink-0 items-center justify-center rounded-lg bg-purple-600/10 text-purple-700 dark:text-purple-400">
+                <FolderLock className="size-3.5 sm:size-4" />
+              </div>
+              <span className="truncate text-[10px] font-bold uppercase tracking-wider text-purple-600/80 dark:text-purple-400/80">
+                Personal
+              </span>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600/80 dark:text-purple-400/80">
-              Personal & Other
-            </span>
+            <p className="font-mono text-base font-black tracking-tight text-purple-900 dark:text-purple-300 sm:text-xl">
+              {otherCount}
+            </p>
           </div>
-          <p className="font-mono text-xl font-extrabold text-purple-900 dark:text-purple-300">
-            {otherCount}
-          </p>
-          <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-            Personal & miscellaneous items
+          <p className="mt-0.5 line-clamp-1 text-[10px] text-slate-500 dark:text-slate-400 sm:text-[11px]">
+            Miscellaneous items
           </p>
         </div>
       </div>
 
-      {/* Search & Category Filter & View Mode Toolbar */}
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-          {/* Search Input */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by app, username, account, IFSC, URL..."
-              className="h-9.5 rounded-xl border-slate-200 bg-white pl-9 pr-8 text-xs shadow-2xs placeholder:text-slate-400 focus-visible:border-emerald-500 dark:border-slate-800 dark:bg-slate-900"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              >
-                <X className="size-3.5" />
-              </button>
-            )}
-          </div>
-
-          {/* Right Toolbar: View Switchers + Select All + Add Button */}
-          <div className="flex items-center gap-2">
-            {/* View Mode Switcher Pills */}
-            <div className="flex items-center rounded-xl border border-slate-200/80 bg-white p-1 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
-              <button
-                type="button"
-                onClick={() => setViewMode("grid")}
-                className={cn(
-                  "flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition-all",
-                  viewMode === "grid"
-                    ? "bg-slate-100 text-slate-900 shadow-2xs dark:bg-slate-800 dark:text-white"
-                    : "text-slate-500 hover:text-slate-900 dark:hover:text-white",
-                )}
-                title="Card View"
-              >
-                <LayoutGrid className="size-3.5" />
-                <span className="hidden sm:inline">Cards</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setViewMode("list")}
-                className={cn(
-                  "flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition-all",
-                  viewMode === "list"
-                    ? "bg-slate-100 text-slate-900 shadow-2xs dark:bg-slate-800 dark:text-white"
-                    : "text-slate-500 hover:text-slate-900 dark:hover:text-white",
-                )}
-                title="Table View"
-              >
-                <List className="size-3.5" />
-                <span className="hidden sm:inline">Table</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setViewMode("quick-copy")}
-                className={cn(
-                  "flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition-all",
-                  viewMode === "quick-copy"
-                    ? "bg-slate-100 text-slate-900 shadow-2xs dark:bg-slate-800 dark:text-white"
-                    : "text-slate-500 hover:text-slate-900 dark:hover:text-white",
-                )}
-                title="Quick Copy Sheet"
-              >
-                <Copy className="size-3.5" />
-                <span className="hidden sm:inline">Quick Copy</span>
-              </button>
-            </div>
-
-            {/* Select All Checkbox */}
-            {viewMode !== "quick-copy" && filteredPasswords.length > 0 && (
-              <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200/80 bg-white px-3 py-2 text-xs font-bold text-slate-600 shadow-2xs transition-colors hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800">
-                <Checkbox
-                  checked={allFilteredSelected}
-                  onCheckedChange={handleToggleSelectAll}
-                  className="size-4 rounded border-slate-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
-                />
-                <span className="hidden sm:inline">Select all</span>
-              </label>
-            )}
-
-            {/* Add Password Button */}
-            <Button
-              onClick={handleOpenAdd}
-              className="h-9 gap-1.5 rounded-xl bg-emerald-600 px-3.5 text-xs font-bold text-white shadow-sm shadow-emerald-600/25 transition-all hover:bg-emerald-500 active:scale-[0.98]"
+      {/* Search & Secondary View Toolbar (Single Line Row) */}
+      <div className="flex items-center justify-between gap-2">
+        {/* Search Input */}
+        <div className="relative min-w-0 flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search logins, accounts, IFSC..."
+            className="h-9 rounded-xl border-slate-200 bg-white pl-9 pr-8 text-xs shadow-2xs placeholder:text-slate-400 focus-visible:border-emerald-500 dark:border-slate-800 dark:bg-slate-900"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
             >
-              <Plus className="size-4" />
-              <span>Add Password</span>
-            </Button>
-          </div>
+              <X className="size-3.5" />
+            </button>
+          )}
         </div>
 
-        {/* Category Pills */}
-        <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto pb-1">
-          {["All", ...PASSWORD_CATEGORIES].map((cat) => {
-            const active = selectedCategory === cat;
-            const count = categoryCounts[cat] || 0;
-            return (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setSelectedCategory(cat)}
-                className={cn(
-                  "inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition-all",
-                  active
-                    ? "border-emerald-500 bg-emerald-600 text-white shadow-sm shadow-emerald-600/20"
-                    : "border-slate-200/80 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800",
-                )}
-              >
-                <span>{cat}</span>
-                <span
-                  className={cn(
-                    "rounded-md px-1.5 py-0.2 font-mono text-[10px]",
-                    active
-                      ? "bg-white/20 text-white"
-                      : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
-                  )}
-                >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
+        {/* Right Toolbar: View Switchers + Select All in Single Row */}
+        <div className="flex shrink-0 items-center gap-1.5">
+          {/* View Mode Switcher Pills */}
+          <div className="flex items-center rounded-xl border border-slate-200/80 bg-white p-1 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+            <button
+              type="button"
+              onClick={() => setViewMode("grid")}
+              className={cn(
+                "flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold transition-all",
+                viewMode === "grid"
+                  ? "bg-slate-100 text-slate-900 shadow-2xs dark:bg-slate-800 dark:text-white"
+                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white",
+              )}
+              title="Card View"
+            >
+              <LayoutGrid className="size-3.5" />
+              <span className="hidden md:inline">Cards</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setViewMode("list")}
+              className={cn(
+                "flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold transition-all",
+                viewMode === "list"
+                  ? "bg-slate-100 text-slate-900 shadow-2xs dark:bg-slate-800 dark:text-white"
+                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white",
+              )}
+              title="Table View"
+            >
+              <List className="size-3.5" />
+              <span className="hidden md:inline">Table</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setViewMode("quick-copy")}
+              className={cn(
+                "flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold transition-all",
+                viewMode === "quick-copy"
+                  ? "bg-slate-100 text-slate-900 shadow-2xs dark:bg-slate-800 dark:text-white"
+                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white",
+              )}
+              title="Quick Copy Sheet"
+            >
+              <Copy className="size-3.5" />
+              <span className="hidden md:inline">Copy</span>
+            </button>
+          </div>
+
+          {/* Select All Checkbox */}
+          {viewMode !== "quick-copy" && filteredPasswords.length > 0 && (
+            <label className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/80 bg-white px-2.5 py-1.5 text-xs font-bold text-slate-600 shadow-2xs transition-colors hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800">
+              <Checkbox
+                checked={allFilteredSelected}
+                onCheckedChange={handleToggleSelectAll}
+                className="size-3.5 rounded border-slate-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+              />
+              <span className="hidden md:inline">Select all</span>
+            </label>
+          )}
         </div>
       </div>
 

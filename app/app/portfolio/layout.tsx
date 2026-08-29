@@ -15,6 +15,7 @@ import {
   tabListClassName,
   tabTriggerClassName,
 } from "@/components/finance/page-header";
+import { cn } from "@/lib/utils";
 
 export default function PortfolioLayout({
   children,
@@ -41,7 +42,7 @@ export default function PortfolioLayout({
   };
 
   return (
-    <div className="flex h-full min-h-0 min-w-0 w-full flex-col gap-4 overflow-y-auto px-3 pb-[max(2.75rem,calc(env(safe-area-inset-bottom)+1.5rem))] pt-3 sm:gap-5 sm:px-4 sm:pb-10 sm:pt-4 lg:p-8">
+    <div className="flex min-h-0 min-w-0 w-full flex-col gap-4 p-4 sm:gap-5 sm:p-6 lg:p-8">
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
@@ -50,15 +51,15 @@ export default function PortfolioLayout({
         <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
           <div className="min-w-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <TabsList className={tabListClassName()}>
-              <TabsTrigger value="overview" className={tabTriggerClassName()}>
+              <TabsTrigger value="overview" className={cn(tabTriggerClassName(), "shrink-0 whitespace-nowrap")}>
                 <LayoutDashboard className="h-3.5 w-3.5 text-emerald-600" />
                 Overview
               </TabsTrigger>
-              <TabsTrigger value="investments" className={tabTriggerClassName()}>
+              <TabsTrigger value="investments" className={cn(tabTriggerClassName(), "shrink-0 whitespace-nowrap")}>
                 <Coins className="h-3.5 w-3.5 text-blue-500" />
                 Assets
               </TabsTrigger>
-              <TabsTrigger value="debts" className={tabTriggerClassName()}>
+              <TabsTrigger value="debts" className={cn(tabTriggerClassName(), "shrink-0 whitespace-nowrap")}>
                 <CreditCard className="h-3.5 w-3.5 text-rose-500" />
                 Debts
               </TabsTrigger>

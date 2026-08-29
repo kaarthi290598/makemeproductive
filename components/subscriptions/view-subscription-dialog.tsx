@@ -100,7 +100,7 @@ export function ViewSubscriptionDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-h-[min(94dvh,46rem)] w-[min(calc(100vw-1.5rem),34rem)] max-w-lg overflow-y-auto rounded-2xl border-slate-200/90 p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-950 sm:rounded-3xl">
+      <DialogContent className="w-full max-w-full sm:w-[min(calc(100vw-1.5rem),34rem)] sm:max-w-lg max-h-[92dvh] overflow-y-auto rounded-t-3xl rounded-b-none sm:rounded-3xl border-slate-200/90 p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-950">
         {/* Header */}
         <div className="relative border-b border-indigo-100 bg-gradient-to-b from-indigo-50/80 to-transparent px-5 py-3.5 dark:border-indigo-950/60 dark:from-indigo-950/30 sm:px-6">
           <DialogHeader className="space-y-0.5 text-left">

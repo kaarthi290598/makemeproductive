@@ -38,10 +38,10 @@ interface AddEditCreditDueDialogProps {
 }
 
 const dialogShellClass =
-  "max-h-[min(94dvh,46rem)] w-[min(calc(100vw-1.5rem),34rem)] max-w-lg overflow-y-auto rounded-2xl border-slate-200/90 p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-950 sm:rounded-3xl";
+  "w-full max-w-full sm:w-[min(calc(100vw-1.5rem),34rem)] sm:max-w-lg max-h-[92dvh] overflow-y-auto rounded-t-3xl rounded-b-none sm:rounded-3xl border-slate-200/90 p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-950";
 
 const inputClass =
-  "h-9 rounded-xl border-slate-200 bg-slate-50/70 text-xs shadow-2xs placeholder:text-slate-400 focus-visible:bg-white dark:border-slate-800 dark:bg-slate-900 dark:focus-visible:bg-slate-950";
+  "h-10 sm:h-9 rounded-xl border-slate-200 bg-slate-50/70 text-sm sm:text-xs shadow-2xs placeholder:text-slate-400 focus-visible:bg-white dark:border-slate-800 dark:bg-slate-900 dark:focus-visible:bg-slate-950";
 
 export function AddEditCreditDueDialog({
   open,

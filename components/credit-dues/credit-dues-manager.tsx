@@ -153,189 +153,203 @@ export function CreditDuesManager() {
 
   return (
     <div className="relative flex flex-col gap-4 p-4 sm:p-6 lg:p-8">
-      {/* KPI Stat Summary Cards */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Total Remaining Due */}
-        <div className="rounded-xl border border-rose-200/60 bg-gradient-to-br from-rose-50 to-rose-100/40 p-3.5 dark:border-rose-800/40 dark:from-rose-950/40 dark:to-rose-900/20">
-          <div className="mb-1 flex items-center gap-2">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-rose-600/10 text-rose-700 dark:text-rose-400">
-              <TrendingDown className="size-4" />
-            </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600/80 dark:text-rose-400/80">
-              Remaining Due
-            </span>
+      {/* ─── Top Header Bar: Filter Tabs & Add Button (Matching Expense & Portfolio) ─── */}
+      <div className="flex min-w-0 flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+        {/* Left: Filter Tabs */}
+        <div className="min-w-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="inline-flex h-auto w-max items-center gap-1 rounded-xl border border-slate-200/80 bg-slate-100 p-1 dark:border-slate-800 dark:bg-slate-900">
+            {(
+              [
+                { value: "all", label: "All Cards" },
+                { value: "unpaid", label: "Unpaid Dues" },
+                { value: "paid", label: "Settled" },
+                { value: "high_utilization", label: "High Util (>30%)" },
+              ] as const
+            ).map((f) => (
+              <button
+                key={f.value}
+                type="button"
+                onClick={() => setFilterStatus(f.value)}
+                className={cn(
+                  "shrink-0 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all",
+                  filterStatus === f.value
+                    ? "bg-rose-600 text-white shadow-2xs"
+                    : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white",
+                )}
+              >
+                {f.label}
+              </button>
+            ))}
           </div>
-          <p className="font-mono text-xl font-extrabold text-rose-900 dark:text-rose-300">
-            ₹{totalRemainingDue.toLocaleString("en-IN")}
-          </p>
-          <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-            Current unpaid statement dues
+        </div>
+
+        {/* Right: Prominent + Add Card Button right at the top */}
+        <div className="flex shrink-0 items-center gap-2">
+          <Button
+            size="sm"
+            onClick={handleOpenAdd}
+            className="h-9 w-full gap-1.5 rounded-xl bg-rose-600 px-3.5 text-sm font-bold text-white shadow-sm shadow-rose-600/25 transition-all hover:bg-rose-500 active:scale-[0.98] sm:w-auto"
+          >
+            <Plus className="size-4" />
+            <span>Add Card</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* KPI Stat Summary Cards (2x2 on Mobile, 4 on Desktop) */}
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+        {/* Total Remaining Due */}
+        <div className="flex flex-col justify-between rounded-2xl border border-rose-200/60 bg-gradient-to-br from-rose-50 to-rose-100/40 p-3 sm:p-3.5 dark:border-rose-800/40 dark:from-rose-950/40 dark:to-rose-900/20">
+          <div>
+            <div className="mb-1 flex items-center gap-1.5 sm:gap-2">
+              <div className="flex size-6 sm:size-7 shrink-0 items-center justify-center rounded-lg bg-rose-600/10 text-rose-700 dark:text-rose-400">
+                <TrendingDown className="size-3.5 sm:size-4" />
+              </div>
+              <span className="truncate text-[10px] font-bold uppercase tracking-wider text-rose-600/80 dark:text-rose-400/80">
+                Remaining Due
+              </span>
+            </div>
+            <p className="font-mono text-base font-black tracking-tight text-rose-900 dark:text-rose-300 sm:text-xl">
+              ₹{totalRemainingDue.toLocaleString("en-IN")}
+            </p>
+          </div>
+          <p className="mt-0.5 line-clamp-1 text-[10px] text-slate-500 dark:text-slate-400 sm:text-[11px]">
+            Unpaid statement dues
           </p>
         </div>
 
         {/* Portfolio Credit Utilization */}
-        <div className="rounded-xl border border-indigo-200/60 bg-gradient-to-br from-indigo-50 to-indigo-100/40 p-3.5 dark:border-indigo-800/40 dark:from-indigo-950/40 dark:to-indigo-900/20">
-          <div className="mb-1 flex items-center gap-2">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-indigo-600/10 text-indigo-700 dark:text-indigo-400">
-              <Sparkles className="size-4" />
+        <div className="flex flex-col justify-between rounded-2xl border border-indigo-200/60 bg-gradient-to-br from-indigo-50 to-indigo-100/40 p-3 sm:p-3.5 dark:border-indigo-800/40 dark:from-indigo-950/40 dark:to-indigo-900/20">
+          <div>
+            <div className="mb-1 flex items-center gap-1.5 sm:gap-2">
+              <div className="flex size-6 sm:size-7 shrink-0 items-center justify-center rounded-lg bg-indigo-600/10 text-indigo-700 dark:text-indigo-400">
+                <Sparkles className="size-3.5 sm:size-4" />
+              </div>
+              <span className="truncate text-[10px] font-bold uppercase tracking-wider text-indigo-600/80 dark:text-indigo-400/80">
+                Utilization
+              </span>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600/80 dark:text-indigo-400/80">
-              Credit Utilization
-            </span>
+            <p className="font-mono text-base font-black tracking-tight text-indigo-900 dark:text-indigo-300 sm:text-xl">
+              {overallUtilization.toFixed(1)}%
+            </p>
           </div>
-          <p className="font-mono text-xl font-extrabold text-indigo-900 dark:text-indigo-300">
-            {overallUtilization.toFixed(1)}%
-            <span className={cn("ml-2 text-xs font-bold", utilizationHealth.color)}>
+          <p className="mt-0.5 line-clamp-1 text-[10px] text-slate-500 dark:text-slate-400 sm:text-[11px]">
+            <span className={cn("font-bold", utilizationHealth.color)}>
               {utilizationHealth.label}
-            </span>
-          </p>
-          <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-            Target &lt; 30% for ideal health
+            </span>{" "}
+            · Target &lt;30%
           </p>
         </div>
 
         {/* Total Credit Limit */}
-        <div className="rounded-xl border border-teal-200/60 bg-gradient-to-br from-teal-50 to-teal-100/40 p-3.5 dark:border-teal-800/40 dark:from-teal-950/40 dark:to-teal-900/20">
-          <div className="mb-1 flex items-center gap-2">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-teal-600/10 text-teal-700 dark:text-teal-400">
-              <CreditCard className="size-4" />
+        <div className="flex flex-col justify-between rounded-2xl border border-teal-200/60 bg-gradient-to-br from-teal-50 to-teal-100/40 p-3 sm:p-3.5 dark:border-teal-800/40 dark:from-teal-950/40 dark:to-teal-900/20">
+          <div>
+            <div className="mb-1 flex items-center gap-1.5 sm:gap-2">
+              <div className="flex size-6 sm:size-7 shrink-0 items-center justify-center rounded-lg bg-teal-600/10 text-teal-700 dark:text-teal-400">
+                <CreditCard className="size-3.5 sm:size-4" />
+              </div>
+              <span className="truncate text-[10px] font-bold uppercase tracking-wider text-teal-600/80 dark:text-teal-400/80">
+                Total Limit
+              </span>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-teal-600/80 dark:text-teal-400/80">
-              Total Limit
-            </span>
+            <p className="font-mono text-base font-black tracking-tight text-teal-900 dark:text-teal-300 sm:text-xl">
+              ₹{totalCreditLimit.toLocaleString("en-IN")}
+            </p>
           </div>
-          <p className="font-mono text-xl font-extrabold text-teal-900 dark:text-teal-300">
-            ₹{totalCreditLimit.toLocaleString("en-IN")}
-          </p>
-          <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+          <p className="mt-0.5 line-clamp-1 text-[10px] text-slate-500 dark:text-slate-400 sm:text-[11px]">
             Avail: ₹{(totalCreditLimit - totalOutstanding).toLocaleString("en-IN")}
           </p>
         </div>
 
         {/* Dues Due This Week */}
-        <div className="rounded-xl border border-amber-200/60 bg-gradient-to-br from-amber-50 to-amber-100/40 p-3.5 dark:border-amber-800/40 dark:from-amber-950/40 dark:to-amber-900/20">
-          <div className="mb-1 flex items-center gap-2">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-amber-600/10 text-amber-700 dark:text-amber-400">
-              <Clock className="size-4" />
+        <div className="flex flex-col justify-between rounded-2xl border border-amber-200/60 bg-gradient-to-br from-amber-50 to-amber-100/40 p-3 sm:p-3.5 dark:border-amber-800/40 dark:from-amber-950/40 dark:to-amber-900/20">
+          <div>
+            <div className="mb-1 flex items-center gap-1.5 sm:gap-2">
+              <div className="flex size-6 sm:size-7 shrink-0 items-center justify-center rounded-lg bg-amber-600/10 text-amber-700 dark:text-amber-400">
+                <Clock className="size-3.5 sm:size-4" />
+              </div>
+              <span className="truncate text-[10px] font-bold uppercase tracking-wider text-amber-600/80 dark:text-amber-400/80">
+                Due (7d)
+              </span>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600/80 dark:text-amber-400/80">
-              Due This Week
-            </span>
+            <p className="font-mono text-base font-black tracking-tight text-amber-900 dark:text-amber-300 sm:text-xl">
+              {duesThisWeekCount}
+              <span className="text-xs font-normal text-amber-600/70 dark:text-amber-400/70"> cards</span>
+            </p>
           </div>
-          <p className="font-mono text-xl font-extrabold text-amber-900 dark:text-amber-300">
-            {duesThisWeekCount}
-            <span className="text-xs font-normal text-amber-600/70 dark:text-amber-400/70"> accounts</span>
-          </p>
-          <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-            Due in next 7 calendar days
+          <p className="mt-0.5 line-clamp-1 text-[10px] text-slate-500 dark:text-slate-400 sm:text-[11px]">
+            Due in 7 days
           </p>
         </div>
       </div>
 
-      {/* Search & Filter Toolbar */}
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-          {/* Search Input */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by card name, bank, notes..."
-              className="h-9.5 rounded-xl border-slate-200 bg-white pl-9 pr-8 text-xs shadow-2xs placeholder:text-slate-400 focus-visible:border-rose-500 dark:border-slate-800 dark:bg-slate-900"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              >
-                <X className="size-3.5" />
-              </button>
-            )}
-          </div>
-
-          {/* Right Toolbar: Filter Tabs + View Mode Toggle + Select All + Add Button */}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Filter Tabs */}
-            <div className="flex items-center rounded-xl border border-slate-200/80 bg-white p-1 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
-              {(
-                [
-                  { value: "all", label: "All" },
-                  { value: "unpaid", label: "Unpaid Dues" },
-                  { value: "paid", label: "Settled" },
-                  { value: "high_utilization", label: "High Util (>30%)" },
-                ] as const
-              ).map((f) => (
-                <button
-                  key={f.value}
-                  type="button"
-                  onClick={() => setFilterStatus(f.value)}
-                  className={cn(
-                    "rounded-lg px-2.5 py-1 text-xs font-bold transition-all",
-                    filterStatus === f.value
-                      ? "bg-rose-600 text-white shadow-2xs"
-                      : "text-slate-500 hover:text-slate-900 dark:hover:text-white",
-                  )}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-
-            {/* View Mode Switcher Pills */}
-            <div className="flex items-center rounded-xl border border-slate-200/80 bg-white p-1 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
-              <button
-                type="button"
-                onClick={() => setViewMode("grid")}
-                className={cn(
-                  "flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition-all",
-                  viewMode === "grid"
-                    ? "bg-slate-100 text-slate-900 shadow-2xs dark:bg-slate-800 dark:text-white"
-                    : "text-slate-500 hover:text-slate-900 dark:hover:text-white",
-                )}
-                title="Card Grid View"
-              >
-                <LayoutGrid className="size-3.5" />
-                <span className="hidden sm:inline">Cards</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setViewMode("list")}
-                className={cn(
-                  "flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition-all",
-                  viewMode === "list"
-                    ? "bg-slate-100 text-slate-900 shadow-2xs dark:bg-slate-800 dark:text-white"
-                    : "text-slate-500 hover:text-slate-900 dark:hover:text-white",
-                )}
-                title="Table List View"
-              >
-                <List className="size-3.5" />
-                <span className="hidden sm:inline">Table</span>
-              </button>
-            </div>
-
-            {/* Select All Checkbox */}
-            {filteredCreditDues.length > 0 && (
-              <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200/80 bg-white px-3 py-2 text-xs font-bold text-slate-600 shadow-2xs transition-colors hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800">
-                <Checkbox
-                  checked={allFilteredSelected}
-                  onCheckedChange={handleToggleSelectAll}
-                  className="size-4 rounded border-slate-300 data-[state=checked]:bg-rose-600 data-[state=checked]:border-rose-600"
-                />
-                <span className="hidden sm:inline">Select all</span>
-              </label>
-            )}
-
-            {/* Add Credit Account Button */}
-            <Button
-              onClick={handleOpenAdd}
-              className="h-9 gap-1.5 rounded-xl bg-rose-600 px-3.5 text-xs font-bold text-white shadow-sm shadow-rose-600/25 transition-all hover:bg-rose-500 active:scale-[0.98]"
+      {/* Search & Secondary View Toolbar (Single Line Row) */}
+      <div className="flex items-center justify-between gap-2">
+        {/* Search Input */}
+        <div className="relative min-w-0 flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search cards..."
+            className="h-9 rounded-xl border-slate-200 bg-white pl-9 pr-8 text-xs shadow-2xs placeholder:text-slate-400 focus-visible:border-rose-500 dark:border-slate-800 dark:bg-slate-900"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
             >
-              <Plus className="size-4" />
-              <span>Add Account</span>
-            </Button>
+              <X className="size-3.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Right Secondary Toolbar: View Mode Toggle + Select All in Single Row */}
+        <div className="flex shrink-0 items-center gap-1.5">
+          {/* View Mode Switcher Pills */}
+          <div className="flex items-center rounded-xl border border-slate-200/80 bg-white p-1 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+            <button
+              type="button"
+              onClick={() => setViewMode("grid")}
+              className={cn(
+                "flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold transition-all",
+                viewMode === "grid"
+                  ? "bg-slate-100 text-slate-900 shadow-2xs dark:bg-slate-800 dark:text-white"
+                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white",
+              )}
+              title="Card Grid View"
+            >
+              <LayoutGrid className="size-3.5" />
+              <span className="hidden md:inline">Cards</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setViewMode("list")}
+              className={cn(
+                "flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold transition-all",
+                viewMode === "list"
+                  ? "bg-slate-100 text-slate-900 shadow-2xs dark:bg-slate-800 dark:text-white"
+                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white",
+              )}
+              title="Table List View"
+            >
+              <List className="size-3.5" />
+              <span className="hidden md:inline">Table</span>
+            </button>
           </div>
+
+          {/* Select All Checkbox */}
+          {filteredCreditDues.length > 0 && (
+            <label className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200/80 bg-white px-2.5 py-1.5 text-xs font-bold text-slate-600 shadow-2xs transition-colors hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800">
+              <Checkbox
+                checked={allFilteredSelected}
+                onCheckedChange={handleToggleSelectAll}
+                className="size-3.5 rounded border-slate-300 data-[state=checked]:bg-rose-600 data-[state=checked]:border-rose-600"
+              />
+              <span className="hidden md:inline">Select all</span>
+            </label>
+          )}
         </div>
       </div>
 

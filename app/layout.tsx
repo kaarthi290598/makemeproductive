@@ -8,19 +8,36 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ClientQueryProvider } from "@/components/client-query-provider";
 
 export const metadata: Metadata = {
+  applicationName: "ToolCity",
   title: "ToolCity - Make Me Productive",
-  description: "Personal finance, expenses, investments, subscriptions, credit cards & vault.",
+  description: "Personal finance, expenses, investments, subscriptions, credit cards & secure vault.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "ToolCity",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [
-      { url: "/apple-icon", sizes: "180x180", type: "image/png" },
+      { url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
   },
 };
 
 export const viewport: Viewport = {
+  themeColor: "#090d16",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
 };
 

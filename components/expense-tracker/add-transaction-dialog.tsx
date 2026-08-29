@@ -184,7 +184,7 @@ export function AddTransactionDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-h-[min(94dvh,42rem)] w-[min(calc(100vw-1.5rem),32rem)] max-w-lg overflow-y-auto rounded-2xl border-slate-200/90 p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-950 sm:rounded-3xl">
+      <DialogContent className="w-full max-w-full sm:w-[min(calc(100vw-1.5rem),32rem)] sm:max-w-lg max-h-[92dvh] overflow-y-auto rounded-t-3xl rounded-b-none sm:rounded-3xl border-slate-200/90 p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-950">
         <form onSubmit={handleSubmit} className="flex flex-col">
           {/* Dynamic Top Header with Subtle Ambient Glow */}
           <div

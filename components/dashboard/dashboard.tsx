@@ -265,14 +265,14 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Quick Action Pills */}
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Quick Action Pills (Horizontal Chip Scroll on Mobile) */}
+        <div className="flex w-full min-w-0 items-center gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:w-auto sm:flex-wrap sm:pb-0">
           {quickActions.map((action) => (
             <Link
               key={action.title}
               href={action.href}
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all active:scale-[0.98]",
+                "inline-flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all active:scale-[0.96]",
                 action.color,
               )}
             >
@@ -283,8 +283,8 @@ export default function Dashboard() {
         </div>
       </motion.div>
 
-      {/* ─── Core Executive 4 KPI Stat Cards ─────────────────────── */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {/* ─── Core Executive 4 KPI Stat Cards (2x2 on Mobile, 4 on Desktop) ─── */}
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
         {/* 1. Net Worth */}
         <StatCard
           title="Net Worth"
@@ -300,31 +300,31 @@ export default function Dashboard() {
 
         {/* 2. Cash Flow This Month */}
         <StatCard
-          title="Monthly Cash Flow"
+          title="Monthly Flow"
           value={formatCurrency(netCashFlow)}
           subtitle={`In: ${formatCurrency(totalIncomeThisMonth)} · Out: ${formatCurrency(totalSpentThisMonth)}`}
           icon={Wallet}
           tone={netCashFlow >= 0 ? "emerald" : "rose"}
           trend={{
-            label: `Budget Spent: ${budgetPct}%`,
+            label: `Budget: ${budgetPct}%`,
             positive: budgetPct <= 100,
           }}
         />
 
         {/* 3. Subscriptions Burn */}
         <StatCard
-          title="Monthly Subscriptions"
+          title="Subscriptions"
           value={formatCurrency(totalMonthlySpend)}
-          subtitle={`${activeCount} active recurring services`}
+          subtitle={`${activeCount} active plans`}
           icon={CalendarSync}
           tone="purple"
         />
 
         {/* 4. Credit Dues & Utilization */}
         <StatCard
-          title="Credit Statement Dues"
+          title="Credit Dues"
           value={formatCurrency(totalRemainingDue)}
-          subtitle={`Utilization: ${overallUtilization.toFixed(1)}% · Avail: ${formatCurrency(availableCredit)}`}
+          subtitle={`Util: ${overallUtilization.toFixed(1)}% · Avail: ${formatCurrency(availableCredit)}`}
           icon={CreditCard}
           tone="rose"
         />
@@ -776,36 +776,48 @@ function StatCard({
 
   return (
     <motion.div variants={itemVariants}>
-      <div className={cn("rounded-xl border p-3.5", style.container)}>
-        <div className="mb-1 flex items-center gap-2">
-          <div
-            className={cn(
-              "flex size-7 items-center justify-center rounded-lg",
-              style.iconBg,
-            )}
-          >
-            <Icon className="size-4" />
+      <div
+        className={cn(
+          "flex h-full flex-col justify-between rounded-2xl border p-3 sm:p-3.5 transition-all",
+          style.container,
+        )}
+      >
+        <div>
+          <div className="mb-1 flex items-center gap-1.5 sm:gap-2">
+            <div
+              className={cn(
+                "flex size-6 shrink-0 items-center justify-center rounded-lg sm:size-7",
+                style.iconBg,
+              )}
+            >
+              <Icon className="size-3.5 sm:size-4" />
+            </div>
+            <span
+              className={cn(
+                "truncate text-[10px] font-bold uppercase tracking-wider",
+                style.label,
+              )}
+            >
+              {title}
+            </span>
           </div>
-          <span
+          <p
             className={cn(
-              "text-[10px] font-bold uppercase tracking-wider",
-              style.label,
+              "font-mono text-base font-black tracking-tight sm:text-xl",
+              style.value,
             )}
           >
-            {title}
-          </span>
+            {value}
+          </p>
+          <p className="mt-0.5 line-clamp-1 text-[10px] text-slate-500 dark:text-slate-400 sm:text-[11px]">
+            {subtitle}
+          </p>
         </div>
-        <p className={cn("font-mono text-xl font-extrabold", style.value)}>
-          {value}
-        </p>
-        <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-          {subtitle}
-        </p>
         {trend && (
           <div className="mt-2 border-t border-slate-200/50 pt-1.5 dark:border-slate-800/60">
             <span
               className={cn(
-                "text-[10px] font-semibold",
+                "text-[9px] font-bold sm:text-[10px]",
                 trend.positive
                   ? "text-emerald-600 dark:text-emerald-400"
                   : "text-rose-600 dark:text-rose-400",

@@ -99,7 +99,7 @@ export function PeriodFilter({
       </div>
 
       {dateFilterType === "month" && (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex items-center gap-1 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:gap-1.5">
           {MONTHS.map((month) => {
             const value = `${year}-${month.key}`;
             const selected = selectedDates.includes(value);
@@ -109,7 +109,7 @@ export function PeriodFilter({
                 type="button"
                 onClick={() => toggleMonth(month.key)}
                 className={cn(
-                  "rounded-lg px-2.5 py-1 text-[11px] font-bold transition-all",
+                  "shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-bold transition-all",
                   selected
                     ? "bg-emerald-600 text-white shadow-sm"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white",

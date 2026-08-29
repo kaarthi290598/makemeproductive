@@ -76,46 +76,52 @@ export function PortfolioOverview() {
 
   return (
     <div className="space-y-5">
-      <div className="grid gap-3 md:grid-cols-3">
-        <div className="rounded-xl border border-teal-200/60 bg-gradient-to-br from-teal-50 to-teal-100/40 p-3.5 dark:border-teal-800/40 dark:from-teal-950/40 dark:to-teal-900/20">
-          <div className="mb-1 flex items-center gap-2">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-teal-600/10 text-teal-700 dark:text-teal-400">
-              <Landmark className="size-4" />
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3">
+        {/* Net Worth (Spans full 2 cols on mobile, 1 on desktop) */}
+        <div className="col-span-2 flex flex-col justify-between rounded-2xl border border-teal-200/60 bg-gradient-to-br from-teal-50 to-teal-100/40 p-3 sm:p-3.5 dark:border-teal-800/40 dark:from-teal-950/40 dark:to-teal-900/20 md:col-span-1">
+          <div>
+            <div className="mb-1 flex items-center gap-1.5 sm:gap-2">
+              <div className="flex size-6 sm:size-7 shrink-0 items-center justify-center rounded-lg bg-teal-600/10 text-teal-700 dark:text-teal-400">
+                <Landmark className="size-3.5 sm:size-4" />
+              </div>
+              <span className="truncate text-[10px] font-bold uppercase tracking-wider text-teal-600/80 dark:text-teal-400/80">
+                Net worth
+              </span>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-teal-600/80 dark:text-teal-400/80">
-              Net worth
-            </span>
+            <p
+              className={cn(
+                "font-mono text-base font-black tracking-tight sm:text-xl",
+                netWorth >= 0
+                  ? "text-emerald-900 dark:text-emerald-300"
+                  : "text-rose-900 dark:text-rose-300",
+              )}
+            >
+              {netWorth < 0 ? "−" : ""}₹{money(Math.abs(netWorth))}
+            </p>
           </div>
-          <p
-            className={cn(
-              "font-mono text-xl font-extrabold",
-              netWorth >= 0
-                ? "text-emerald-900 dark:text-emerald-300"
-                : "text-rose-900 dark:text-rose-300",
-            )}
-          >
-            {netWorth < 0 ? "−" : ""}₹{money(Math.abs(netWorth))}
-          </p>
-          <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+          <p className="mt-0.5 line-clamp-1 text-[10px] text-slate-500 dark:text-slate-400 sm:text-[11px]">
             Assets minus debts
           </p>
         </div>
 
-        <div className="rounded-xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50 to-emerald-100/40 p-3.5 dark:border-emerald-800/40 dark:from-emerald-950/40 dark:to-emerald-900/20">
-          <div className="mb-1 flex items-center gap-2">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-emerald-600/10 text-emerald-700 dark:text-emerald-400">
-              <TrendingUp className="size-4" />
+        {/* Assets */}
+        <div className="flex flex-col justify-between rounded-2xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50 to-emerald-100/40 p-3 sm:p-3.5 dark:border-emerald-800/40 dark:from-emerald-950/40 dark:to-emerald-900/20">
+          <div>
+            <div className="mb-1 flex items-center gap-1.5 sm:gap-2">
+              <div className="flex size-6 sm:size-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600/10 text-emerald-700 dark:text-emerald-400">
+                <TrendingUp className="size-3.5 sm:size-4" />
+              </div>
+              <span className="truncate text-[10px] font-bold uppercase tracking-wider text-emerald-600/80 dark:text-emerald-400/80">
+                Assets
+              </span>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600/80 dark:text-emerald-400/80">
-              Assets
-            </span>
+            <p className="font-mono text-base font-black tracking-tight text-emerald-900 dark:text-emerald-300 sm:text-xl">
+              ₹{money(totalAssets)}
+            </p>
           </div>
-          <p className="font-mono text-xl font-extrabold text-emerald-900 dark:text-emerald-300">
-            ₹{money(totalAssets)}
-          </p>
           <p
             className={cn(
-              "mt-1 text-[11px] font-semibold",
+              "mt-0.5 line-clamp-1 text-[10px] font-bold sm:text-[11px]",
               overallReturns >= 0
                 ? "text-emerald-600 dark:text-emerald-400"
                 : "text-rose-600 dark:text-rose-400",
@@ -126,19 +132,22 @@ export function PortfolioOverview() {
           </p>
         </div>
 
-        <div className="rounded-xl border border-rose-200/60 bg-gradient-to-br from-rose-50 to-rose-100/40 p-3.5 dark:border-rose-800/40 dark:from-rose-950/40 dark:to-rose-900/20">
-          <div className="mb-1 flex items-center gap-2">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-rose-600/10 text-rose-700 dark:text-rose-400">
-              <TrendingDown className="size-4" />
+        {/* Debts */}
+        <div className="flex flex-col justify-between rounded-2xl border border-rose-200/60 bg-gradient-to-br from-rose-50 to-rose-100/40 p-3 sm:p-3.5 dark:border-rose-800/40 dark:from-rose-950/40 dark:to-rose-900/20">
+          <div>
+            <div className="mb-1 flex items-center gap-1.5 sm:gap-2">
+              <div className="flex size-6 sm:size-7 shrink-0 items-center justify-center rounded-lg bg-rose-600/10 text-rose-700 dark:text-rose-400">
+                <TrendingDown className="size-3.5 sm:size-4" />
+              </div>
+              <span className="truncate text-[10px] font-bold uppercase tracking-wider text-rose-600/80 dark:text-rose-400/80">
+                Debts
+              </span>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600/80 dark:text-rose-400/80">
-              Debts
-            </span>
+            <p className="font-mono text-base font-black tracking-tight text-rose-900 dark:text-rose-300 sm:text-xl">
+              ₹{money(totalLiabilities)}
+            </p>
           </div>
-          <p className="font-mono text-xl font-extrabold text-rose-900 dark:text-rose-300">
-            ₹{money(totalLiabilities)}
-          </p>
-          <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+          <p className="mt-0.5 line-clamp-1 text-[10px] text-slate-500 dark:text-slate-400 sm:text-[11px]">
             {debts.length} {debts.length === 1 ? "liability" : "liabilities"}
           </p>
         </div>

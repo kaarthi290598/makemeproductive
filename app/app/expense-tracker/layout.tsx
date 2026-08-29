@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "next/navigation";
 import { ModuleSkeleton } from "@/components/module-skeleton";
 import { ExpenseTabReadyProvider } from "@/components/expense-tracker/tab-ready";
+import { cn } from "@/lib/utils";
 import {
   Plus,
   Minus,
@@ -65,7 +66,7 @@ export default function ExpenseTrackerLayout({
     (pendingTab !== null && pendingTab !== activeTab);
 
   return (
-    <div className="flex h-full min-h-0 min-w-0 w-full flex-col gap-4 overflow-y-auto px-3 pb-[max(2.75rem,calc(env(safe-area-inset-bottom)+1.5rem))] pt-3 sm:gap-5 sm:px-4 sm:pb-10 sm:pt-4 lg:p-8">
+    <div className="flex min-h-0 min-w-0 w-full flex-col gap-4 p-4 sm:gap-5 sm:p-6 lg:p-8">
       <Tabs
         value={displayedTab}
         onValueChange={handleTabChange}
@@ -74,19 +75,19 @@ export default function ExpenseTrackerLayout({
         <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
           <div className="min-w-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <TabsList className="inline-flex h-auto w-max justify-start gap-1 rounded-xl border border-slate-200/60 bg-slate-100 p-1 dark:border-slate-700/60 dark:bg-slate-800 sm:gap-1.5">
-              <TabsTrigger value="overview" className={tabTriggerClass}>
+              <TabsTrigger value="overview" className={cn(tabTriggerClass, "shrink-0 whitespace-nowrap")}>
                 <LayoutDashboard className="h-3.5 w-3.5 text-emerald-600" />
                 Overview
               </TabsTrigger>
-              <TabsTrigger value="transactions" className={tabTriggerClass}>
+              <TabsTrigger value="transactions" className={cn(tabTriggerClass, "shrink-0 whitespace-nowrap")}>
                 <Receipt className="h-3.5 w-3.5 text-blue-500" />
                 Transactions
               </TabsTrigger>
-              <TabsTrigger value="analytics" className={tabTriggerClass}>
+              <TabsTrigger value="analytics" className={cn(tabTriggerClass, "shrink-0 whitespace-nowrap")}>
                 <BarChart3 className="h-3.5 w-3.5 text-violet-500" />
                 Analytics
               </TabsTrigger>
-              <TabsTrigger value="settings" className={tabTriggerClass}>
+              <TabsTrigger value="settings" className={cn(tabTriggerClass, "shrink-0 whitespace-nowrap")}>
                 <Settings className="h-3.5 w-3.5 text-slate-500" />
                 Settings
               </TabsTrigger>

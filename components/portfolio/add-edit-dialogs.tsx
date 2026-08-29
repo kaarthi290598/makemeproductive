@@ -40,10 +40,10 @@ const fieldLabelClass =
   "block text-xs font-bold text-slate-700 dark:text-slate-300";
 
 const dialogShellClass =
-  "max-h-[min(94dvh,44rem)] w-[min(calc(100vw-1.5rem),32rem)] max-w-lg overflow-y-auto rounded-2xl border-slate-200/90 p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-950 sm:rounded-3xl";
+  "w-full max-w-full sm:w-[min(calc(100vw-1.5rem),32rem)] sm:max-w-lg max-h-[92dvh] overflow-y-auto rounded-t-3xl rounded-b-none sm:rounded-3xl border-slate-200/90 p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-950";
 
 const inputClass =
-  "h-9 rounded-xl border-slate-200 bg-slate-50/70 text-xs shadow-2xs placeholder:text-slate-400 focus-visible:bg-white dark:border-slate-800 dark:bg-slate-900 dark:focus-visible:bg-slate-950";
+  "h-10 sm:h-9 rounded-xl border-slate-200 bg-slate-50/70 text-sm sm:text-xs shadow-2xs placeholder:text-slate-400 focus-visible:bg-white dark:border-slate-800 dark:bg-slate-900 dark:focus-visible:bg-slate-950";
 
 const datePickerClass =
   "h-9 w-full rounded-xl border-slate-200 bg-slate-50/70 font-mono text-xs font-semibold shadow-2xs hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800";

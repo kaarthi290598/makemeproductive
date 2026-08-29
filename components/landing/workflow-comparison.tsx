@@ -50,7 +50,7 @@ export function WorkflowComparison() {
         <div className="mt-14 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900">
           <div className="grid grid-cols-1 divide-y divide-slate-200 dark:divide-slate-800 md:grid-cols-2 md:divide-x md:divide-y-0">
             {/* Left Column: The Old Way */}
-            <div className="p-6 sm:p-8">
+            <div className="p-4 sm:p-8">
               <div className="flex items-center gap-2">
                 <span className="flex size-7 items-center justify-center rounded-lg bg-rose-100 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400">
                   <XCircle className="size-4" />
@@ -67,7 +67,7 @@ export function WorkflowComparison() {
                 {comparisons.map((c, i) => (
                   <div
                     key={i}
-                    className="rounded-2xl border border-rose-100 bg-rose-50/40 p-4 text-xs dark:border-rose-950/50 dark:bg-rose-950/20"
+                    className="rounded-2xl border border-rose-100 bg-rose-50/40 p-3.5 sm:p-4 text-xs dark:border-rose-950/50 dark:bg-rose-950/20"
                   >
                     <span className="font-bold text-rose-900 dark:text-rose-200">
                       {c.aspect}
@@ -81,7 +81,7 @@ export function WorkflowComparison() {
             </div>
 
             {/* Right Column: ToolCity Command Center */}
-            <div className="bg-emerald-50/20 p-6 dark:bg-emerald-950/10 sm:p-8">
+            <div className="bg-emerald-50/20 p-4 dark:bg-emerald-950/10 sm:p-8">
               <div className="flex items-center gap-2">
                 <span className="flex size-7 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
                   <CheckCircle2 className="size-4" />

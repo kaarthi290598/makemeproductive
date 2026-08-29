@@ -108,7 +108,7 @@ export function ViewCreditDueDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="w-[min(calc(100vw-1.5rem),46rem)] max-w-2xl overflow-hidden rounded-3xl border-slate-200/90 p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-950">
+        <DialogContent className="w-full max-w-full sm:w-[min(calc(100vw-1.5rem),46rem)] sm:max-w-2xl max-h-[92dvh] overflow-y-auto rounded-t-3xl rounded-b-none sm:rounded-3xl border-slate-200/90 p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-950">
           {/* Header */}
           <div className="relative border-b border-slate-100 bg-slate-50/60 px-5 py-3.5 dark:border-slate-800/80 dark:bg-slate-900/40 sm:px-6">
             <DialogHeader className="space-y-0.5 text-left">
