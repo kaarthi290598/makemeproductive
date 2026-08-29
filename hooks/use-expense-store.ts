@@ -109,7 +109,6 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
     set({ error: null });
     try {
       await createExpenseTransaction(transaction);
-      await refreshCategories(set);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to add";
       set({ error: message });
@@ -121,7 +120,6 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
     set({ error: null });
     try {
       await updateExpenseTransaction(id, updates);
-      await refreshCategories(set);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to update";
       set({ error: message });
@@ -144,7 +142,6 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
     set({ error: null });
     try {
       await deleteExpenseTransaction(id);
-      await refreshCategories(set);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to delete";
       set({ error: message });

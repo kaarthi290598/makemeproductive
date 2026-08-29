@@ -147,7 +147,7 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
     setDeletingId(id);
     try {
       await deleteTransaction(id);
-      await invalidateExpense();
+      invalidateExpense();
       toast.success("Transaction deleted");
     } catch {
       // Error handled by store
@@ -157,8 +157,13 @@ export function TransactionList({ hideFilters = false }: TransactionListProps) {
   };
 
   const handleSettle = async (id: string) => {
-    await toggleSettlement(id, false);
-    await invalidateExpense();
+    try {
+      await toggleSettlement(id, false);
+      invalidateExpense();
+      toast.success("Transaction marked as settled");
+    } catch {
+      // Error handled by store
+    }
   };
 
   const handleExport = async () => {

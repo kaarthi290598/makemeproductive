@@ -143,7 +143,7 @@ export function AddTransactionDialog({
         await addTransaction(transactionData);
         toast.success("Transaction added successfully!");
       }
-      await invalidateExpense();
+      invalidateExpense();
 
       if (!isEditMode && addAnother) {
         resetForm();

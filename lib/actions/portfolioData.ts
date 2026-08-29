@@ -2,7 +2,6 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabaseClient";
-import { revalidatePath } from "next/cache";
 
 // Type references from store
 export interface InvestmentContribution {
@@ -179,8 +178,6 @@ export async function createPortfolioInvestment(
     throw new Error(`Error creating initial contribution: ${contribError.message}`);
   }
 
-  revalidatePath("/app/portfolio");
-  
   return {
     id: newInv.id,
     name: newInv.name,
@@ -215,7 +212,6 @@ export async function updatePortfolioInvestment(id: string, updates: Partial<Pic
     .single();
 
   if (error) throw new Error(`Error updating investment: ${error.message}`);
-  revalidatePath("/app/portfolio");
   return data;
 }
 
@@ -230,7 +226,6 @@ export async function deletePortfolioInvestment(id: string) {
     .eq("user_id", userId);
 
   if (error) throw new Error(`Error deleting investment: ${error.message}`);
-  revalidatePath("/app/portfolio");
 }
 
 export async function createPortfolioContribution(
@@ -254,7 +249,6 @@ export async function createPortfolioContribution(
     .single();
 
   if (error) throw new Error(`Error creating contribution: ${error.message}`);
-  revalidatePath("/app/portfolio");
   
   return {
     id: data.id,
@@ -288,7 +282,6 @@ export async function updatePortfolioContribution(
     .single();
 
   if (error) throw new Error(`Error updating contribution: ${error.message}`);
-  revalidatePath("/app/portfolio");
   
   return {
     id: data.id,
@@ -310,7 +303,6 @@ export async function deletePortfolioContribution(id: string) {
     .eq("user_id", userId);
 
   if (error) throw new Error(`Error deleting contribution: ${error.message}`);
-  revalidatePath("/app/portfolio");
 }
 
 /**
@@ -393,7 +385,6 @@ export async function createPortfolioDebt(debt: Omit<Debt, "id" | "payments">) {
     .single();
 
   if (error) throw new Error(`Error creating debt: ${error.message}`);
-  revalidatePath("/app/portfolio");
   
   return {
     id: data.id,
@@ -438,7 +429,6 @@ export async function updatePortfolioDebt(id: string, updates: Partial<Omit<Debt
     .single();
 
   if (error) throw new Error(`Error updating debt: ${error.message}`);
-  revalidatePath("/app/portfolio");
 
   return {
     id: data.id,
@@ -466,7 +456,6 @@ export async function deletePortfolioDebt(id: string) {
     .eq("user_id", userId);
 
   if (error) throw new Error(`Error deleting debt: ${error.message}`);
-  revalidatePath("/app/portfolio");
 }
 
 export async function createDebtPayment(
@@ -490,7 +479,6 @@ export async function createDebtPayment(
     .single();
 
   if (error) throw new Error(`Error creating debt payment: ${error.message}`);
-  revalidatePath("/app/portfolio");
   
   return {
     id: data.id,
@@ -524,7 +512,6 @@ export async function updateDebtPayment(
     .single();
 
   if (error) throw new Error(`Error updating debt payment: ${error.message}`);
-  revalidatePath("/app/portfolio");
   
   return {
     id: data.id,
@@ -546,6 +533,5 @@ export async function deleteDebtPayment(id: string) {
     .eq("user_id", userId);
 
   if (error) throw new Error(`Error deleting debt payment: ${error.message}`);
-  revalidatePath("/app/portfolio");
 }
 

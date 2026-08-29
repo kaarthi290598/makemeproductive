@@ -2,7 +2,6 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabaseClient";
-import { revalidatePath } from "next/cache";
 import { Category, Transaction, Person, MonthlySummary, ExpenseTransactionFilters, ExpenseStats } from "@/types/expense";
 
 /**
@@ -48,7 +47,6 @@ export async function createExpenseCategory(
     throw new Error(`Error creating category: ${error.message}`);
   }
 
-  revalidatePath("/app/expense-tracker");
   return data as Category;
 }
 
@@ -72,7 +70,6 @@ export async function updateExpenseCategory(
     throw new Error(`Error updating category: ${error.message}`);
   }
 
-  revalidatePath("/app/expense-tracker");
   return data as Category;
 }
 
@@ -91,7 +88,6 @@ export async function deleteExpenseCategory(id: string) {
     throw new Error(`Error deleting category: ${error.message}`);
   }
 
-  revalidatePath("/app/expense-tracker");
   return { success: true };
 }
 
@@ -361,10 +357,6 @@ export async function createExpenseTransaction(
     throw new Error(`Error creating transaction: ${error.message}`);
   }
 
-  // Update category spent amount automatically via a database trigger would be better,
-  // but for now we can do it here or just revalidate.
-  // Revalidate ensures the client gets the latest state including updated spent values.
-  revalidatePath("/app/expense-tracker");
   return data as Transaction;
 }
 
@@ -388,7 +380,6 @@ export async function updateExpenseTransaction(
     throw new Error(`Error updating transaction: ${error.message}`);
   }
 
-  revalidatePath("/app/expense-tracker");
   return data as Transaction;
 }
 
@@ -412,7 +403,6 @@ export async function toggleTransactionSettlement(
     throw new Error(`Error toggling settlement: ${error.message}`);
   }
 
-  revalidatePath("/app/expense-tracker");
   return data as Transaction;
 }
 
@@ -431,7 +421,6 @@ export async function deleteExpenseTransaction(id: string) {
     throw new Error(`Error deleting transaction: ${error.message}`);
   }
 
-  revalidatePath("/app/expense-tracker");
   return { success: true };
 }
 
@@ -472,7 +461,6 @@ export async function createExpensePerson(name: string) {
     throw new Error(`Error creating person: ${error.message}`);
   }
 
-  revalidatePath("/app/expense-tracker");
   return data as Person;
 }
 
@@ -493,7 +481,6 @@ export async function updateExpensePerson(id: string, name: string) {
     throw new Error(`Error updating person: ${error.message}`);
   }
 
-  revalidatePath("/app/expense-tracker");
   return data as Person;
 }
 
@@ -512,7 +499,6 @@ export async function deleteExpensePerson(id: string) {
     throw new Error(`Error deleting person: ${error.message}`);
   }
 
-  revalidatePath("/app/expense-tracker");
   return { success: true };
 }
 
@@ -555,6 +541,5 @@ export async function createMonthlySummary(
     throw new Error(`Error creating/updating summary: ${error.message}`);
   }
 
-  revalidatePath("/app/expense-tracker");
   return data as MonthlySummary;
 }
