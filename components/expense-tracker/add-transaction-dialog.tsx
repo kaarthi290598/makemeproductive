@@ -345,30 +345,32 @@ export function AddTransactionDialog({
                     No categories found. Add categories in Settings.
                   </p>
                 ) : (
-                  <div className="grid grid-flow-col grid-rows-2 gap-1.5 overflow-x-auto pb-1 auto-cols-[calc((100%-12px)/3)] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex sm:flex-wrap sm:auto-cols-auto sm:overflow-visible">
-                    {categories.map((cat) => {
-                      const active = categoryId === cat.id;
-                      return (
-                        <button
-                          key={cat.id}
-                          type="button"
-                          onClick={() => setCategoryId(cat.id)}
-                          className={cn(
-                            "flex h-8 w-full min-w-0 items-center justify-center gap-1.5 rounded-xl border px-1.5 text-xs font-bold transition-all sm:w-auto sm:px-2.5",
-                            active
-                              ? "border-rose-400 bg-rose-50 text-rose-900 shadow-sm ring-1 ring-rose-400 dark:border-rose-600 dark:bg-rose-950/60 dark:text-rose-200"
-                              : "border-slate-200 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800",
-                          )}
-                        >
-                          <span
-                            className="size-2 shrink-0 rounded-full shadow-xs"
-                            style={{ backgroundColor: cat.color || "#f43f5e" }}
-                          />
-                          <span className="truncate">{cat.name}</span>
-                          {active && <Check className="size-3 shrink-0 text-rose-600" />}
-                        </button>
-                      );
-                    })}
+                  <div className="max-h-20 overflow-y-auto pr-1">
+                    <div className="flex flex-wrap gap-1.5">
+                      {categories.map((cat) => {
+                        const active = categoryId === cat.id;
+                        return (
+                          <button
+                            key={cat.id}
+                            type="button"
+                            onClick={() => setCategoryId(cat.id)}
+                            className={cn(
+                              "inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-xs font-bold transition-all",
+                              active
+                                ? "border-rose-400 bg-rose-50 text-rose-900 shadow-sm ring-1 ring-rose-400 dark:border-rose-600 dark:bg-rose-950/60 dark:text-rose-200"
+                                : "border-slate-200 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800",
+                            )}
+                          >
+                            <span
+                              className="size-2 shrink-0 rounded-full shadow-xs"
+                              style={{ backgroundColor: cat.color || "#f43f5e" }}
+                            />
+                            <span>{cat.name}</span>
+                            {active && <Check className="size-3 shrink-0 text-rose-600" />}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
