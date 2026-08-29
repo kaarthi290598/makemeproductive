@@ -101,8 +101,8 @@ export function ViewSubscriptionDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="w-full max-w-full sm:w-[min(calc(100vw-1.5rem),34rem)] sm:max-w-lg max-h-[92dvh] overflow-y-auto rounded-t-3xl rounded-b-none sm:rounded-3xl border-slate-200/90 p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-950">
-        {/* Header */}
-        <div className="relative border-b border-indigo-100 bg-gradient-to-b from-indigo-50/80 to-transparent px-5 py-3.5 dark:border-indigo-950/60 dark:from-indigo-950/30 sm:px-6">
+        {/* Desktop Only Header */}
+        <div className="hidden border-b border-indigo-100 bg-gradient-to-b from-indigo-50/80 to-transparent px-6 py-3.5 dark:border-indigo-950/60 dark:from-indigo-950/30 sm:block">
           <DialogHeader className="space-y-0.5 text-left">
             <div className="flex items-center gap-3">
               <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-base font-black text-white shadow-md shadow-indigo-600/25 ring-4 ring-indigo-100 dark:ring-indigo-950/50">
@@ -124,6 +124,10 @@ export function ViewSubscriptionDialog({
             </div>
           </DialogHeader>
         </div>
+
+        <DialogTitle className="sr-only sm:hidden">
+          {subscription.name}
+        </DialogTitle>
 
         {/* Body */}
         <div className="space-y-3 px-5 py-3.5 sm:px-6">
@@ -270,25 +274,25 @@ export function ViewSubscriptionDialog({
         </div>
 
         {/* Footer */}
-        <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50 sm:justify-between sm:px-6">
+        <DialogFooter className="flex-col gap-2 border-t border-slate-100 bg-slate-50/70 px-5 pt-3 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] dark:border-slate-800 dark:bg-slate-900/50 sm:flex-row sm:justify-between sm:px-6 sm:pb-4">
           <Button
             type="button"
-            variant="outline"
-            className="h-9 rounded-xl text-xs font-bold"
-            onClick={() => setOpen(false)}
-          >
-            Close
-          </Button>
-          <Button
-            type="button"
-            className="h-9 gap-1.5 rounded-xl bg-indigo-600 px-4 text-xs font-bold text-white shadow-md shadow-indigo-600/25 hover:bg-indigo-500"
+            className="h-10 w-full gap-1.5 rounded-xl bg-indigo-600 px-4 text-xs font-bold text-white shadow-md shadow-indigo-600/25 active:scale-[0.98] hover:bg-indigo-500 sm:h-9 sm:w-auto"
             onClick={() => {
               setOpen(false);
               onEdit(subscription);
             }}
           >
             <Pencil className="size-3.5" />
-            <span>Edit Subscription</span>
+            <span>Edit Plan</span>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-10 w-full rounded-xl text-xs font-bold sm:h-9 sm:w-auto"
+            onClick={() => setOpen(false)}
+          >
+            Close
           </Button>
         </DialogFooter>
       </DialogContent>

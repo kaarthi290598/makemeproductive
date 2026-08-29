@@ -53,7 +53,8 @@ export function DebtPaymentsDialog({ open, setOpen, debt }: DebtPaymentsDialogPr
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="w-full max-w-full sm:w-[min(calc(100vw-1.5rem),34rem)] sm:max-w-lg max-h-[92dvh] overflow-y-auto rounded-t-3xl rounded-b-none sm:rounded-3xl border-slate-200/90 p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-950">
-          <div className="relative border-b border-rose-100 bg-gradient-to-b from-rose-50/80 to-transparent px-5 py-3.5 dark:border-rose-950/60 dark:from-rose-950/30 sm:px-6">
+          {/* Desktop Only Header */}
+          <div className="hidden border-b border-rose-100 bg-gradient-to-b from-rose-50/80 to-transparent px-6 py-3.5 dark:border-rose-950/60 dark:from-rose-950/30 sm:block">
             <DialogHeader className="space-y-0.5 text-left">
               <div className="flex items-center gap-3">
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-rose-600 text-white shadow-md shadow-rose-600/25 ring-4 ring-rose-100 dark:ring-rose-950/50">
@@ -70,6 +71,10 @@ export function DebtPaymentsDialog({ open, setOpen, debt }: DebtPaymentsDialogPr
               </div>
             </DialogHeader>
           </div>
+
+          <DialogTitle className="sr-only sm:hidden">
+            {debt.name}
+          </DialogTitle>
 
           <div className="space-y-3 px-5 py-3.5 sm:px-6">
             {!debt.payments || debt.payments.length === 0 ? (
@@ -162,9 +167,9 @@ export function DebtPaymentsDialog({ open, setOpen, debt }: DebtPaymentsDialogPr
             )}
           </div>
 
-          <div className="border-t border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50 sm:flex sm:justify-end sm:px-6">
+          <div className="border-t border-slate-100 bg-slate-50/70 px-5 pt-3 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] dark:border-slate-800 dark:bg-slate-900/50 sm:flex sm:justify-end sm:px-6 sm:pb-4">
             <Button
-              className="h-9.5 w-full gap-1.5 rounded-xl bg-rose-600 px-5 text-xs font-bold text-white shadow-lg shadow-rose-600/25 hover:bg-rose-500 sm:w-auto"
+              className="h-10 w-full gap-1.5 rounded-xl bg-rose-600 px-5 text-xs font-bold text-white shadow-lg shadow-rose-600/25 active:scale-[0.98] hover:bg-rose-500 sm:h-9.5 sm:w-auto"
               onClick={() => {
                 setEditPayment(null);
                 setEditOpen(true);

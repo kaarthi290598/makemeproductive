@@ -141,8 +141,9 @@ export function AddEditSubscriptionDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className={dialogShellClass}>
         <form onSubmit={handleSubmit} className="flex flex-col">
-          {/* Header */}
-          <div className="relative border-b border-indigo-100 bg-gradient-to-b from-indigo-50/80 to-transparent px-5 py-3.5 dark:border-indigo-950/60 dark:from-indigo-950/30 sm:px-6">
+
+          {/* Desktop Only Header */}
+          <div className="hidden border-b border-indigo-100 bg-gradient-to-b from-indigo-50/80 to-transparent px-6 py-3.5 dark:border-indigo-950/60 dark:from-indigo-950/30 sm:block">
             <DialogHeader className="space-y-0.5 text-left">
               <div className="flex items-center gap-3">
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-600/25 ring-4 ring-indigo-100 dark:ring-indigo-950/50">
@@ -162,6 +163,12 @@ export function AddEditSubscriptionDialog({
             </DialogHeader>
           </div>
 
+          <DialogTitle className="sr-only sm:hidden">
+            {subscriptionToEdit
+              ? "Edit Subscription"
+              : "Add New Subscription"}
+          </DialogTitle>
+
           {/* Form Body */}
           <div className="space-y-3 px-5 py-3.5 sm:px-6">
             {/* Name */}
@@ -178,7 +185,6 @@ export function AddEditSubscriptionDialog({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className={inputClass}
-                autoFocus
               />
             </div>
 
@@ -373,11 +379,11 @@ export function AddEditSubscriptionDialog({
           </div>
 
           {/* Footer */}
-          <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50 sm:justify-end sm:px-6">
+          <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 pt-3 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] dark:border-slate-800 dark:bg-slate-900/50 sm:justify-end sm:px-6 sm:pb-4">
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="h-9.5 w-full gap-2 rounded-xl bg-indigo-600 px-5 text-xs font-bold text-white shadow-lg shadow-indigo-600/25 hover:bg-indigo-500 sm:w-auto sm:min-w-[140px]"
+              className="h-10 w-full gap-2 rounded-xl bg-indigo-600 px-5 text-xs font-bold text-white shadow-lg shadow-indigo-600/25 active:scale-[0.98] hover:bg-indigo-500 sm:h-9.5 sm:w-auto sm:min-w-[140px]"
             >
               <Send className="size-3.5" />
               <span>

@@ -72,8 +72,8 @@ export function RecordPaymentDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="w-full max-w-full sm:w-[min(calc(100vw-1.5rem),28rem)] sm:max-w-md max-h-[92dvh] overflow-y-auto rounded-t-3xl rounded-b-none sm:rounded-3xl border-slate-200/90 p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-950">
         <form onSubmit={handlePay} className="flex flex-col">
-          {/* Header */}
-          <div className="border-b border-emerald-100 bg-gradient-to-b from-emerald-50/80 to-transparent px-5 py-3.5 dark:border-emerald-950/60 dark:from-emerald-950/30 sm:px-6">
+          {/* Desktop Only Header */}
+          <div className="hidden border-b border-emerald-100 bg-gradient-to-b from-emerald-50/80 to-transparent px-6 py-3.5 dark:border-emerald-950/60 dark:from-emerald-950/30 sm:block">
             <DialogHeader className="space-y-0.5 text-left">
               <div className="flex items-center gap-3">
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-md shadow-emerald-600/25">
@@ -90,6 +90,10 @@ export function RecordPaymentDialog({
               </div>
             </DialogHeader>
           </div>
+
+          <DialogTitle className="sr-only sm:hidden">
+            Record Payment - {account.name}
+          </DialogTitle>
 
           {/* Form Body */}
           <div className="space-y-3 px-5 py-4 sm:px-6">
@@ -147,7 +151,6 @@ export function RecordPaymentDialog({
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   className="h-10 rounded-xl border-slate-200 bg-slate-50/70 pl-8 font-mono text-base font-bold shadow-2xs placeholder:text-slate-400 focus-visible:bg-white dark:border-slate-800 dark:bg-slate-900 dark:focus-visible:bg-slate-950"
-                  autoFocus
                 />
               </div>
             </div>
@@ -180,11 +183,11 @@ export function RecordPaymentDialog({
           </div>
 
           {/* Footer */}
-          <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50 sm:justify-end sm:px-6">
+          <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 pt-3 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] dark:border-slate-800 dark:bg-slate-900/50 sm:justify-end sm:px-6 sm:pb-4">
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="h-9.5 w-full gap-2 rounded-xl bg-emerald-600 px-5 text-xs font-bold text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-500 sm:w-auto"
+              className="h-10 w-full gap-2 rounded-xl bg-emerald-600 px-5 text-xs font-bold text-white shadow-lg shadow-emerald-600/25 active:scale-[0.98] hover:bg-emerald-500 sm:h-9.5 sm:w-auto"
             >
               <Send className="size-3.5" />
               <span>{isSubmitting ? "Saving..." : "Save Payment"}</span>

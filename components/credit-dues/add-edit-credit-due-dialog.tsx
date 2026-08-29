@@ -155,8 +155,8 @@ export function AddEditCreditDueDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className={dialogShellClass}>
         <form onSubmit={handleSubmit} className="flex flex-col">
-          {/* Header */}
-          <div className="relative border-b border-rose-100 bg-gradient-to-b from-rose-50/80 to-transparent px-5 py-3.5 dark:border-rose-950/60 dark:from-rose-950/30 sm:px-6">
+          {/* Desktop Only Header */}
+          <div className="hidden border-b border-rose-100 bg-gradient-to-b from-rose-50/80 to-transparent px-6 py-3.5 dark:border-rose-950/60 dark:from-rose-950/30 sm:block">
             <DialogHeader className="space-y-0.5 text-left">
               <div className="flex items-center gap-3">
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-rose-600 text-white shadow-md shadow-rose-600/25 ring-4 ring-rose-100 dark:ring-rose-950/50">
@@ -176,6 +176,12 @@ export function AddEditCreditDueDialog({
             </DialogHeader>
           </div>
 
+          <DialogTitle className="sr-only sm:hidden">
+            {accountToEdit
+              ? "Edit Credit Card / Due Account"
+              : "Add Credit Card / Due Account"}
+          </DialogTitle>
+
           {/* Form Body */}
           <div className="space-y-3 px-5 py-3.5 sm:px-6">
             {/* Account / Card Name (Mandatory) */}
@@ -192,7 +198,6 @@ export function AddEditCreditDueDialog({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className={inputClass}
-                autoFocus
               />
             </div>
 
@@ -382,11 +387,11 @@ export function AddEditCreditDueDialog({
           </div>
 
           {/* Footer */}
-          <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50 sm:justify-end sm:px-6">
+          <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 pt-3 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] dark:border-slate-800 dark:bg-slate-900/50 sm:justify-end sm:px-6 sm:pb-4">
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="h-9.5 w-full gap-2 rounded-xl bg-rose-600 px-5 text-xs font-bold text-white shadow-lg shadow-rose-600/25 hover:bg-rose-500 sm:w-auto sm:min-w-[140px]"
+              className="h-10 w-full gap-2 rounded-xl bg-rose-600 px-5 text-xs font-bold text-white shadow-lg shadow-rose-600/25 active:scale-[0.98] hover:bg-rose-500 sm:h-9.5 sm:w-auto sm:min-w-[140px]"
             >
               <Send className="size-3.5" />
               <span>

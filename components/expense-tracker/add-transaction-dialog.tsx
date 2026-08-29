@@ -186,10 +186,11 @@ export function AddTransactionDialog({
       </DialogTrigger>
       <DialogContent className="w-full max-w-full sm:w-[min(calc(100vw-1.5rem),32rem)] sm:max-w-lg max-h-[92dvh] overflow-y-auto rounded-t-3xl rounded-b-none sm:rounded-3xl border-slate-200/90 p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-950">
         <form onSubmit={handleSubmit} className="flex flex-col">
-          {/* Dynamic Top Header with Subtle Ambient Glow */}
+
+          {/* Desktop Only Full Header */}
           <div
             className={cn(
-              "relative border-b px-5 py-3.5 transition-colors duration-200 sm:px-6",
+              "hidden border-b px-6 py-3.5 transition-colors duration-200 sm:block",
               isCredit
                 ? "border-emerald-100 bg-gradient-to-b from-emerald-50/80 to-transparent dark:border-emerald-950/60 dark:from-emerald-950/30"
                 : "border-rose-100 bg-gradient-to-b from-rose-50/80 to-transparent dark:border-rose-950/60 dark:from-rose-950/30",
@@ -227,10 +228,21 @@ export function AddTransactionDialog({
                 </div>
               </div>
             </DialogHeader>
+          </div>
 
+          <DialogTitle className="sr-only sm:hidden">
+            {isEditMode
+              ? "Edit Entry"
+              : isCredit
+                ? "Add Credit"
+                : "Add Debit"}
+          </DialogTitle>
+
+          {/* Dialog Main Form Body */}
+          <div className="space-y-3 px-5 py-3.5 sm:px-6">
             {/* Segmented Type Toggle (when not editing) */}
             {!isEditMode && (
-              <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl border border-slate-200/80 bg-slate-100/90 p-1 dark:border-slate-800 dark:bg-slate-900">
+              <div className="grid grid-cols-2 gap-1 rounded-xl border border-slate-200/80 bg-slate-100/90 p-1 dark:border-slate-800 dark:bg-slate-900">
                 <button
                   type="button"
                   onClick={() => setType("income")}
@@ -259,10 +271,6 @@ export function AddTransactionDialog({
                 </button>
               </div>
             )}
-          </div>
-
-          {/* Dialog Main Form Body */}
-          <div className="space-y-3 px-5 py-3.5 sm:px-6">
             {/* Amount Field */}
             <div
               className={cn(
@@ -305,7 +313,6 @@ export function AddTransactionDialog({
                   type="number"
                   inputMode="decimal"
                   step="any"
-                  autoFocus
                   min="0"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value.replace(/-/g, ""))}
@@ -338,13 +345,7 @@ export function AddTransactionDialog({
                     No categories found. Add categories in Settings.
                   </p>
                 ) : (
-                  <div
-                    className={cn(
-                      "flex flex-wrap gap-1.5",
-                      categories.length > 12 &&
-                        "max-h-28 overflow-y-auto pr-1",
-                    )}
-                  >
+                  <div className="grid grid-flow-col grid-rows-2 gap-1.5 overflow-x-auto pb-1 auto-cols-[calc((100%-12px)/3)] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex sm:flex-wrap sm:auto-cols-auto sm:overflow-visible">
                     {categories.map((cat) => {
                       const active = categoryId === cat.id;
                       return (
@@ -353,7 +354,7 @@ export function AddTransactionDialog({
                           type="button"
                           onClick={() => setCategoryId(cat.id)}
                           className={cn(
-                            "inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1 text-xs font-bold transition-all",
+                            "flex h-8 w-full min-w-0 items-center justify-center gap-1.5 rounded-xl border px-1.5 text-xs font-bold transition-all sm:w-auto sm:px-2.5",
                             active
                               ? "border-rose-400 bg-rose-50 text-rose-900 shadow-sm ring-1 ring-rose-400 dark:border-rose-600 dark:bg-rose-950/60 dark:text-rose-200"
                               : "border-slate-200 bg-slate-50/70 text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800",
@@ -363,8 +364,8 @@ export function AddTransactionDialog({
                             className="size-2 shrink-0 rounded-full shadow-xs"
                             style={{ backgroundColor: cat.color || "#f43f5e" }}
                           />
-                          <span>{cat.name}</span>
-                          {active && <Check className="size-3 text-rose-600" />}
+                          <span className="truncate">{cat.name}</span>
+                          {active && <Check className="size-3 shrink-0 text-rose-600" />}
                         </button>
                       );
                     })}
@@ -482,7 +483,7 @@ export function AddTransactionDialog({
           </div>
 
           {/* Dialog Footer */}
-          <DialogFooter className="flex-col-reverse gap-2 border-t border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <DialogFooter className="flex-col gap-3 border-t border-slate-100 bg-slate-50/70 px-5 pt-3 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] dark:border-slate-800 dark:bg-slate-900/50 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:pb-4">
             {!isEditMode ? (
               <label className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
                 <Checkbox
@@ -505,7 +506,7 @@ export function AddTransactionDialog({
               type="submit"
               disabled={isSubmitting}
               className={cn(
-                "h-9.5 w-full gap-2 rounded-xl px-5 text-xs font-bold text-white shadow-lg sm:w-auto sm:min-w-[140px]",
+                "h-10 w-full gap-2 rounded-xl px-5 text-xs font-bold text-white shadow-lg active:scale-[0.98] sm:h-9.5 sm:w-auto sm:min-w-[140px]",
                 isCredit
                   ? "bg-emerald-600 shadow-emerald-600/25 hover:bg-emerald-500"
                   : "bg-rose-600 shadow-rose-600/25 hover:bg-rose-500",

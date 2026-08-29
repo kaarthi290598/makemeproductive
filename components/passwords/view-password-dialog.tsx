@@ -67,10 +67,10 @@ export function ViewPasswordDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="w-full max-w-full sm:w-[min(calc(100vw-1.5rem),34rem)] sm:max-w-lg max-h-[92dvh] overflow-y-auto rounded-t-3xl rounded-b-none sm:rounded-3xl border-slate-200/90 p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-950">
-        {/* Header */}
+        {/* Desktop Only Header */}
         <div
           className={cn(
-            "relative border-b px-5 py-3.5 transition-colors sm:px-6",
+            "hidden border-b px-6 py-3.5 transition-colors sm:block",
             isBank
               ? "border-blue-100 bg-gradient-to-b from-blue-50/80 to-transparent dark:border-blue-950/60 dark:from-blue-950/30"
               : "border-emerald-100 bg-gradient-to-b from-emerald-50/80 to-transparent dark:border-emerald-950/60 dark:from-emerald-950/30",
@@ -109,14 +109,16 @@ export function ViewPasswordDialog({
                   </span>
                 </div>
                 <DialogDescription className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  {isBank
-                    ? "Bank account & netbanking credentials"
-                    : "Stored credential details"}
+                  {isBank ? "Banking & Card Credentials" : "Account Credentials"}
                 </DialogDescription>
               </div>
             </div>
           </DialogHeader>
         </div>
+
+        <DialogTitle className="sr-only sm:hidden">
+          {password.name}
+        </DialogTitle>
 
         {/* Content Details */}
         <div className="space-y-3 px-5 py-3.5 sm:px-6">
@@ -529,19 +531,11 @@ export function ViewPasswordDialog({
         </div>
 
         {/* Footer */}
-        <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50 sm:justify-between sm:px-6">
-          <Button
-            type="button"
-            variant="outline"
-            className="h-9 rounded-xl text-xs font-bold"
-            onClick={() => setOpen(false)}
-          >
-            Close
-          </Button>
+        <DialogFooter className="flex-col gap-2 border-t border-slate-100 bg-slate-50/70 px-5 pt-3 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] dark:border-slate-800 dark:bg-slate-900/50 sm:flex-row sm:justify-between sm:px-6 sm:pb-4">
           <Button
             type="button"
             className={cn(
-              "h-9 gap-1.5 rounded-xl px-4 text-xs font-bold text-white shadow-md",
+              "h-10 w-full gap-1.5 rounded-xl px-4 text-xs font-bold text-white shadow-md active:scale-[0.98] sm:h-9 sm:w-auto",
               isBank
                 ? "bg-blue-600 shadow-blue-600/25 hover:bg-blue-500"
                 : "bg-emerald-600 shadow-emerald-600/25 hover:bg-emerald-500",
@@ -553,6 +547,14 @@ export function ViewPasswordDialog({
           >
             <Pencil className="size-3.5" />
             <span>Edit {isBank ? "Bank Details" : "Credential"}</span>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-10 w-full rounded-xl text-xs font-bold sm:h-9 sm:w-auto"
+            onClick={() => setOpen(false)}
+          >
+            Close
           </Button>
         </DialogFooter>
       </DialogContent>

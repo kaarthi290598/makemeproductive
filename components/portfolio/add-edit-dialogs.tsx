@@ -79,37 +79,44 @@ function DialogIconHeader({
 }) {
   const isEmerald = tone === "emerald";
   return (
-    <div
-      className={cn(
-        "relative border-b px-5 py-3.5 transition-colors duration-200 sm:px-6",
-        isEmerald
-          ? "border-emerald-100 bg-gradient-to-b from-emerald-50/80 to-transparent dark:border-emerald-950/60 dark:from-emerald-950/30"
-          : "border-rose-100 bg-gradient-to-b from-rose-50/80 to-transparent dark:border-rose-950/60 dark:from-rose-950/30",
-      )}
-    >
-      <DialogHeader className="space-y-0.5 text-left">
-        <div className="flex items-center gap-3">
-          <span
-            className={cn(
-              "flex size-9 shrink-0 items-center justify-center rounded-xl text-white shadow-md transition-all duration-300",
-              isEmerald
-                ? "bg-emerald-600 shadow-emerald-600/25 ring-4 ring-emerald-100 dark:ring-emerald-950/50"
-                : "bg-rose-600 shadow-rose-600/25 ring-4 ring-rose-100 dark:ring-rose-950/50",
-            )}
-          >
-            <Icon className="size-4.5" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <DialogTitle className="text-base font-bold tracking-tight text-slate-900 dark:text-white sm:text-lg">
-              {title}
-            </DialogTitle>
-            <DialogDescription className="text-xs font-medium text-slate-500 dark:text-slate-400">
-              {description}
-            </DialogDescription>
+    <>
+      {/* Desktop Only Header */}
+      <div
+        className={cn(
+          "hidden border-b px-6 py-3.5 transition-colors duration-200 sm:block",
+          isEmerald
+            ? "border-emerald-100 bg-gradient-to-b from-emerald-50/80 to-transparent dark:border-emerald-950/60 dark:from-emerald-950/30"
+            : "border-rose-100 bg-gradient-to-b from-rose-50/80 to-transparent dark:border-rose-950/60 dark:from-rose-950/30",
+        )}
+      >
+        <DialogHeader className="space-y-0.5 text-left">
+          <div className="flex items-center gap-3">
+            <span
+              className={cn(
+                "flex size-9 shrink-0 items-center justify-center rounded-xl text-white shadow-md transition-all duration-300",
+                isEmerald
+                  ? "bg-emerald-600 shadow-emerald-600/25 ring-4 ring-emerald-100 dark:ring-emerald-950/50"
+                  : "bg-rose-600 shadow-rose-600/25 ring-4 ring-rose-100 dark:ring-rose-950/50",
+              )}
+            >
+              <Icon className="size-4.5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <DialogTitle className="text-base font-bold tracking-tight text-slate-900 dark:text-white sm:text-lg">
+                {title}
+              </DialogTitle>
+              <DialogDescription className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                {description}
+              </DialogDescription>
+            </div>
           </div>
-        </div>
-      </DialogHeader>
-    </div>
+        </DialogHeader>
+      </div>
+
+      <DialogTitle className="sr-only sm:hidden">
+        {title}
+      </DialogTitle>
+    </>
   );
 }
 
@@ -120,7 +127,6 @@ function AmountCard({
   onChange,
   tone,
   placeholder = "0.00",
-  autoFocus,
 }: {
   id: string;
   label: string;
@@ -128,7 +134,6 @@ function AmountCard({
   onChange: (next: string) => void;
   tone: "emerald" | "rose";
   placeholder?: string;
-  autoFocus?: boolean;
 }) {
   const isEmerald = tone === "emerald";
   return (
@@ -173,7 +178,6 @@ function AmountCard({
           type="number"
           inputMode="decimal"
           step="any"
-          autoFocus={autoFocus}
           min="0"
           value={value}
           onChange={(e) => onChange(e.target.value.replace(/-/g, ""))}
@@ -254,7 +258,7 @@ function SubmitButton({
     <Button
       type="submit"
       className={cn(
-        "h-9.5 w-full gap-2 rounded-xl px-5 text-xs font-bold text-white shadow-lg sm:w-auto sm:min-w-[140px]",
+        "h-10 w-full gap-2 rounded-xl px-5 text-xs font-bold text-white shadow-lg active:scale-[0.98] sm:h-9.5 sm:w-auto sm:min-w-[140px]",
         isEmerald
           ? "bg-emerald-600 shadow-emerald-600/25 hover:bg-emerald-500"
           : "bg-rose-600 shadow-rose-600/25 hover:bg-rose-500",
@@ -369,7 +373,6 @@ export function AddEditInvestmentDialog({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className={inputClass}
-                autoFocus={!!investmentToEdit}
               />
             </div>
 
@@ -391,7 +394,6 @@ export function AddEditInvestmentDialog({
                   id="inv-invested"
                   label="Initial Invested Amount *"
                   value={investedAmount}
-                  autoFocus
                   tone="emerald"
                   onChange={(next) => {
                     setInvestedAmount(next);
@@ -450,7 +452,7 @@ export function AddEditInvestmentDialog({
             </div>
           </div>
 
-          <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50 sm:justify-end sm:px-6">
+          <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 pt-3 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] dark:border-slate-800 dark:bg-slate-900/50 sm:justify-end sm:px-6 sm:pb-4">
             <SubmitButton tone="emerald">
               {investmentToEdit ? "Update Asset" : "Save Asset"}
             </SubmitButton>
@@ -549,7 +551,6 @@ export function AddEditContributionDialog({
               id="c-amount"
               label="Invested Amount *"
               value={amount}
-              autoFocus
               tone="emerald"
               onChange={(next) => {
                 setAmount(next);
@@ -605,7 +606,7 @@ export function AddEditContributionDialog({
             </div>
           </div>
 
-          <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50 sm:justify-end sm:px-6">
+          <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 pt-3 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] dark:border-slate-800 dark:bg-slate-900/50 sm:justify-end sm:px-6 sm:pb-4">
             <SubmitButton tone="emerald">
               {contributionToEdit ? "Update Log" : "Log Purchase"}
             </SubmitButton>
@@ -762,7 +763,6 @@ export function AddEditDebtDialog({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className={inputClass}
-                autoFocus={!!debtToEdit}
               />
             </div>
 
@@ -780,7 +780,6 @@ export function AddEditDebtDialog({
               id="debt-total"
               label="Total Loan Principal *"
               value={totalAmount}
-              autoFocus={!debtToEdit}
               tone="rose"
               onChange={(next) => {
                 setTotalAmount(next);
@@ -895,7 +894,7 @@ export function AddEditDebtDialog({
             </div>
           </div>
 
-          <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50 sm:justify-end sm:px-6">
+          <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 pt-3 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] dark:border-slate-800 dark:bg-slate-900/50 sm:justify-end sm:px-6 sm:pb-4">
             <SubmitButton tone="rose">
               {debtToEdit ? "Update Debt" : "Save Debt"}
             </SubmitButton>
@@ -1088,7 +1087,6 @@ export function AddEditDebtPaymentDialog({
                   id="pay-amount"
                   label="Total Payment Amount *"
                   value={amount}
-                  autoFocus
                   tone="rose"
                   placeholder={`Remaining ₹${debt?.remainingAmount ?? 0}`}
                   onChange={setAmount}
@@ -1184,7 +1182,7 @@ export function AddEditDebtPaymentDialog({
             </div>
           </div>
 
-          <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50 sm:justify-end sm:px-6">
+          <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 pt-3 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] dark:border-slate-800 dark:bg-slate-900/50 sm:justify-end sm:px-6 sm:pb-4">
             <SubmitButton tone="rose">
               {paymentToEdit ? "Update Payment" : "Log Payment"}
             </SubmitButton>

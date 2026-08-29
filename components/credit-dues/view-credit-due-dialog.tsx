@@ -28,6 +28,7 @@ import {
   CheckCircle2 as CheckCircle2Icon,
   AlertCircle as AlertCircleIcon,
   Sparkles as SparklesIcon,
+  CreditCard as CreditCardIcon,
 } from "lucide-react";
 import { format, parseISO, differenceInCalendarDays } from "date-fns";
 
@@ -49,58 +50,50 @@ export function ViewCreditDueDialog({
   if (!account) return null;
 
   const remainingDue = calculateRemainingDue(account);
+  const isPaidOff = remainingDue <= 0 && account.total_outstanding <= 0;
   const utilization = calculateUtilization(account);
   const availableCredit = calculateAvailableCredit(account);
   const health = getUtilizationHealth(utilization);
 
-  const daysLeft = account.due_date
-    ? differenceInCalendarDays(parseISO(account.due_date), new Date())
-    : null;
-
   const getDueBadge = () => {
-    if (remainingDue === 0) {
+    if (isPaidOff) {
       return (
-        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/50 dark:text-emerald-300">
+        <span className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/50 dark:text-emerald-300">
           <CheckCircle2Icon className="size-3" />
-          <span>Fully Settled</span>
+          Paid Off
         </span>
       );
     }
-    if (!account.due_date || daysLeft === null) {
+    if (!account.due_date) {
       return (
-        <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-0.5 text-xs font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
-          <span>Active</span>
+        <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+          No Due Date
         </span>
       );
     }
+    const daysLeft = differenceInCalendarDays(
+      parseISO(account.due_date),
+      new Date(),
+    );
     if (daysLeft < 0) {
       return (
-        <span className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2.5 py-0.5 text-xs font-bold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/50 dark:text-rose-300">
+        <span className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-rose-50 px-2 py-0.5 text-xs font-bold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/50 dark:text-rose-300">
           <AlertCircleIcon className="size-3" />
-          <span>Overdue by {Math.abs(daysLeft)} {Math.abs(daysLeft) === 1 ? "day" : "days"}</span>
+          Overdue by {Math.abs(daysLeft)}d
         </span>
       );
     }
     if (daysLeft === 0) {
       return (
-        <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-bold text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/50 dark:text-amber-300">
+        <span className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/50 dark:text-amber-300">
           <ClockIcon className="size-3" />
-          <span>Due Today</span>
-        </span>
-      );
-    }
-    if (daysLeft <= 7) {
-      return (
-        <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-bold text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/50 dark:text-amber-300">
-          <ClockIcon className="size-3" />
-          <span>Due in {daysLeft} {daysLeft === 1 ? "day" : "days"}</span>
+          Due Today
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-0.5 text-xs font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
-        <CalendarIcon className="size-3" />
-        <span>Due in {daysLeft} days</span>
+      <span className="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/50 dark:text-emerald-300">
+        Due in {daysLeft} days
       </span>
     );
   };
@@ -109,8 +102,8 @@ export function ViewCreditDueDialog({
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="w-full max-w-full sm:w-[min(calc(100vw-1.5rem),46rem)] sm:max-w-2xl max-h-[92dvh] overflow-y-auto rounded-t-3xl rounded-b-none sm:rounded-3xl border-slate-200/90 p-0 shadow-2xl dark:border-slate-800 dark:bg-slate-950">
-          {/* Header */}
-          <div className="relative border-b border-slate-100 bg-slate-50/60 px-5 py-3.5 dark:border-slate-800/80 dark:bg-slate-900/40 sm:px-6">
+          {/* Desktop Only Header */}
+          <div className="hidden border-b border-slate-100 bg-slate-50/60 px-6 py-3.5 dark:border-slate-800/80 dark:bg-slate-900/40 sm:block">
             <DialogHeader className="space-y-0.5 text-left">
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
@@ -125,6 +118,10 @@ export function ViewCreditDueDialog({
               </div>
             </DialogHeader>
           </div>
+
+          <DialogTitle className="sr-only sm:hidden">
+            {account.name}
+          </DialogTitle>
 
           {/* 2-Column Body (Zero Scroll Layout) */}
           <div className="p-5 sm:p-6">
@@ -254,21 +251,22 @@ export function ViewCreditDueDialog({
             </div>
           </div>
 
-          {/* Footer Actions */}
-          <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50 sm:justify-between sm:px-6">
-            <div className="flex items-center gap-2">
+          {/* Footer */}
+          <DialogFooter className="flex-col gap-2 border-t border-slate-100 bg-slate-50/70 px-5 pt-3 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] dark:border-slate-800 dark:bg-slate-900/50 sm:flex-row sm:justify-between sm:px-6 sm:pb-4">
+            <Button
+              type="button"
+              className="h-10 w-full gap-1.5 rounded-xl bg-emerald-600 px-4 text-xs font-bold text-white shadow-md shadow-emerald-600/25 transition-all hover:bg-emerald-500 active:scale-[0.98] sm:order-last sm:h-9 sm:w-auto"
+              onClick={() => setPayOpen(true)}
+            >
+              <CheckCircle2Icon className="size-3.5" />
+              <span>Record Payment</span>
+            </Button>
+
+            <div className="flex w-full items-center gap-2 sm:w-auto">
               <Button
                 type="button"
                 variant="outline"
-                className="h-9 rounded-xl px-3.5 text-xs font-bold"
-                onClick={() => setOpen(false)}
-              >
-                Close
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="h-9 gap-1.5 rounded-xl px-3.5 text-xs font-bold"
+                className="h-10 flex-1 gap-1.5 rounded-xl px-3.5 text-xs font-bold sm:h-9 sm:flex-none"
                 onClick={() => {
                   setOpen(false);
                   onEdit(account);
@@ -277,16 +275,15 @@ export function ViewCreditDueDialog({
                 <PencilIcon className="size-3.5" />
                 <span>Edit</span>
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-10 flex-1 rounded-xl px-3.5 text-xs font-bold sm:h-9 sm:flex-none"
+                onClick={() => setOpen(false)}
+              >
+                Close
+              </Button>
             </div>
-
-            <Button
-              type="button"
-              className="h-9 gap-1.5 rounded-xl bg-emerald-600 px-4 text-xs font-bold text-white shadow-md shadow-emerald-600/25 transition-all hover:bg-emerald-500 active:scale-[0.98]"
-              onClick={() => setPayOpen(true)}
-            >
-              <CheckCircle2Icon className="size-3.5" />
-              <span>Record Payment</span>
-            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

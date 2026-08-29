@@ -197,10 +197,10 @@ export function AddEditPasswordDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className={dialogShellClass}>
         <form onSubmit={handleSubmit} className="flex flex-col">
-          {/* Header */}
+          {/* Desktop Only Header */}
           <div
             className={cn(
-              "relative border-b px-5 py-3.5 transition-colors sm:px-6",
+              "hidden border-b px-6 py-3.5 transition-colors sm:block",
               isBank
                 ? "border-blue-100 bg-gradient-to-b from-blue-50/80 to-transparent dark:border-blue-950/60 dark:from-blue-950/30"
                 : "border-emerald-100 bg-gradient-to-b from-emerald-50/80 to-transparent dark:border-emerald-950/60 dark:from-emerald-950/30",
@@ -241,6 +241,16 @@ export function AddEditPasswordDialog({
               </div>
             </DialogHeader>
           </div>
+
+          <DialogTitle className="sr-only sm:hidden">
+            {passwordToEdit
+              ? isBank
+                ? "Edit Bank Account & Credentials"
+                : "Edit Credential"
+              : isBank
+                ? "Add Bank Account & Credentials"
+                : "Add Credential"}
+          </DialogTitle>
 
           {/* Form Body */}
           <div className="space-y-3 px-5 py-3.5 sm:px-6">
@@ -303,7 +313,6 @@ export function AddEditPasswordDialog({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className={inputClass}
-                autoFocus
               />
             </div>
 
@@ -651,12 +660,12 @@ export function AddEditPasswordDialog({
           </div>
 
           {/* Footer */}
-          <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50 sm:justify-end sm:px-6">
+          <DialogFooter className="border-t border-slate-100 bg-slate-50/70 px-5 pt-3 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] dark:border-slate-800 dark:bg-slate-900/50 sm:justify-end sm:px-6 sm:pb-4">
             <Button
               type="submit"
               disabled={isSubmitting}
               className={cn(
-                "h-9.5 w-full gap-2 rounded-xl px-5 text-xs font-bold text-white shadow-lg sm:w-auto sm:min-w-[140px]",
+                "h-10 w-full gap-2 rounded-xl px-5 text-xs font-bold text-white shadow-lg active:scale-[0.98] sm:h-9.5 sm:w-auto sm:min-w-[140px]",
                 isBank
                   ? "bg-blue-600 shadow-blue-600/25 hover:bg-blue-500"
                   : "bg-emerald-600 shadow-emerald-600/25 hover:bg-emerald-500",
