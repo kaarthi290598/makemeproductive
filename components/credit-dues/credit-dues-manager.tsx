@@ -258,16 +258,18 @@ export function CreditDuesManager() {
           <div className="flex flex-wrap items-center gap-2">
             {/* Filter Tabs */}
             <div className="flex items-center rounded-xl border border-slate-200/80 bg-white p-1 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
-              {[
-                { value: "all", label: "All" },
-                { value: "unpaid", label: "Unpaid Dues" },
-                { value: "paid", label: "Settled" },
-                { value: "high_utilization", label: "High Util (>30%)" },
-              ].map((f) => (
+              {(
+                [
+                  { value: "all", label: "All" },
+                  { value: "unpaid", label: "Unpaid Dues" },
+                  { value: "paid", label: "Settled" },
+                  { value: "high_utilization", label: "High Util (>30%)" },
+                ] as const
+              ).map((f) => (
                 <button
                   key={f.value}
                   type="button"
-                  onClick={() => setFilterStatus(f.value as any)}
+                  onClick={() => setFilterStatus(f.value)}
                   className={cn(
                     "rounded-lg px-2.5 py-1 text-xs font-bold transition-all",
                     filterStatus === f.value

@@ -66,8 +66,7 @@ export function ChipScroll({
         <div className="flex flex-wrap content-start gap-1.5">{children}</div>
       </div>
       <div
-        role="scrollbar"
-        aria-hidden={!overflows}
+        aria-hidden="true"
         onClick={onTrackClick}
         className="relative h-20 w-1.5 shrink-0 cursor-pointer rounded-full bg-slate-200 dark:bg-slate-700 sm:h-24"
       >
