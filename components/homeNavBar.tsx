@@ -5,6 +5,9 @@ import { SidebarTrigger } from "./ui/sidebar";
 import { ModeToggle } from "./darkModeToggle";
 import { UserButton } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
+import { usePWAInstall } from "@/hooks/use-pwa-install";
+import { toast } from "sonner";
+import { Button } from "./ui/button";
 import {
   LayoutDashboard,
   Wallet,
@@ -13,6 +16,7 @@ import {
   CalendarSync,
   KeyRound,
   Sparkles,
+  Download,
 } from "lucide-react";
 
 export default function HomeNavBar() {
@@ -47,13 +51,52 @@ export default function HomeNavBar() {
         </div>
       </div>
 
-      {/* Right: Mode Toggle + User Profile */}
+      {/* Right: Install Button + Mode Toggle + User Profile */}
       <div className="flex items-center gap-2">
+        <NavBarInstallButton />
         <ModeToggle />
         <div className="flex size-8 items-center justify-center">
           <UserButton afterSignOutUrl="/" />
         </div>
       </div>
     </div>
+  );
+}
+
+function NavBarInstallButton() {
+  const { isInstallable, isInstalled, promptInstall } = usePWAInstall();
+
+  if (isInstalled) {
+    return null;
+  }
+
+  const handleInstall = async () => {
+    if (isInstallable) {
+      await promptInstall();
+    } else {
+      const isIOS =
+        typeof window !== "undefined" &&
+        /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+      if (isIOS) {
+        toast.info(
+          "To install on iOS: Tap the Share button (⎋) at the bottom of Safari and choose 'Add to Home Screen' (+)",
+        );
+      } else {
+        toast.info(
+          "To install: Open browser menu (⋮) and choose 'Install ToolCity' or 'Add to Home Screen'",
+        );
+      }
+    }
+  };
+
+  return (
+    <Button
+      size="sm"
+      onClick={handleInstall}
+      className="h-7 gap-1 rounded-lg bg-emerald-600 px-2 text-[11px] font-bold text-white shadow-xs transition-all hover:bg-emerald-500 active:scale-95 sm:h-8 sm:gap-1.5 sm:px-2.5 sm:text-xs"
+    >
+      <Download className="size-3.5" />
+      <span>Install</span>
+    </Button>
   );
 }

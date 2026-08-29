@@ -14,6 +14,7 @@ import {
   Download,
 } from "lucide-react";
 import { usePWAInstall } from "@/hooks/use-pwa-install";
+import { toast } from "sonner";
 
 import {
   Sidebar,
@@ -203,14 +204,33 @@ const SidebarApp = () => {
 function SidebarInstallButton() {
   const { isInstallable, isInstalled, promptInstall } = usePWAInstall();
 
-  if (isInstalled || !isInstallable) {
+  if (isInstalled) {
     return null;
   }
+
+  const handleInstall = async () => {
+    if (isInstallable) {
+      await promptInstall();
+    } else {
+      const isIOS =
+        typeof window !== "undefined" &&
+        /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+      if (isIOS) {
+        toast.info(
+          "To install on iOS: Tap the Share button (⎋) at the bottom of Safari and choose 'Add to Home Screen' (+)",
+        );
+      } else {
+        toast.info(
+          "To install: Open browser menu (⋮) and choose 'Install ToolCity' or 'Add to Home Screen'",
+        );
+      }
+    }
+  };
 
   return (
     <button
       type="button"
-      onClick={() => promptInstall()}
+      onClick={handleInstall}
       className="mb-2 flex w-full items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-left text-xs font-bold text-emerald-700 transition-all hover:bg-emerald-500/20 active:scale-[0.98] dark:text-emerald-300"
     >
       <div className="flex items-center gap-2">
