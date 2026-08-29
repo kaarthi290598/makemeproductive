@@ -14,7 +14,6 @@ import {
   Download,
 } from "lucide-react";
 import { usePWAInstall } from "@/hooks/use-pwa-install";
-import { PWAInstallDialog } from "@/components/pwa-install-dialog";
 
 import {
   Sidebar,
@@ -203,46 +202,25 @@ const SidebarApp = () => {
 
 function SidebarInstallButton() {
   const { isInstallable, isInstalled, promptInstall } = usePWAInstall();
-  const [dialogOpen, setDialogOpen] = React.useState(false);
 
-  if (isInstalled) {
-    return (
-      <div className="mb-2 flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-50/50 px-3 py-2 text-xs font-bold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300">
-        <span className="flex size-2 rounded-full bg-emerald-500" />
-        <span>App Installed</span>
-      </div>
-    );
+  if (isInstalled || !isInstallable) {
+    return null;
   }
 
-  const handleClick = async () => {
-    if (isInstallable) {
-      const success = await promptInstall();
-      if (!success) {
-        setDialogOpen(true);
-      }
-    } else {
-      setDialogOpen(true);
-    }
-  };
-
   return (
-    <>
-      <button
-        type="button"
-        onClick={handleClick}
-        className="mb-2 flex w-full items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-left text-xs font-bold text-emerald-700 transition-all hover:bg-emerald-500/20 dark:text-emerald-300"
-      >
-        <div className="flex items-center gap-2">
-          <Download className="size-3.5 text-emerald-600 dark:text-emerald-400" />
-          <span>Install App</span>
-        </div>
-        <span className="rounded bg-emerald-600 px-1.5 py-0.5 text-[10px] text-white">
-          PWA
-        </span>
-      </button>
-
-      <PWAInstallDialog open={dialogOpen} onOpenChange={setDialogOpen} />
-    </>
+    <button
+      type="button"
+      onClick={() => promptInstall()}
+      className="mb-2 flex w-full items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-left text-xs font-bold text-emerald-700 transition-all hover:bg-emerald-500/20 active:scale-[0.98] dark:text-emerald-300"
+    >
+      <div className="flex items-center gap-2">
+        <Download className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+        <span>Install App</span>
+      </div>
+      <span className="rounded bg-emerald-600 px-1.5 py-0.5 text-[10px] text-white">
+        PWA
+      </span>
+    </button>
   );
 }
 

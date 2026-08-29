@@ -4,12 +4,10 @@ import React, { useState, useEffect } from "react";
 import { usePWAInstall } from "@/hooks/use-pwa-install";
 import { Button } from "@/components/ui/button";
 import { Download, X, Smartphone } from "lucide-react";
-import { PWAInstallDialog } from "@/components/pwa-install-dialog";
 
 export function PWAInstallPrompt() {
   const { isInstallable, isInstalled, promptInstall } = usePWAInstall();
   const [dismissed, setDismissed] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     const isDismissed = sessionStorage.getItem("pwa-prompt-dismissed");
@@ -27,16 +25,8 @@ export function PWAInstallPrompt() {
     sessionStorage.setItem("pwa-prompt-dismissed", "true");
   };
 
-  const handleInstall = async () => {
-    const success = await promptInstall();
-    if (!success) {
-      setDialogOpen(true);
-    }
-  };
-
   return (
-    <>
-      <div className="fixed bottom-20 left-4 right-4 z-40 mx-auto max-w-md animate-in fade-in slide-in-from-bottom-4 duration-300 md:bottom-6 md:right-6 md:left-auto">
+    <div className="fixed bottom-20 left-4 right-4 z-40 mx-auto max-w-md animate-in fade-in slide-in-from-bottom-4 duration-300 md:bottom-6 md:right-6 md:left-auto">
       <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-slate-900/95 p-3.5 shadow-2xl backdrop-blur-xl dark:border-emerald-500/30 dark:bg-slate-950/95">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 p-2 text-white shadow-md shadow-emerald-600/20">
           <Smartphone className="size-5" />
@@ -52,7 +42,7 @@ export function PWAInstallPrompt() {
         <div className="flex shrink-0 items-center gap-1.5">
           <Button
             size="sm"
-            onClick={handleInstall}
+            onClick={() => promptInstall()}
             className="h-8 gap-1 rounded-xl bg-emerald-600 px-3 text-xs font-bold text-white shadow-sm shadow-emerald-600/25 hover:bg-emerald-500 active:scale-95"
           >
             <Download className="size-3.5" />
@@ -69,8 +59,5 @@ export function PWAInstallPrompt() {
         </div>
       </div>
     </div>
-
-    <PWAInstallDialog open={dialogOpen} onOpenChange={setDialogOpen} />
-  </>
-);
+  );
 }
