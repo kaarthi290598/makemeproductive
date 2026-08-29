@@ -71,6 +71,15 @@ export function LandingHeader() {
 
         {/* Desktop Nav Links */}
         <nav className="hidden items-center gap-7 md:flex">
+          <SignedIn>
+            <Link
+              href="/app"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-500/20 dark:bg-emerald-500/15 dark:text-emerald-300"
+            >
+              <LayoutDashboard className="size-3.5" />
+              <span>Go to App</span>
+            </Link>
+          </SignedIn>
           <a
             href="#features"
             className="text-xs font-semibold text-slate-600 transition-colors hover:text-emerald-600 dark:text-slate-300 dark:hover:text-emerald-400"
@@ -129,17 +138,26 @@ export function LandingHeader() {
           </SignedIn>
         </div>
 
-        {/* Mobile Hamburger Toggle */}
+        {/* Mobile Header Right */}
         <div className="flex items-center gap-2 md:hidden">
           <ModeToggle />
+          <SignedIn>
+            <Link href="/app">
+              <Button className="h-8 gap-1 rounded-lg bg-emerald-600 px-2.5 text-xs font-bold text-white shadow-xs">
+                <span>App</span>
+                <ArrowRight className="size-3" />
+              </Button>
+            </Link>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="size-9 rounded-xl"
+            className="size-8 rounded-lg"
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+            {mobileMenuOpen ? <X className="size-4.5" /> : <Menu className="size-4.5" />}
           </Button>
         </div>
       </div>
