@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import {
   fetchPasswords,
   createPassword,
@@ -28,12 +29,14 @@ interface PasswordsStore {
   removeMultiplePasswords: (ids: string[]) => Promise<void>;
 }
 
-export const usePasswordsStore = create<PasswordsStore>((set, get) => ({
-  passwords: [],
-  loading: false,
-  searchQuery: "",
-  selectedCategory: "All",
-  selectedIds: [],
+export const usePasswordsStore = create<PasswordsStore>()(
+  persist(
+    (set, get) => ({
+      passwords: [],
+      loading: false,
+      searchQuery: "",
+      selectedCategory: "All",
+      selectedIds: [],
 
   setSearchQuery: (query: string) => set({ searchQuery: query }),
   setSelectedCategory: (category: string) => set({ selectedCategory: category }),
@@ -160,4 +163,11 @@ export const usePasswordsStore = create<PasswordsStore>((set, get) => ({
       throw err;
     }
   },
-}));
+  }),
+  {
+    name: "passwords-store",
+    partialize: (state) => ({
+      passwords: state.passwords,
+    }),
+  },
+));

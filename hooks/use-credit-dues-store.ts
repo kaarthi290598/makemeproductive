@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import { CreditDueInput, CreditDueItem, calculateRemainingDue, calculateUtilization } from "@/types/credit-due";
 import {
   fetchCreditDues,
@@ -38,12 +39,14 @@ interface CreditDuesState {
   removeMultipleCreditDues: (ids: string[]) => Promise<boolean>;
 }
 
-export const useCreditDuesStore = create<CreditDuesState>((set, get) => ({
-  creditDues: [],
-  loading: false,
-  searchQuery: "",
-  filterStatus: "all",
-  selectedIds: [],
+export const useCreditDuesStore = create<CreditDuesState>()(
+  persist(
+    (set, get) => ({
+      creditDues: [],
+      loading: false,
+      searchQuery: "",
+      filterStatus: "all",
+      selectedIds: [],
 
   setSearchQuery: (query: string) => set({ searchQuery: query }),
   setFilterStatus: (status) => set({ filterStatus: status }),
@@ -190,6 +193,13 @@ export const useCreditDuesStore = create<CreditDuesState>((set, get) => ({
       const msg = err instanceof Error ? err.message : "Failed to bulk delete";
       toast.error(msg);
       return false;
-    }
+      }
+    },
+  }),
+  {
+    name: "credit-dues-store",
+    partialize: (state) => ({
+      creditDues: state.creditDues,
+    }),
   },
-}));
+));

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import { Category, Transaction, MonthlySummary, Person } from "@/types/expense";
 import {
   fetchExpenseCategories,
@@ -63,13 +64,15 @@ async function refreshCategories(
   }
 }
 
-export const useExpenseStore = create<ExpenseStore>((set, get) => ({
-  categories: [],
-  monthlySummaries: [],
-  persons: [],
-  loading: false,
-  error: null,
-  loadedAt: null,
+export const useExpenseStore = create<ExpenseStore>()(
+  persist(
+    (set, get) => ({
+      categories: [],
+      monthlySummaries: [],
+      persons: [],
+      loading: false,
+      error: null,
+      loadedAt: null,
 
   initialize: async (options = {}) => {
     const { quiet = false, force = false } = options;
@@ -297,12 +300,22 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
     }
   },
 
-  resetData: async () => {
-    set({
-      categories: [],
-      persons: [],
-      monthlySummaries: [],
-      loadedAt: null,
-    });
+    resetData: async () => {
+      set({
+        categories: [],
+        persons: [],
+        monthlySummaries: [],
+        loadedAt: null,
+      });
+    },
+  }),
+  {
+    name: "expense-store",
+    partialize: (state) => ({
+      categories: state.categories,
+      monthlySummaries: state.monthlySummaries,
+      persons: state.persons,
+      loadedAt: state.loadedAt,
+    }),
   },
-}));
+));

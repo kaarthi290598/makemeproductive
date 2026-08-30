@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import {
   SubscriptionInput,
   SubscriptionItem,
@@ -47,13 +48,15 @@ interface SubscriptionsState {
   removeMultipleSubscriptions: (ids: string[]) => Promise<boolean>;
 }
 
-export const useSubscriptionsStore = create<SubscriptionsState>((set, get) => ({
-  subscriptions: [],
-  loading: false,
-  searchQuery: "",
-  selectedCategory: "All",
-  selectedStatus: "all",
-  selectedIds: [],
+export const useSubscriptionsStore = create<SubscriptionsState>()(
+  persist(
+    (set, get) => ({
+      subscriptions: [],
+      loading: false,
+      searchQuery: "",
+      selectedCategory: "All",
+      selectedStatus: "all",
+      selectedIds: [],
 
   setSearchQuery: (query: string) => set({ searchQuery: query }),
   setSelectedCategory: (category: string) => set({ selectedCategory: category }),
@@ -202,4 +205,11 @@ export const useSubscriptionsStore = create<SubscriptionsState>((set, get) => ({
       return false;
     }
   },
-}));
+  }),
+  {
+    name: "subscriptions-store",
+    partialize: (state) => ({
+      subscriptions: state.subscriptions,
+    }),
+  },
+));

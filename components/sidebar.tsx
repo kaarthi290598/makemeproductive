@@ -273,7 +273,7 @@ function SidebarUserAccountCard() {
             className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-emerald-500/10 px-2.5 py-1.5 text-left text-[11px] font-bold text-emerald-700 transition-all hover:bg-emerald-500/20 active:scale-[0.98] dark:text-emerald-400"
           >
             <Settings className="size-3.5" />
-            <span>Clerk Settings</span>
+            <span>Settings</span>
           </button>
 
           <button

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import {
   fetchPortfolioInvestments,
   fetchInvestmentContributions,
@@ -102,12 +103,14 @@ interface PortfolioStore {
 const INIT_TTL_MS = 60_000;
 let initializePromise: Promise<void> | null = null;
 
-export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
-  investments: [],
-  debts: [],
-  loading: false,
-  error: null,
-  loadedAt: null,
+export const usePortfolioStore = create<PortfolioStore>()(
+  persist(
+    (set, get) => ({
+      investments: [],
+      debts: [],
+      loading: false,
+      error: null,
+      loadedAt: null,
 
   initialize: async (options = {}) => {
     const { force = false } = options;
@@ -467,7 +470,16 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
     }
   },
 
-  resetStore: () => {
-    set({ investments: [], debts: [], loadedAt: null });
+    resetStore: () => {
+      set({ investments: [], debts: [], loadedAt: null });
+    },
+  }),
+  {
+    name: "portfolio-store",
+    partialize: (state) => ({
+      investments: state.investments,
+      debts: state.debts,
+      loadedAt: state.loadedAt,
+    }),
   },
-}));
+));

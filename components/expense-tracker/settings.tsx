@@ -443,7 +443,7 @@ export function Settings() {
                   className="h-9 gap-1.5 rounded-xl bg-emerald-600 px-3.5 text-xs font-bold text-white shadow-sm shadow-emerald-600/20 hover:bg-emerald-500"
                 >
                   <SettingsIcon className="size-3.5" />
-                  <span>Open Clerk Settings</span>
+                  <span>Open Settings</span>
                 </Button>
               </div>
             </CardContent>
