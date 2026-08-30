@@ -100,6 +100,7 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+    overscroll-behavior-y: contain;
   }
 }
 :root {
@@ -239,7 +240,20 @@ button[data-localization-key="userProfile.start.dangerSection.deleteAccountButto
 }
 
 .cl-userButtonPopoverCard {
-  @apply rounded-md;
+  @apply rounded-xl max-w-[92vw] shadow-2xl;
+  z-index: 90 !important;
+}
+
+.cl-modalBackdrop {
+  z-index: 100 !important;
+}
+
+.cl-modalContent {
+  @apply max-w-[96vw] max-h-[92vh] rounded-2xl;
+}
+
+.cl-userProfile-root {
+  @apply max-w-full overflow-hidden rounded-xl;
 }
 
 .cl-userButtonPopoverFooter a {

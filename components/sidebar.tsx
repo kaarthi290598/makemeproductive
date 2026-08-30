@@ -12,9 +12,12 @@ import {
   CalendarSync,
   CreditCard,
   Download,
+  Settings,
+  LogOut,
 } from "lucide-react";
 import { usePWAInstall } from "@/hooks/use-pwa-install";
 import { toast } from "sonner";
+import { useUser, useClerk, UserButton } from "@clerk/nextjs";
 
 import {
   Sidebar,
@@ -93,7 +96,7 @@ const SidebarApp = () => {
   return (
     <Sidebar collapsible="icon" variant="sidebar">
       {/* Branded Header */}
-      <SidebarHeader className="border-b border-sidebar-border/50 px-3 py-4">
+      <SidebarHeader className="border-b border-sidebar-border/50 px-3 py-4 pt-[max(1rem,calc(env(safe-area-inset-top,0px)+0.5rem))]">
         <Link
           href="/app"
           className={cn(
@@ -184,22 +187,108 @@ const SidebarApp = () => {
       </SidebarContent>
 
       {/* Footer */}
-      {!isCollapsed && (
-        <SidebarFooter className="border-t border-sidebar-border/50 px-3 py-3">
-          <SidebarInstallButton />
-          <div className="rounded-xl bg-gradient-to-br from-emerald-500/5 to-emerald-600/10 px-3 py-2.5">
-            <p className="text-[11px] font-medium text-sidebar-foreground/60">
-              Make Me Productive
-            </p>
-            <p className="mt-0.5 text-[10px] text-sidebar-foreground/40">
-              Your all-in-one workspace
-            </p>
+      <SidebarFooter className="border-t border-sidebar-border/50 p-2.5 pb-[max(0.75rem,calc(env(safe-area-inset-bottom,0px)+0.5rem))]">
+        {isCollapsed ? (
+          <div className="flex w-full items-center justify-center py-1">
+            <UserButton
+              afterSignOutUrl="/"
+              userProfileMode="modal"
+              appearance={{
+                elements: {
+                  avatarBox: "size-8",
+                  userButtonAvatarBox: "size-8",
+                },
+              }}
+            />
           </div>
-        </SidebarFooter>
-      )}
+        ) : (
+          <SidebarUserAccountCard />
+        )}
+      </SidebarFooter>
     </Sidebar>
   );
 };
+
+function SidebarUserAccountCard() {
+  const { user } = useUser();
+  const { openUserProfile, signOut } = useClerk();
+  const { setOpenMobile } = useSidebar();
+
+  const handleOpenProfile = () => {
+    setOpenMobile(false);
+    openUserProfile();
+  };
+
+  const handleSignOut = () => {
+    setOpenMobile(false);
+    signOut({ redirectUrl: "/" });
+  };
+
+  const displayName =
+    user?.fullName ||
+    user?.firstName ||
+    user?.username ||
+    user?.primaryEmailAddress?.emailAddress?.split("@")[0] ||
+    "Account";
+
+  const email = user?.primaryEmailAddress?.emailAddress || "";
+
+  return (
+    <div className="space-y-2">
+      <SidebarInstallButton />
+
+      {/* Clerk User Account & Settings Card */}
+      <div className="rounded-xl border border-sidebar-border/70 bg-sidebar-accent/40 p-2.5 backdrop-blur-xs transition-colors hover:bg-sidebar-accent/70">
+        <div className="flex items-center gap-2.5">
+          <div className="flex size-8 shrink-0 items-center justify-center">
+            <UserButton
+              afterSignOutUrl="/"
+              userProfileMode="modal"
+              appearance={{
+                elements: {
+                  avatarBox: "size-8",
+                  userButtonAvatarBox: "size-8",
+                  userButtonPopoverCard:
+                    "shadow-2xl border border-slate-200 dark:border-slate-800",
+                },
+              }}
+            />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xs font-bold tracking-tight text-sidebar-foreground">
+              {displayName}
+            </p>
+            {email && (
+              <p className="truncate text-[10px] text-sidebar-foreground/50">
+                {email}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-2 flex items-center gap-1 border-t border-sidebar-border/50 pt-2">
+          <button
+            type="button"
+            onClick={handleOpenProfile}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-emerald-500/10 px-2.5 py-1.5 text-left text-[11px] font-bold text-emerald-700 transition-all hover:bg-emerald-500/20 active:scale-[0.98] dark:text-emerald-400"
+          >
+            <Settings className="size-3.5" />
+            <span>Clerk Settings</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSignOut}
+            title="Sign Out"
+            className="flex size-7.5 items-center justify-center rounded-lg border border-sidebar-border/40 text-sidebar-foreground/60 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+          >
+            <LogOut className="size-3.5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function SidebarInstallButton() {
   const { isInstallable, isInstalled, promptInstall } = usePWAInstall();
@@ -231,7 +320,7 @@ function SidebarInstallButton() {
     <button
       type="button"
       onClick={handleInstall}
-      className="mb-2 flex w-full items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-left text-xs font-bold text-emerald-700 transition-all hover:bg-emerald-500/20 active:scale-[0.98] dark:text-emerald-300"
+      className="flex w-full items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-left text-xs font-bold text-emerald-700 transition-all hover:bg-emerald-500/20 active:scale-[0.98] dark:text-emerald-300"
     >
       <div className="flex items-center gap-2">
         <Download className="size-3.5 text-emerald-600 dark:text-emerald-400" />

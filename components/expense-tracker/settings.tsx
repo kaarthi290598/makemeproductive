@@ -8,7 +8,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, UserPlus, Pencil, Users } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  UserPlus,
+  Pencil,
+  Users,
+  ShieldCheck,
+  Settings as SettingsIcon,
+} from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -22,8 +30,11 @@ import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { cn, formatDateToLocalISO } from "@/lib/utils";
 import { useReportTabReadyAfterFirstLoad } from "./tab-ready";
+import { useUser, useClerk, UserButton } from "@clerk/nextjs";
 
 export function Settings() {
+  const { user } = useUser();
+  const { openUserProfile } = useClerk();
   const categories = useExpenseStore((s) => s.categories);
   const persons = useExpenseStore((s) => s.persons);
   const addCategory = useExpenseStore((s) => s.addCategory);
@@ -113,6 +124,12 @@ export function Settings() {
           className="h-auto flex-1 gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold text-slate-600 shadow-none sm:flex-none dark:text-slate-400 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-900 dark:data-[state=active]:text-white"
         >
           People
+        </TabsTrigger>
+        <TabsTrigger
+          value="account"
+          className="h-auto flex-1 gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold text-slate-600 shadow-none sm:flex-none dark:text-slate-400 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-900 dark:data-[state=active]:text-white"
+        >
+          Account & Security
         </TabsTrigger>
       </TabsList>
 
@@ -383,6 +400,76 @@ export function Settings() {
               </div>
             )}
           </div>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="account" className="space-y-4">
+        <div className="grid gap-5 md:grid-cols-2">
+          <Card className="rounded-xl border-slate-200 shadow-sm dark:border-slate-800">
+            <CardHeader className="px-5 pb-3 pt-5">
+              <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                <ShieldCheck className="size-5 text-emerald-600 dark:text-emerald-400" />
+                <span>Clerk Account & Profile</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 px-5 pb-5">
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Manage your user profile, linked email addresses, password security, and active sessions.
+              </p>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-slate-200/80 bg-slate-50/80 p-3.5 dark:border-slate-800/80 dark:bg-slate-900/60">
+                <div className="flex items-center gap-3">
+                  <UserButton
+                    afterSignOutUrl="/"
+                    userProfileMode="modal"
+                    appearance={{
+                      elements: {
+                        avatarBox: "size-10",
+                      },
+                    }}
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold text-slate-900 dark:text-white">
+                      {user?.fullName || user?.username || "Authenticated User"}
+                    </p>
+                    <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                      {user?.primaryEmailAddress?.emailAddress || "Clerk Secure Session"}
+                    </p>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={() => openUserProfile()}
+                  className="h-9 gap-1.5 rounded-xl bg-emerald-600 px-3.5 text-xs font-bold text-white shadow-sm shadow-emerald-600/20 hover:bg-emerald-500"
+                >
+                  <SettingsIcon className="size-3.5" />
+                  <span>Open Clerk Settings</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-xl border-slate-200 shadow-sm dark:border-slate-800">
+            <CardHeader className="px-5 pb-3 pt-5">
+              <CardTitle className="text-base font-semibold">Security & Session Status</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 px-5 pb-5 text-xs">
+              <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-slate-400">Authentication Provider</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200">Clerk Auth (256-bit)</span>
+              </div>
+              <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-slate-400">Database Access</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">Row Level Security (RLS)</span>
+              </div>
+              <div className="flex items-center justify-between py-1">
+                <span className="text-slate-500 dark:text-slate-400">Clerk User ID</span>
+                <span className="font-mono text-[11px] text-slate-600 dark:text-slate-300">
+                  {user?.id ? `${user.id.slice(0, 14)}...` : "Loading..."}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </TabsContent>
     </Tabs>

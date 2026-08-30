@@ -36,27 +36,38 @@ export default function HomeNavBar() {
   const Icon = context.icon;
 
   return (
-    <div className="sticky top-0 z-30 flex h-12 w-full min-w-0 flex-row items-center justify-between border-b border-slate-200/90 bg-white/90 px-3 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/90 sm:h-14 sm:px-6">
+    <div className="sticky top-0 z-30 flex h-[calc(3rem+env(safe-area-inset-top,0px))] w-full min-w-0 flex-row items-center justify-between border-b border-slate-200/90 bg-white/90 px-3 pt-[env(safe-area-inset-top,0px)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/90 sm:h-14 sm:px-6 sm:pt-0">
       {/* Left: Sidebar Trigger + Page Title Badge */}
-      <div className="flex items-center gap-2">
-        <SidebarTrigger className="size-8 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800" />
+      <div className="flex min-w-0 flex-1 items-center gap-2 mr-2">
+        <SidebarTrigger className="size-8 shrink-0 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800" />
 
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
           <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600/10 text-emerald-700 dark:text-emerald-400 sm:hidden">
             <Icon className="size-3.5" />
           </div>
-          <span className="text-sm font-bold tracking-tight text-slate-900 dark:text-white sm:text-base">
+          <span className="truncate text-sm font-bold tracking-tight text-slate-900 dark:text-white sm:text-base">
             {context.title}
           </span>
         </div>
       </div>
 
       {/* Right: Install Button + Mode Toggle + User Profile */}
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
         <NavBarInstallButton />
         <ModeToggle />
-        <div className="flex size-8 items-center justify-center">
-          <UserButton afterSignOutUrl="/" />
+        <div className="flex size-8 shrink-0 items-center justify-center">
+          <UserButton
+            afterSignOutUrl="/"
+            userProfileMode="modal"
+            appearance={{
+              elements: {
+                avatarBox: "size-8",
+                userButtonAvatarBox: "size-8",
+                userButtonPopoverCard:
+                  "shadow-2xl border border-slate-200 dark:border-slate-800",
+              },
+            }}
+          />
         </div>
       </div>
     </div>
@@ -96,7 +107,7 @@ function NavBarInstallButton() {
       className="h-7 gap-1 rounded-lg bg-emerald-600 px-2 text-[11px] font-bold text-white shadow-xs transition-all hover:bg-emerald-500 active:scale-95 sm:h-8 sm:gap-1.5 sm:px-2.5 sm:text-xs"
     >
       <Download className="size-3.5" />
-      <span>Install</span>
+      <span className="hidden sm:inline">Install</span>
     </Button>
   );
 }
