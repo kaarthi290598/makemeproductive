@@ -215,26 +215,30 @@ export function AddEditSubscriptionDialog({
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Billing Cycle
+                <Label
+                  htmlFor="sub-frequency"
+                  className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300"
+                >
+                  <CalendarSync className="size-3 text-slate-400" />
+                  Billing Cycle <span className="text-rose-500">*</span>
                 </Label>
-                <div className="grid grid-cols-4 gap-1">
+                <select
+                  id="sub-frequency"
+                  value={frequency}
+                  onChange={(e) =>
+                    setFrequency(e.target.value as BillingFrequency)
+                  }
+                  className={cn(
+                    inputClass,
+                    "w-full px-2.5 font-medium text-xs bg-white dark:bg-slate-900",
+                  )}
+                >
                   {BILLING_FREQUENCIES.map((f) => (
-                    <button
-                      key={f.value}
-                      type="button"
-                      onClick={() => setFrequency(f.value)}
-                      className={cn(
-                        "rounded-xl border py-1.5 text-center text-[11px] font-bold transition-all",
-                        frequency === f.value
-                          ? "border-indigo-500 bg-indigo-50 text-indigo-900 shadow-2xs ring-1 ring-indigo-500 dark:border-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-200"
-                          : "border-slate-200 bg-slate-50/70 text-slate-600 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400",
-                      )}
-                    >
+                    <option key={f.value} value={f.value}>
                       {f.label}
-                    </button>
+                    </option>
                   ))}
-                </div>
+                </select>
               </div>
             </div>
 

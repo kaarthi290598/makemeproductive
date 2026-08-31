@@ -4,6 +4,7 @@ import React from "react";
 import {
   SubscriptionItem,
   calculateMonthlyEquivalent,
+  getBillingFrequencyShortLabel,
 } from "@/types/subscription";
 import { useSubscriptionsStore } from "@/hooks/use-subscriptions-store";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -55,6 +56,8 @@ export function SubscriptionTableView({
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
             {items.map((item) => {
               const isSelected = selectedIds.includes(item.id);
+              const isCancelled = item.status === "cancelled";
+              const isPaused = item.status === "paused";
               const monthlyCost = calculateMonthlyEquivalent(
                 item.amount,
                 item.billing_frequency,
@@ -71,7 +74,7 @@ export function SubscriptionTableView({
                   className={cn(
                     "group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40",
                     isSelected && "bg-indigo-50/30 dark:bg-indigo-950/20",
-                    item.status === "cancelled" && "opacity-60",
+                    isCancelled && "bg-rose-50/10 dark:bg-rose-950/10",
                   )}
                 >
                   {/* Select Checkbox */}
@@ -89,10 +92,24 @@ export function SubscriptionTableView({
                   {/* Name */}
                   <td className="px-3 py-3 font-semibold text-slate-900 dark:text-white">
                     <div className="flex items-center gap-2">
-                      <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-xs font-black text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                      <div
+                        className={cn(
+                          "flex size-7 shrink-0 items-center justify-center rounded-lg text-xs font-black",
+                          isCancelled
+                            ? "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300"
+                            : isPaused
+                              ? "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                              : "bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300",
+                        )}
+                      >
                         {item.name.charAt(0).toUpperCase()}
                       </div>
-                      <span className="truncate font-bold max-w-[140px] sm:max-w-[180px]">
+                      <span
+                        className={cn(
+                          "truncate font-bold max-w-[140px] sm:max-w-[180px]",
+                          isCancelled && "line-through text-slate-400 dark:text-slate-500 decoration-rose-400",
+                        )}
+                      >
                         {item.name}
                       </span>
                     </div>
@@ -122,28 +139,51 @@ export function SubscriptionTableView({
                   </td>
 
                   {/* Billed Cost */}
-                  <td className="px-3 py-3 font-mono font-bold text-slate-900 dark:text-white">
+                  <td
+                    className={cn(
+                      "px-3 py-3 font-mono font-bold",
+                      isCancelled
+                        ? "text-slate-400 line-through dark:text-slate-500"
+                        : "text-slate-900 dark:text-white",
+                    )}
+                  >
                     ₹{item.amount.toLocaleString("en-IN")}
-                    <span className="text-[10px] font-normal text-slate-500">
-                      /{item.billing_frequency}
+                    <span className="text-[10px] font-normal text-slate-500 no-underline inline-block ml-0.5">
+                      {getBillingFrequencyShortLabel(item.billing_frequency)}
                     </span>
                   </td>
 
                   {/* Monthly Equivalent */}
-                  <td className="px-3 py-3 font-mono font-semibold text-indigo-600 dark:text-indigo-400">
-                    ₹{monthlyCost.toLocaleString("en-IN", { maximumFractionDigits: 1 })}
-                    <span className="text-[10px] font-normal text-slate-400">
-                      /mo
-                    </span>
+                  <td className="px-3 py-3 font-mono font-semibold">
+                    {isCancelled ? (
+                      <span className="text-xs text-rose-600 dark:text-rose-400">
+                        Inactive
+                      </span>
+                    ) : (
+                      <span className="text-indigo-600 dark:text-indigo-400">
+                        ₹{monthlyCost.toLocaleString("en-IN", { maximumFractionDigits: 1 })}
+                        <span className="text-[10px] font-normal text-slate-400">
+                          /mo
+                        </span>
+                      </span>
+                    )}
                   </td>
 
                   {/* Next Renewal */}
                   <td className="px-3 py-3">
-                    <div className="flex items-center gap-1.5 font-mono text-xs">
-                      <span>
-                        {format(parseISO(item.next_payment_date), "MMM d, yyyy")}
+                    {isCancelled ? (
+                      <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">
+                        Cancelled
                       </span>
-                      {item.status === "active" && (
+                    ) : isPaused ? (
+                      <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                        Paused
+                      </span>
+                    ) : (
+                      <div className="flex items-center gap-1.5 font-mono text-xs">
+                        <span>
+                          {format(parseISO(item.next_payment_date), "MMM d, yyyy")}
+                        </span>
                         <span
                           className={cn(
                             "rounded px-1.5 py-0.2 text-[10px] font-bold",
@@ -160,8 +200,8 @@ export function SubscriptionTableView({
                               ? "Today"
                               : `${daysLeft}d`}
                         </span>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </td>
 
                   {/* Payment Method */}

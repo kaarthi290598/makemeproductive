@@ -28,7 +28,7 @@ const faqs = [
   {
     question: "How does Subscription normalized spend work?",
     answer:
-      "Subscriptions with weekly, monthly, quarterly, or yearly frequencies are automatically converted into equivalent monthly and yearly burn rates so you can budget accurately.",
+      "Subscriptions with weekly, monthly, quarterly, half-yearly (6 months), or yearly frequencies are automatically converted into equivalent monthly and yearly burn rates so you can budget accurately.",
   },
 ];
 

@@ -4,6 +4,7 @@ import React from "react";
 import {
   SubscriptionItem,
   calculateMonthlyEquivalent,
+  getBillingFrequencyShortLabel,
 } from "@/types/subscription";
 import { useSubscriptionsStore } from "@/hooks/use-subscriptions-store";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -50,6 +51,9 @@ export function SubscriptionCard({
     useSubscriptionsStore();
   const isSelected = selectedIds.includes(item.id);
 
+  const isCancelled = item.status === "cancelled";
+  const isPaused = item.status === "paused";
+
   const monthlyCost = calculateMonthlyEquivalent(
     item.amount,
     item.billing_frequency,
@@ -66,11 +70,14 @@ export function SubscriptionCard({
     <div
       onClick={() => onView(item)}
       className={cn(
-        "group relative flex cursor-pointer flex-col justify-between rounded-2xl border bg-white p-4 shadow-2xs transition-all duration-200 hover:border-slate-300 hover:shadow-md dark:bg-slate-900/90 dark:hover:border-slate-700",
+        "group relative flex cursor-pointer flex-col justify-between rounded-2xl border p-4 shadow-2xs transition-all duration-200 hover:shadow-md",
         isSelected
           ? "border-indigo-500 bg-indigo-50/20 ring-2 ring-indigo-500/20 dark:border-indigo-500 dark:bg-indigo-950/20"
-          : "border-slate-200/80 dark:border-slate-800",
-        item.status === "cancelled" && "opacity-60",
+          : isCancelled
+            ? "border-rose-200/70 bg-rose-50/20 hover:border-rose-300 dark:border-rose-900/40 dark:bg-rose-950/20 dark:hover:border-rose-800"
+            : isPaused
+              ? "border-amber-200/70 bg-amber-50/20 hover:border-amber-300 dark:border-amber-900/40 dark:bg-amber-950/20 dark:hover:border-amber-800"
+              : "border-slate-200/80 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900/90 dark:hover:border-slate-700",
       )}
     >
       <div>
@@ -87,32 +94,52 @@ export function SubscriptionCard({
                 className="size-4.5 rounded-md border-slate-300 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
               />
             </div>
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/15 to-indigo-600/10 text-sm font-black text-indigo-700 shadow-2xs dark:from-indigo-500/25 dark:to-indigo-600/20 dark:text-indigo-300">
+            <div
+              className={cn(
+                "flex size-9 shrink-0 items-center justify-center rounded-xl text-sm font-black shadow-2xs",
+                isCancelled
+                  ? "bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300"
+                  : isPaused
+                    ? "bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300"
+                    : "bg-gradient-to-br from-indigo-500/15 to-indigo-600/10 text-indigo-700 dark:from-indigo-500/25 dark:to-indigo-600/20 dark:text-indigo-300",
+              )}
+            >
               {item.name.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <h3 className="truncate text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors dark:text-white dark:group-hover:text-indigo-400">
+              <h3
+                className={cn(
+                  "truncate text-sm font-bold transition-colors",
+                  isCancelled
+                    ? "text-slate-500 line-through decoration-rose-400 dark:text-slate-400 dark:decoration-rose-500"
+                    : "text-slate-900 group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400",
+                )}
+              >
                 {item.name}
               </h3>
-              <div className="flex items-center gap-1.5 mt-0.5">
+              <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
                 <span
                   className={cn(
                     "rounded-md border px-1.5 py-0.2 text-[9px] font-bold uppercase",
-                    catStyle,
+                    isCancelled
+                      ? "border-slate-200 bg-slate-100 text-slate-500 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-400"
+                      : catStyle,
                   )}
                 >
                   {item.category || "General"}
                 </span>
-                {item.status !== "active" && (
-                  <span
-                    className={cn(
-                      "rounded-md px-1.5 py-0.2 text-[9px] font-bold uppercase",
-                      item.status === "paused"
-                        ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
-                        : "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300",
-                    )}
-                  >
-                    {item.status}
+
+                {isCancelled && (
+                  <span className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-rose-100/80 px-1.5 py-0.2 text-[9px] font-extrabold uppercase tracking-wider text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/80 dark:text-rose-300">
+                    <XCircle className="size-2.5" />
+                    Cancelled
+                  </span>
+                )}
+
+                {isPaused && (
+                  <span className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-100/80 px-1.5 py-0.2 text-[9px] font-extrabold uppercase tracking-wider text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/80 dark:text-amber-300">
+                    <PauseCircle className="size-2.5" />
+                    Paused
                   </span>
                 )}
               </div>
@@ -158,27 +185,49 @@ export function SubscriptionCard({
         </div>
 
         {/* Pricing Card Section */}
-        <div className="mt-3 flex items-baseline justify-between rounded-xl bg-slate-50/70 p-2.5 dark:bg-slate-950/50">
+        <div
+          className={cn(
+            "mt-3 flex items-baseline justify-between rounded-xl p-2.5",
+            isCancelled
+              ? "border border-rose-200/50 bg-rose-50/50 dark:border-rose-950/50 dark:bg-rose-950/30"
+              : isPaused
+                ? "border border-amber-200/50 bg-amber-50/50 dark:border-amber-950/50 dark:bg-amber-950/30"
+                : "bg-slate-50/70 dark:bg-slate-950/50",
+          )}
+        >
           <div>
             <span className="block text-[10px] font-bold uppercase text-slate-400">
-              Billed Amount
+              {isCancelled ? "Previous Bill" : "Billed Amount"}
             </span>
-            <span className="font-mono text-base font-black text-slate-900 dark:text-white">
+            <span
+              className={cn(
+                "font-mono text-base font-black",
+                isCancelled
+                  ? "text-slate-400 line-through dark:text-slate-500"
+                  : "text-slate-900 dark:text-white",
+              )}
+            >
               ₹{item.amount.toLocaleString("en-IN")}
-              <span className="text-xs font-medium text-slate-400">
-                /{item.billing_frequency === "monthly" ? "mo" : item.billing_frequency === "yearly" ? "yr" : item.billing_frequency === "quarterly" ? "qtr" : "wk"}
+              <span className="text-xs font-medium text-slate-400 inline-block no-underline">
+                {getBillingFrequencyShortLabel(item.billing_frequency)}
               </span>
             </span>
           </div>
 
           <div className="text-right">
             <span className="block text-[10px] font-bold uppercase text-slate-400">
-              Monthly Equiv.
+              {isCancelled ? "Status" : "Monthly Equiv."}
             </span>
-            <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
-              ₹{monthlyCost.toLocaleString("en-IN", { maximumFractionDigits: 1 })}
-              <span className="text-[10px] font-normal text-slate-400">/mo</span>
-            </span>
+            {isCancelled ? (
+              <span className="font-mono text-xs font-bold text-rose-600 dark:text-rose-400">
+                Inactive
+              </span>
+            ) : (
+              <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                ₹{monthlyCost.toLocaleString("en-IN", { maximumFractionDigits: 1 })}
+                <span className="text-[10px] font-normal text-slate-400">/mo</span>
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -186,29 +235,41 @@ export function SubscriptionCard({
       {/* Footer: Renewal Countdown + Payment Method */}
       <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs dark:border-slate-800/60">
         <div className="flex items-center gap-1.5 text-[11px] font-semibold">
-          <Calendar className="size-3 text-slate-400" />
-          <span className="text-slate-500">
-            {format(parseISO(item.next_payment_date), "MMM d")}
-          </span>
-          {item.status === "active" && (
-            <span
-              className={cn(
-                "rounded-md px-1.5 py-0.2 font-mono text-[10px] font-bold",
-                daysLeft < 0
-                  ? "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300"
+          {isCancelled ? (
+            <div className="flex items-center gap-1 text-rose-600 dark:text-rose-400 font-bold text-[10px]">
+              <XCircle className="size-3 text-rose-500" />
+              <span>Subscription Cancelled</span>
+            </div>
+          ) : isPaused ? (
+            <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-bold text-[10px]">
+              <PauseCircle className="size-3 text-amber-500" />
+              <span>Payments Paused</span>
+            </div>
+          ) : (
+            <>
+              <Calendar className="size-3 text-slate-400" />
+              <span className="text-slate-500">
+                {format(parseISO(item.next_payment_date), "MMM d")}
+              </span>
+              <span
+                className={cn(
+                  "rounded-md px-1.5 py-0.2 font-mono text-[10px] font-bold",
+                  daysLeft < 0
+                    ? "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300"
+                    : daysLeft === 0
+                      ? "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                      : daysLeft <= 7
+                        ? "bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300"
+                        : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
+                )}
+              >
+                {daysLeft < 0
+                  ? "Overdue"
                   : daysLeft === 0
-                    ? "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
-                    : daysLeft <= 7
-                      ? "bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300"
-                      : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
-              )}
-            >
-              {daysLeft < 0
-                ? "Overdue"
-                : daysLeft === 0
-                  ? "Today"
-                  : `${daysLeft}d left`}
-            </span>
+                    ? "Today"
+                    : `${daysLeft}d left`}
+              </span>
+            </>
           )}
         </div>
 

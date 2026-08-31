@@ -14,6 +14,8 @@ import {
   SubscriptionItem,
   calculateMonthlyEquivalent,
   calculateYearlyEquivalent,
+  formatBillingFrequency,
+  getBillingFrequencyShortLabel,
 } from "@/types/subscription";
 import { useSubscriptionsStore } from "@/hooks/use-subscriptions-store";
 import { cn } from "@/lib/utils";
@@ -136,12 +138,12 @@ export function ViewSubscriptionDialog({
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  Billed Amount ({subscription.billing_frequency})
+                  Billed Amount ({formatBillingFrequency(subscription.billing_frequency)})
                 </span>
                 <p className="font-mono text-2xl font-black text-slate-900 dark:text-white">
                   ₹{subscription.amount.toLocaleString("en-IN")}
                   <span className="text-xs font-semibold text-slate-400">
-                    /{subscription.billing_frequency}
+                    {getBillingFrequencyShortLabel(subscription.billing_frequency)}
                   </span>
                 </p>
               </div>
