@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { usePasswordsStore } from "@/hooks/use-passwords-store";
 import {
   PasswordItem,
+  BankCard,
   PASSWORD_CATEGORIES,
   ACCOUNT_TYPES,
 } from "@/types/password";
@@ -35,6 +36,9 @@ import {
   Hash,
   Phone,
   ShieldAlert,
+  Plus,
+  Trash2,
+  ChevronDown,
 } from "lucide-react";
 
 interface AddEditPasswordDialogProps {
@@ -70,14 +74,15 @@ export function AddEditPasswordDialog({
   const [customerId, setCustomerId] = useState("");
   const [accountHolderName, setAccountHolderName] = useState("");
   const [branchName, setBranchName] = useState("");
-  const [atmPin, setAtmPin] = useState("");
   const [mpin, setMpin] = useState("");
   const [transactionPassword, setTransactionPassword] = useState("");
   const [registeredPhone, setRegisteredPhone] = useState("");
+  const [upiPin, setUpiPin] = useState("");
+  const [cards, setCards] = useState<BankCard[]>([]);
+  const [expiryPickerCard, setExpiryPickerCard] = useState<string | null>(null);
 
   // Visibility toggles
   const [showPassword, setShowPassword] = useState(false);
-  const [showAtmPin, setShowAtmPin] = useState(false);
   const [showMpin, setShowMpin] = useState(false);
   const [showTxPassword, setShowTxPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -100,13 +105,14 @@ export function AddEditPasswordDialog({
       setCustomerId(passwordToEdit.customer_id || "");
       setAccountHolderName(passwordToEdit.account_holder_name || "");
       setBranchName(passwordToEdit.branch_name || "");
-      setAtmPin(passwordToEdit.atm_pin || "");
       setMpin(passwordToEdit.mpin || "");
       setTransactionPassword(passwordToEdit.transaction_password || "");
       setRegisteredPhone(passwordToEdit.registered_phone || "");
+      setUpiPin(passwordToEdit.upi_pin || "");
+      setCards(passwordToEdit.cards || []);
+      setExpiryPickerCard(null);
 
       setShowPassword(false);
-      setShowAtmPin(false);
       setShowMpin(false);
       setShowTxPassword(false);
     } else {
@@ -123,13 +129,14 @@ export function AddEditPasswordDialog({
       setCustomerId("");
       setAccountHolderName("");
       setBranchName("");
-      setAtmPin("");
       setMpin("");
       setTransactionPassword("");
       setRegisteredPhone("");
+      setUpiPin("");
+      setCards([]);
+      setExpiryPickerCard(null);
 
       setShowPassword(false);
-      setShowAtmPin(false);
       setShowMpin(false);
       setShowTxPassword(false);
     }
@@ -174,10 +181,11 @@ export function AddEditPasswordDialog({
         customer_id: isBank ? customerId.trim() || null : null,
         account_holder_name: isBank ? accountHolderName.trim() || null : null,
         branch_name: isBank ? branchName.trim() || null : null,
-        atm_pin: isBank ? atmPin.trim() || null : null,
         mpin: isBank ? mpin.trim() || null : null,
         transaction_password: isBank ? transactionPassword.trim() || null : null,
         registered_phone: isBank ? registeredPhone.trim() || null : null,
+        upi_pin: isBank ? upiPin.trim() || null : null,
+        cards: isBank ? cards : [],
       };
 
       if (passwordToEdit) {
@@ -321,7 +329,7 @@ export function AddEditPasswordDialog({
               <div className="space-y-2.5 rounded-2xl border border-blue-200/70 bg-blue-50/30 p-3 dark:border-blue-900/40 dark:bg-blue-950/20">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-blue-900 dark:text-blue-200">
                   <Building2 className="size-3.5 text-blue-600 dark:text-blue-400" />
-                  <span>Account & Branch Details</span>
+                  <span>Bank Details</span>
                 </div>
 
                 {/* Account Number & IFSC Code */}
@@ -456,43 +464,8 @@ export function AddEditPasswordDialog({
                   />
                 </div>
 
-                {/* Security PINs: ATM PIN & MPIN */}
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  {/* ATM PIN */}
-                  <div className="space-y-1">
-                    <Label
-                      htmlFor="pwd-atmpin"
-                      className="flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-300"
-                    >
-                      <CreditCard className="size-3 text-slate-400" />
-                      ATM / Card PIN
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="pwd-atmpin"
-                        type={showAtmPin ? "text" : "password"}
-                        placeholder="e.g. 4-digit PIN"
-                        value={atmPin}
-                        onChange={(e) => setAtmPin(e.target.value)}
-                        className={cn(inputClass, "pr-8 font-mono")}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowAtmPin(!showAtmPin)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                        tabIndex={-1}
-                      >
-                        {showAtmPin ? (
-                          <EyeOff className="size-3.5" />
-                        ) : (
-                          <Eye className="size-3.5" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* App MPIN */}
-                  <div className="space-y-1">
+                {/* App MPIN */}
+                <div className="space-y-1">
                     <Label
                       htmlFor="pwd-mpin"
                       className="flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-300"
@@ -522,7 +495,6 @@ export function AddEditPasswordDialog({
                         )}
                       </button>
                     </div>
-                  </div>
                 </div>
 
                 {/* Transaction Password */}
@@ -557,7 +529,122 @@ export function AddEditPasswordDialog({
                     </button>
                   </div>
                 </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="pwd-upipin" className="text-[11px] font-bold text-slate-700 dark:text-slate-300">UPI PIN</Label>
+                  <Input
+                    id="pwd-upipin"
+                    type="password"
+                    inputMode="numeric"
+                    placeholder="UPI PIN"
+                    value={upiPin}
+                    onChange={(e) => setUpiPin(e.target.value)}
+                    className={cn(inputClass, "font-mono")}
+                  />
+                </div>
               </div>
+            )}
+
+            {isBank && (
+              <section className="space-y-2.5 rounded-2xl border border-violet-200/70 bg-violet-50/30 p-3 dark:border-violet-900/40 dark:bg-violet-950/20" aria-labelledby="cards-section-title">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-violet-900 dark:text-violet-200">
+                    <CreditCard className="size-3.5 text-violet-600 dark:text-violet-400" />
+                    <span id="cards-section-title">Cards</span>
+                    <span className="rounded-md bg-violet-100 px-1.5 py-0.5 text-[10px] text-violet-700 dark:bg-violet-900/60 dark:text-violet-300">{cards.length}</span>
+                  </div>
+                  <Button type="button" variant="outline" size="sm" className="h-7 gap-1 rounded-lg px-2 text-[11px]" onClick={() => setCards((current) => [...current, { id: crypto.randomUUID(), card_type: "Debit Card", cardholder_name: "", card_number: "", cvv: "", expiry_date: "" }])}>
+                    <Plus className="size-3" /> Add card
+                  </Button>
+                </div>
+                {cards.length === 0 ? (
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Add debit or credit cards linked to this bank.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {cards.map((card, index) => (
+                      <div key={card.id} className="space-y-2 rounded-xl border border-violet-200/70 bg-white/80 p-2.5 dark:border-violet-900/50 dark:bg-slate-900/70">
+                        <div className="flex items-center justify-between gap-2">
+                          <Label className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Card {index + 1}</Label>
+                          <button type="button" aria-label={`Remove card ${index + 1}`} onClick={() => setCards((current) => current.filter((item) => item.id !== card.id))} className="rounded p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40"><Trash2 className="size-3.5" /></button>
+                        </div>
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                          <select aria-label={`Card ${index + 1} type`} value={card.card_type} onChange={(e) => setCards((current) => current.map((item) => item.id === card.id ? { ...item, card_type: e.target.value as BankCard["card_type"] } : item))} className={cn(inputClass, "w-full px-2.5 text-xs font-semibold")}>
+                            <option>Debit Card</option><option>Credit Card</option>
+                          </select>
+                          <Input aria-label={`Card ${index + 1} cardholder name`} placeholder="Cardholder name" value={card.cardholder_name} onChange={(e) => setCards((current) => current.map((item) => item.id === card.id ? { ...item, cardholder_name: e.target.value } : item))} className={inputClass} />
+                          <Input aria-label={`Card ${index + 1} number`} placeholder="Card number" inputMode="numeric" autoComplete="off" value={card.card_number} onChange={(e) => setCards((current) => current.map((item) => item.id === card.id ? { ...item, card_number: e.target.value } : item))} className={cn(inputClass, "font-mono")} />
+                          <div className="grid grid-cols-2 gap-2">
+                            <Input aria-label={`Card ${index + 1} CVV`} placeholder="CVV" type="password" inputMode="numeric" autoComplete="off" value={card.cvv} onChange={(e) => setCards((current) => current.map((item) => item.id === card.id ? { ...item, cvv: e.target.value } : item))} className={cn(inputClass, "font-mono")} />
+                            <div className="relative">
+                              <Input
+                                aria-label={`Card ${index + 1} expiry date`}
+                                placeholder="MM/YY"
+                                inputMode="numeric"
+                                autoComplete="cc-exp"
+                                maxLength={5}
+                                value={card.expiry_date}
+                                onChange={(e) => {
+                                  const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
+                                  const expiry = digits.length > 2
+                                    ? `${digits.slice(0, 2)}/${digits.slice(2)}`
+                                    : digits;
+                                  setCards((current) => current.map((item) => item.id === card.id ? { ...item, expiry_date: expiry } : item));
+                                }}
+                                className={cn(inputClass, "pr-8 font-mono")}
+                              />
+                              <button
+                                type="button"
+                                aria-label={`Choose card ${index + 1} expiry date`}
+                                aria-expanded={expiryPickerCard === card.id}
+                                onClick={() => setExpiryPickerCard((current) => current === card.id ? null : card.id)}
+                                className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                              >
+                                <ChevronDown className="size-3.5" />
+                              </button>
+                              {expiryPickerCard === card.id && (
+                                <div className="absolute right-0 top-full z-20 mt-1 grid w-48 grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+                                  <select
+                                    aria-label={`Choose card ${index + 1} expiry month`}
+                                    value={card.expiry_date.split("/")[0] || ""}
+                                    onChange={(e) => setCards((current) => current.map((item) => {
+                                      if (item.id !== card.id) return item;
+                                      const [, year = ""] = item.expiry_date.split("/");
+                                      return { ...item, expiry_date: `${e.target.value}/${year}` };
+                                    }))}
+                                    className={cn(inputClass, "w-full px-2 text-xs font-mono")}
+                                  >
+                                    <option value="">Month</option>
+                                    {Array.from({ length: 12 }, (_, month) => {
+                                      const value = String(month + 1).padStart(2, "0");
+                                      return <option key={value} value={value}>{value}</option>;
+                                    })}
+                                  </select>
+                                  <select
+                                    aria-label={`Choose card ${index + 1} expiry year`}
+                                    value={card.expiry_date.split("/")[1] || ""}
+                                    onChange={(e) => setCards((current) => current.map((item) => {
+                                      if (item.id !== card.id) return item;
+                                      const [month = ""] = item.expiry_date.split("/");
+                                      return { ...item, expiry_date: `${month}/${e.target.value}` };
+                                    }))}
+                                    className={cn(inputClass, "w-full px-2 text-xs font-mono")}
+                                  >
+                                    <option value="">Year</option>
+                                    {Array.from({ length: 31 }, (_, year) => {
+                                      const value = String(new Date().getFullYear() + year).slice(-2);
+                                      return <option key={value} value={value}>{value}</option>;
+                                    })}
+                                  </select>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
             )}
 
             {/* Netbanking User ID / Login ID */}

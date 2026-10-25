@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
@@ -41,6 +41,22 @@ export function ClientQueryProvider({
   children: React.ReactNode;
 }) {
   const [queryClient] = useState(makeQueryClient);
+
+  useEffect(() => {
+    // Remove the legacy browser-wide credit due snapshot now that the module
+    // fetches user-scoped data from the server on entry.
+    try {
+      window.localStorage.removeItem("credit-dues-store");
+    } catch {
+      // The store no longer reads this key; continue if browser storage is blocked.
+    }
+
+    const invalidateDashboard = () => {
+      void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    };
+    window.addEventListener("credit-dues:updated", invalidateDashboard);
+    return () => window.removeEventListener("credit-dues:updated", invalidateDashboard);
+  }, [queryClient]);
 
   return (
     <PersistQueryClientProvider

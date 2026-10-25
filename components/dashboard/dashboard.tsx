@@ -48,6 +48,7 @@ import {
 import { ConsoleHeader, surfaceCardClass } from "@/components/finance/page-header";
 import { fetchDashboardData, DashboardData } from "@/lib/actions/dashboardData";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@clerk/nextjs";
 import { dashboardQueryKey } from "@/lib/query-keys";
 
 // ─── Helpers ─────────────────────────────────────────────────────────
@@ -108,12 +109,14 @@ const itemVariants = {
 // ─── Component ───────────────────────────────────────────────────────
 
 export default function Dashboard() {
+  const { isLoaded, userId } = useAuth();
   const { data, isLoading, error } = useQuery({
-    queryKey: dashboardQueryKey,
+    queryKey: dashboardQueryKey(userId || "signed-out"),
     queryFn: fetchDashboardData,
+    enabled: isLoaded && !!userId,
   });
 
-  if (isLoading) return <DashboardSkeleton />;
+  if (!isLoaded || !userId || isLoading) return <DashboardSkeleton />;
   if (error)
     return (
       <div className="flex h-[400px] items-center justify-center text-destructive">

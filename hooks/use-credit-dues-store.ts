@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import { CreditDueInput, CreditDueItem, calculateRemainingDue, calculateUtilization } from "@/types/credit-due";
 import {
   fetchCreditDues,
@@ -13,6 +12,7 @@ import { toast } from "sonner";
 
 interface CreditDuesState {
   creditDues: CreditDueItem[];
+  activeUserId: string | null;
   loading: boolean;
   searchQuery: string;
   filterStatus: "all" | "unpaid" | "paid" | "high_utilization";
@@ -26,6 +26,7 @@ interface CreditDuesState {
   toggleSelectId: (id: string) => void;
   selectAll: () => void;
   clearSelection: () => void;
+  setActiveUserId: (userId: string | null) => void;
 
   // Actions
   loadCreditDues: () => Promise<void>;
@@ -39,10 +40,17 @@ interface CreditDuesState {
   removeMultipleCreditDues: (ids: string[]) => Promise<boolean>;
 }
 
-export const useCreditDuesStore = create<CreditDuesState>()(
-  persist(
-    (set, get) => ({
+function notifyCreditDuesChanged() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("credit-dues:updated"));
+  }
+}
+
+let latestLoadRequest = 0;
+
+export const useCreditDuesStore = create<CreditDuesState>()((set, get) => ({
       creditDues: [],
+      activeUserId: null,
       loading: false,
       searchQuery: "",
       filterStatus: "all",
@@ -84,16 +92,31 @@ export const useCreditDuesStore = create<CreditDuesState>()(
 
   clearSelection: () => set({ selectedIds: [] }),
 
+  setActiveUserId: (userId) => {
+    if (get().activeUserId === userId) return;
+    latestLoadRequest += 1;
+    set({ activeUserId: userId, creditDues: [], selectedIds: [], loading: false });
+  },
+
   loadCreditDues: async () => {
+    const userId = get().activeUserId;
+    if (!userId) return;
+    const requestId = ++latestLoadRequest;
     set({ loading: true });
     try {
-      const data = await fetchCreditDues();
-      set({ creditDues: data });
+      const data = await fetchCreditDues(userId);
+      if (get().activeUserId === userId && requestId === latestLoadRequest) {
+        set({ creditDues: data });
+      }
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to load credit accounts.");
+      if (get().activeUserId === userId && requestId === latestLoadRequest) {
+        console.error(err);
+        toast.error("Failed to load credit accounts.");
+      }
     } finally {
-      set({ loading: false });
+      if (get().activeUserId === userId && requestId === latestLoadRequest) {
+        set({ loading: false });
+      }
     }
   },
 
@@ -107,6 +130,7 @@ export const useCreditDuesStore = create<CreditDuesState>()(
             new Date(b.due_date || "9999-12-31").getTime(),
         ),
       }));
+      notifyCreditDuesChanged();
       toast.success(`Account "${created.name}" added successfully`);
       return created;
     } catch (err: unknown) {
@@ -128,6 +152,7 @@ export const useCreditDuesStore = create<CreditDuesState>()(
               new Date(b.due_date || "9999-12-31").getTime(),
           ),
       }));
+      notifyCreditDuesChanged();
       toast.success(`Updated "${updated.name}"`);
       return updated;
     } catch (err: unknown) {
@@ -145,6 +170,7 @@ export const useCreditDuesStore = create<CreditDuesState>()(
           item.id === id ? updated : item,
         ),
       }));
+      notifyCreditDuesChanged();
       toast.success(`Payment recorded for "${updated.name}"`);
       return updated;
     } catch (err: unknown) {
@@ -165,6 +191,7 @@ export const useCreditDuesStore = create<CreditDuesState>()(
 
     try {
       await deleteCreditDue(id);
+      notifyCreditDuesChanged();
       toast.success(`Deleted "${target?.name || "Account"}"`);
       return true;
     } catch (err: unknown) {
@@ -186,6 +213,7 @@ export const useCreditDuesStore = create<CreditDuesState>()(
 
     try {
       await deleteMultipleCreditDues(ids);
+      notifyCreditDuesChanged();
       toast.success(`Deleted ${ids.length} credit accounts`);
       return true;
     } catch (err: unknown) {
@@ -195,11 +223,4 @@ export const useCreditDuesStore = create<CreditDuesState>()(
       return false;
       }
     },
-  }),
-  {
-    name: "credit-dues-store",
-    partialize: (state) => ({
-      creditDues: state.creditDues,
-    }),
-  },
-));
+  }));

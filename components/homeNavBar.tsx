@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import { usePWAInstall } from "@/hooks/use-pwa-install";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
+import Link from "next/link";
 import {
   LayoutDashboard,
   Wallet,
@@ -17,6 +18,7 @@ import {
   KeyRound,
   Sparkles,
   Download,
+  Settings,
 } from "lucide-react";
 
 export default function HomeNavBar() {
@@ -24,6 +26,7 @@ export default function HomeNavBar() {
 
   const getPageContext = () => {
     if (pathname === "/app") return { title: "Dashboard", icon: LayoutDashboard };
+    if (pathname.startsWith("/app/settings")) return { title: "Settings", icon: Settings };
     if (pathname.startsWith("/app/expense-tracker")) return { title: "Expense Tracker", icon: Wallet };
     if (pathname.startsWith("/app/portfolio")) return { title: "Portfolio & Debts", icon: Landmark };
     if (pathname.startsWith("/app/credit-dues")) return { title: "Credit & Dues", icon: CreditCard };
@@ -51,10 +54,17 @@ export default function HomeNavBar() {
         </div>
       </div>
 
-      {/* Right: Install Button + Mode Toggle + User Profile */}
+      {/* Right: Install Button + Mode Toggle + Settings + User Profile */}
       <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
         <NavBarInstallButton />
         <ModeToggle />
+        <Link
+          href="/app/settings"
+          title="Settings"
+          className="flex size-8 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-700 transition-colors hover:bg-slate-100 hover:text-emerald-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-emerald-400"
+        >
+          <Settings className="size-4" />
+        </Link>
         <div className="flex size-8 shrink-0 items-center justify-center">
           <UserButton
             afterSignOutUrl="/"

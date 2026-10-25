@@ -38,7 +38,7 @@ import { cn } from "@/lib/utils";
 const items = [
   {
     title: "Dashboard",
-    url: "/app",
+    url: "/app?view=dashboard",
     icon: LayoutDashboard,
     description: "Overview",
   },
@@ -72,6 +72,12 @@ const items = [
     icon: KeyRound,
     description: "Vault & credentials",
   },
+  {
+    title: "Settings",
+    url: "/app/settings",
+    icon: Settings,
+    description: "Preferences & profile",
+  },
 ];
 
 const SidebarApp = () => {
@@ -80,7 +86,10 @@ const SidebarApp = () => {
   const isCollapsed = state === "collapsed";
 
   const isActive = (url: string) => {
-    if (url === "/app") return pathname === "/app";
+    if (url.startsWith("/app?view=dashboard") || url === "/app")
+      return pathname === "/app";
+    if (url === "/app/settings")
+      return pathname.startsWith("/app/settings");
     if (url === "/app/credit-dues")
       return pathname.startsWith("/app/credit-dues");
     if (url === "/app/subscriptions")
@@ -189,7 +198,14 @@ const SidebarApp = () => {
       {/* Footer */}
       <SidebarFooter className="border-t border-sidebar-border/50 p-2.5 pb-[max(0.75rem,calc(env(safe-area-inset-bottom,0px)+0.5rem))]">
         {isCollapsed ? (
-          <div className="flex w-full items-center justify-center py-1">
+          <div className="flex flex-col items-center justify-center gap-2 py-1">
+            <Link
+              href="/app/settings"
+              title="Settings"
+              className="flex size-8 items-center justify-center rounded-lg text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
+            >
+              <Settings className="size-4" />
+            </Link>
             <UserButton
               afterSignOutUrl="/"
               userProfileMode="modal"
@@ -211,13 +227,8 @@ const SidebarApp = () => {
 
 function SidebarUserAccountCard() {
   const { user } = useUser();
-  const { openUserProfile, signOut } = useClerk();
+  const { signOut } = useClerk();
   const { setOpenMobile } = useSidebar();
-
-  const handleOpenProfile = () => {
-    setOpenMobile(false);
-    openUserProfile();
-  };
 
   const handleSignOut = () => {
     setOpenMobile(false);
@@ -267,14 +278,14 @@ function SidebarUserAccountCard() {
         </div>
 
         <div className="mt-2 flex items-center gap-1 border-t border-sidebar-border/50 pt-2">
-          <button
-            type="button"
-            onClick={handleOpenProfile}
+          <Link
+            href="/app/settings"
+            onClick={() => setOpenMobile(false)}
             className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-emerald-500/10 px-2.5 py-1.5 text-left text-[11px] font-bold text-emerald-700 transition-all hover:bg-emerald-500/20 active:scale-[0.98] dark:text-emerald-400"
           >
             <Settings className="size-3.5" />
             <span>Settings</span>
-          </button>
+          </Link>
 
           <button
             type="button"

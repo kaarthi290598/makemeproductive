@@ -1,7 +1,7 @@
 import type { DateFilterType } from "@/components/finance/period-filter";
 import type { ExpenseTransactionFilters } from "@/types/expense";
 
-export const dashboardQueryKey = ["dashboard"] as const;
+export const dashboardQueryKey = (userId: string) => ["dashboard", userId] as const;
 
 export const expenseQueryKeys = {
   all: ["expense"] as const,

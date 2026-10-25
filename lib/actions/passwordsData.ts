@@ -54,6 +54,8 @@ export async function createPassword(
       mpin: payload.mpin?.trim() || null,
       transaction_password: payload.transaction_password?.trim() || null,
       registered_phone: payload.registered_phone?.trim() || null,
+      upi_pin: payload.upi_pin?.trim() || null,
+      cards: payload.cards || [],
     })
     .select()
     .single();
@@ -109,6 +111,9 @@ export async function updatePassword(
     updates.transaction_password = payload.transaction_password?.trim() || null;
   if (payload.registered_phone !== undefined)
     updates.registered_phone = payload.registered_phone?.trim() || null;
+  if (payload.upi_pin !== undefined)
+    updates.upi_pin = payload.upi_pin?.trim() || null;
+  if (payload.cards !== undefined) updates.cards = payload.cards;
 
   const { data, error } = await supabase
     .from("passwords")

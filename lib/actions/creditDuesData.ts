@@ -8,9 +8,12 @@ import { CreditDueInput, CreditDueItem } from "@/types/credit-due";
 /**
  * Fetch all credit dues for the authenticated Clerk user
  */
-export async function fetchCreditDues(): Promise<CreditDueItem[]> {
+export async function fetchCreditDues(expectedUserId?: string): Promise<CreditDueItem[]> {
   const { userId } = await auth();
   if (!userId) throw new Error("User is not authenticated.");
+  if (expectedUserId && expectedUserId !== userId) {
+    throw new Error("The active account changed before credit dues loaded.");
+  }
 
   const { data, error } = await supabase
     .from("credit_dues")
@@ -146,7 +149,33 @@ export async function recordCreditPayment(
   id: string,
   amountPaid: number,
 ): Promise<CreditDueItem> {
-  return updateCreditDue(id, { amount_paid: amountPaid });
+  const { userId } = await auth();
+  if (!userId) throw new Error("User is not authenticated.");
+
+  const payment = Number(amountPaid);
+  if (!Number.isFinite(payment) || payment < 0) {
+    throw new Error("Payment amount must be a non-negative number.");
+  }
+
+  const { data: current, error } = await supabase
+    .from("credit_dues")
+    .select("amount_paid, total_outstanding")
+    .eq("id", id)
+    .eq("user_id", userId)
+    .single();
+
+  if (error) {
+    console.error("Error loading credit due for payment:", error);
+    throw new Error(`Error loading credit due for payment: ${error.message}`);
+  }
+
+  return updateCreditDue(id, {
+    amount_paid: Number(current.amount_paid || 0) + payment,
+    total_outstanding: Math.max(
+      0,
+      Number(current.total_outstanding || 0) - payment,
+    ),
+  });
 }
 
 /**

@@ -106,10 +106,10 @@ export function RecordPaymentDialog({
                 {remainingDue > 0 && (
                   <button
                     type="button"
-                    onClick={() => setPreset(account.statement_amount || account.total_outstanding)}
+                    onClick={() => setPreset(remainingDue)}
                     className="rounded-xl border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
                   >
-                    Full Statement (₹{(account.statement_amount || account.total_outstanding).toLocaleString("en-IN")})
+                    Full Statement (₹{remainingDue.toLocaleString("en-IN")})
                   </button>
                 )}
                 {minDue > 0 && (
@@ -137,7 +137,7 @@ export function RecordPaymentDialog({
                 htmlFor="pay-amount"
                 className="text-xs font-bold text-slate-700 dark:text-slate-300"
               >
-                Total Amount Paid (₹) <span className="text-rose-500">*</span>
+                Payment Amount (₹) <span className="text-rose-500">*</span>
               </Label>
               <div className="relative">
                 <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 font-sans text-sm font-bold text-slate-400">
@@ -164,9 +164,9 @@ export function RecordPaymentDialog({
                 </span>
               </div>
               <div className="flex justify-between py-0.5">
-                <span className="text-slate-500">Total Outstanding:</span>
+                <span className="text-slate-500">New Total Outstanding:</span>
                 <span className="font-mono font-bold text-slate-900 dark:text-white">
-                  ₹{account.total_outstanding.toLocaleString("en-IN")}
+                  ₹{Math.max(0, account.total_outstanding - (parseFloat(amount) || 0)).toLocaleString("en-IN")}
                 </span>
               </div>
               <div className="flex justify-between border-t border-slate-200/60 pt-1 text-emerald-700 dark:border-slate-800 dark:text-emerald-300">
@@ -174,8 +174,7 @@ export function RecordPaymentDialog({
                 <span className="font-mono font-black">
                   ₹{Math.max(
                     0,
-                    (account.statement_amount || account.total_outstanding) -
-                      (parseFloat(amount) || 0),
+                    remainingDue - (parseFloat(amount) || 0),
                   ).toLocaleString("en-IN")}
                 </span>
               </div>

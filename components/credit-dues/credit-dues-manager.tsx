@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { useAuth } from "@clerk/nextjs";
 import { useCreditDuesStore } from "@/hooks/use-credit-dues-store";
 import {
   CreditDueItem,
@@ -36,8 +37,10 @@ import { parseISO, differenceInCalendarDays } from "date-fns";
 type ViewMode = "grid" | "list";
 
 export function CreditDuesManager() {
+  const { isLoaded, userId } = useAuth();
   const {
-    creditDues,
+    creditDues: storedCreditDues,
+    activeUserId,
     loading,
     searchQuery,
     filterStatus,
@@ -47,6 +50,7 @@ export function CreditDuesManager() {
     selectAll,
     clearSelection,
     loadCreditDues,
+    setActiveUserId,
     removeMultipleCreditDues,
   } = useCreditDuesStore();
 
@@ -56,10 +60,13 @@ export function CreditDuesManager() {
   const [editingItem, setEditingItem] = useState<CreditDueItem | null>(null);
   const [viewingItem, setViewingItem] = useState<CreditDueItem | null>(null);
   const [isDeletingMultiple, setIsDeletingMultiple] = useState(false);
+  const creditDues = activeUserId === userId ? storedCreditDues : [];
 
   useEffect(() => {
-    loadCreditDues();
-  }, [loadCreditDues]);
+    if (!isLoaded) return;
+    setActiveUserId(userId);
+    if (userId) void loadCreditDues();
+  }, [isLoaded, userId, loadCreditDues, setActiveUserId]);
 
   // Filtered accounts
   const filteredCreditDues = useMemo(() => {

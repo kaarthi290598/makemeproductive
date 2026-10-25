@@ -19,9 +19,20 @@ export interface PasswordItem {
   mpin?: string | null;
   transaction_password?: string | null;
   registered_phone?: string | null;
+  upi_pin?: string | null;
+  cards?: BankCard[];
 
   created_at?: string;
   updated_at?: string;
+}
+
+export interface BankCard {
+  id: string;
+  card_type: "Debit Card" | "Credit Card";
+  cardholder_name: string;
+  card_number: string;
+  cvv: string;
+  expiry_date: string;
 }
 
 export type PasswordInput = Omit<

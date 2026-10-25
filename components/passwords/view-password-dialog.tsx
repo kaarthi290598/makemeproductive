@@ -48,9 +48,10 @@ export function ViewPasswordDialog({
   onEdit,
 }: ViewPasswordDialogProps) {
   const [showPassword, setShowPassword] = useState(false);
-  const [showAtmPin, setShowAtmPin] = useState(false);
   const [showMpin, setShowMpin] = useState(false);
   const [showTxPassword, setShowTxPassword] = useState(false);
+  const [showUpiPin, setShowUpiPin] = useState(false);
+  const [revealedCards, setRevealedCards] = useState<string[]>([]);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   if (!password) return null;
@@ -125,16 +126,43 @@ export function ViewPasswordDialog({
           {/* Banking Details Card */}
           {isBank && (
             <div className="space-y-2.5 rounded-2xl border border-blue-200/70 bg-blue-50/30 p-3.5 dark:border-blue-900/40 dark:bg-blue-950/20">
-              <div className="flex items-center justify-between text-xs font-bold text-blue-900 dark:text-blue-200">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-blue-900 dark:text-blue-200">
                 <span className="flex items-center gap-1.5">
                   <Building2 className="size-3.5 text-blue-600 dark:text-blue-400" />
                   Bank Account Information
                 </span>
-                {password.account_type && (
-                  <span className="rounded-md bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-900/60 dark:text-blue-300">
-                    {password.account_type}
-                  </span>
-                )}
+                <div className="flex items-center gap-1.5">
+                  {password.account_type && (
+                    <span className="rounded-md bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-900/60 dark:text-blue-300">
+                      {password.account_type}
+                    </span>
+                  )}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 gap-1 rounded-lg px-2 text-[10px] font-semibold text-blue-700 hover:bg-blue-100 dark:text-blue-300 dark:hover:bg-blue-900/50"
+                    onClick={() =>
+                      copyToClipboard(
+                        [
+                          `Name: ${password.name}`,
+                          password.account_number && `Account Number: ${password.account_number}`,
+                          password.ifsc_code && `IFSC Code: ${password.ifsc_code}`,
+                        ]
+                          .filter(Boolean)
+                          .join("\n"),
+                        "Bank Details",
+                      )
+                    }
+                  >
+                    {copiedField === "Bank Details" ? (
+                      <Check className="size-3" />
+                    ) : (
+                      <Copy className="size-3" />
+                    )}
+                    Copy bank details
+                  </Button>
+                </div>
               </div>
 
               {/* Account Number */}
@@ -222,51 +250,8 @@ export function ViewPasswordDialog({
                 )}
               </div>
 
-              {/* ATM PIN & MPIN */}
-              {(password.atm_pin || password.mpin) && (
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  {password.atm_pin && (
-                    <div className="flex items-center justify-between rounded-xl border border-slate-200/80 bg-white p-2.5 dark:border-slate-800 dark:bg-slate-900">
-                      <div>
-                        <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                          ATM / Card PIN
-                        </span>
-                        <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
-                          {showAtmPin ? password.atm_pin : "••••"}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-0.5">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-7 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white"
-                          onClick={() => setShowAtmPin(!showAtmPin)}
-                        >
-                          {showAtmPin ? (
-                            <EyeOff className="size-3.5" />
-                          ) : (
-                            <Eye className="size-3.5" />
-                          )}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-7 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white"
-                          onClick={() =>
-                            copyToClipboard(password.atm_pin!, "ATM PIN")
-                          }
-                        >
-                          {copiedField === "ATM PIN" ? (
-                            <Check className="size-3.5 text-emerald-600" />
-                          ) : (
-                            <Copy className="size-3.5" />
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {password.mpin && (
+              {/* App MPIN */}
+              {password.mpin && (
                     <div className="flex items-center justify-between rounded-xl border border-slate-200/80 bg-white p-2.5 dark:border-slate-800 dark:bg-slate-900">
                       <div>
                         <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -305,8 +290,6 @@ export function ViewPasswordDialog({
                         </Button>
                       </div>
                     </div>
-                  )}
-                </div>
               )}
 
               {/* Transaction Password */}
@@ -385,6 +368,34 @@ export function ViewPasswordDialog({
                       </span>
                     </div>
                   )}
+                </div>
+              )}
+
+              {password.upi_pin && (
+                <div className="flex items-center justify-between rounded-xl border border-slate-200/80 bg-white p-2.5 dark:border-slate-800 dark:bg-slate-900">
+                  <div>
+                    <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">UPI PIN</span>
+                    <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">{showUpiPin ? password.upi_pin : "••••"}</span>
+                  </div>
+                  <div className="flex items-center gap-0.5">
+                    <Button variant="ghost" size="icon" className="size-7 rounded-lg text-slate-400" onClick={() => setShowUpiPin(!showUpiPin)} title={showUpiPin ? "Hide UPI PIN" : "Show UPI PIN"}>{showUpiPin ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}</Button>
+                    <Button variant="ghost" size="icon" className="size-7 rounded-lg text-slate-400" onClick={() => copyToClipboard(password.upi_pin!, "UPI PIN")} title="Copy UPI PIN">{copiedField === "UPI PIN" ? <Check className="size-3.5 text-emerald-600" /> : <Copy className="size-3.5" />}</Button>
+                  </div>
+                </div>
+              )}
+
+              {!!password.cards?.length && (
+                <div className="space-y-2 rounded-xl border border-violet-200/70 bg-violet-50/40 p-2.5 dark:border-violet-900/40 dark:bg-violet-950/20">
+                  <div className="flex items-center justify-between text-xs font-bold text-violet-900 dark:text-violet-200"><span className="flex items-center gap-1.5"><CreditCard className="size-3.5" /> Cards</span><span className="text-[10px]">{password.cards.length}</span></div>
+                  {password.cards.map((card, index) => {
+                    const revealed = revealedCards.includes(card.id);
+                    const maskedNumber = card.card_number ? `•••• •••• •••• ${card.card_number.replace(/\s/g, "").slice(-4)}` : "Not provided";
+                    return <div key={card.id || index} className="space-y-1 rounded-lg border border-violet-200/60 bg-white p-2.5 dark:border-violet-900/50 dark:bg-slate-900">
+                      <div className="flex items-center justify-between gap-2"><span className="rounded-md bg-violet-100 px-1.5 py-0.5 text-[10px] font-bold text-violet-800 dark:bg-violet-900/60 dark:text-violet-200">{card.card_type}</span><span className="text-[10px] text-slate-400">Expires {card.expiry_date || "—"}</span></div>
+                      <div className="flex items-center justify-between gap-2"><div className="min-w-0"><p className="truncate text-[11px] font-semibold text-slate-700 dark:text-slate-300">{card.cardholder_name || "Cardholder"}</p><p className="font-mono text-xs font-bold text-slate-900 dark:text-white">{revealed ? card.card_number || "Not provided" : maskedNumber}</p></div><Button variant="ghost" size="icon" className="size-7 shrink-0 rounded-lg text-slate-400" onClick={() => setRevealedCards((current) => revealed ? current.filter((id) => id !== card.id) : [...current, card.id])} title={revealed ? "Hide card number and CVV" : "Show card number and CVV"}>{revealed ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}</Button></div>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400">CVV: <span className="font-mono font-semibold">{revealed ? card.cvv || "—" : "•••"}</span></p>
+                    </div>;
+                  })}
                 </div>
               )}
             </div>
